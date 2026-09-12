@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { authStore } from '$lib/auth.svelte';
 	import { parallax } from '$lib/parallax';
+	import { dotField } from '$lib/dotField';
 
 	type Mode = 'sign-in' | 'sign-up';
 
@@ -63,12 +64,7 @@
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
-		<img
-			class="hero-illustration"
-			src="/brand/ginseng-mark-reversed-transparent.svg"
-			alt=""
-			data-parallax-strength="10 6"
-		/>
+		<canvas class="hero-field" {@attach dotField({ spacing: 30, radius: 1.5 })}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-kicker" href={resolve('/welcome')}>Ginseng · Liquidity workspace</a>
 			<h1>A timing problem, modeled.</h1>
@@ -174,20 +170,11 @@
 		background: var(--cobalt-deep);
 	}
 
-	/* Background layer: least movement. Overscanned beyond the panel edge
-	   so parallax translation never reveals a gap at the boundary. */
-	.hero-illustration {
+	.hero-field {
 		position: absolute;
-		right: -2.5rem;
-		top: -2.5rem;
-		height: 116%;
-		width: auto;
-		max-width: none;
-		opacity: 0.94;
-		transform: translate3d(0, 0, 0);
-		transition: transform 850ms cubic-bezier(0.19, 1, 0.22, 1);
-		will-change: transform;
-		pointer-events: none;
+		inset: 0;
+		width: 100%;
+		height: 100%;
 	}
 
 	/* Foreground layer: most movement — the copy is what the eye reads
@@ -205,7 +192,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hero-illustration, .hero-copy { transition: none; }
+		.hero-copy { transition: none; }
 	}
 
 	.hero-kicker {
