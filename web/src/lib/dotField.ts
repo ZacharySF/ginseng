@@ -114,6 +114,7 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			canvas.width = Math.round(width * dpr);
 			canvas.height = Math.round(height * dpr);
 			context!.setTransform(dpr, 0, 0, dpr, 0, 0);
+			context!.lineCap = 'round';
 			focus.x = width / 2;
 			focus.y = viewportHeight / 2;
 
@@ -134,6 +135,18 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			}
 		}
 
+		function addAsteriskPath(x: number, y: number, radius: number) {
+			const diagonalX = radius * 0.5;
+			const diagonalY = radius * 0.8660254;
+
+			context!.moveTo(x - radius, y);
+			context!.lineTo(x + radius, y);
+			context!.moveTo(x - diagonalX, y - diagonalY);
+			context!.lineTo(x + diagonalX, y + diagonalY);
+			context!.moveTo(x - diagonalX, y + diagonalY);
+			context!.lineTo(x + diagonalX, y - diagonalY);
+		}
+
 		function frame(timeMs: number) {
 			const time = timeMs * 0.001;
 			const scrollY = options.pinned ? window.scrollY : 0;
@@ -151,6 +164,7 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			focus.y += (targetY - focus.y) * 0.04;
 
 			context!.clearRect(0, scrollY - overscan, width, viewportHeight + overscan * 2);
+			context!.beginPath();
 			for (const dot of dots) {
 				const dx = dot.x - focus.x;
 				const dy = dot.y - focus.y;
@@ -164,26 +178,27 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 				const scale = 1 + wave;
 				const px = focus.x + dx * scale;
 				const py = focus.y + dy * scale;
-				const alpha = Math.min(0.55, Math.max(0.1, 0.26 + wave * 0.7));
+
 				const r = Math.max(0.6, baseRadius * (1 + wave * 0.6));
 
-				context!.beginPath();
-				context!.fillStyle = `rgb(${color} / ${alpha.toFixed(3)})`;
-				context!.arc(px, py + scrollY, r, 0, Math.PI * 2);
-				context!.fill();
+				addAsteriskPath(px, py + scrollY, r);
 			}
+			context!.lineWidth = Math.max(0.55, baseRadius * 0.38);
+			context!.strokeStyle = `rgb(${color} / 0.3)`;
+			context!.stroke();
 			raf = requestAnimationFrame(frame);
 		}
 
 		function drawStatic() {
 			const scrollY = options.pinned ? window.scrollY : 0;
 			context!.clearRect(0, scrollY, width, viewportHeight);
-			context!.fillStyle = `rgb(${color} / 0.26)`;
+			context!.beginPath();
 			for (const dot of dots) {
-				context!.beginPath();
-				context!.arc(dot.x, dot.y + scrollY, baseRadius, 0, Math.PI * 2);
-				context!.fill();
+				addAsteriskPath(dot.x, dot.y + scrollY, baseRadius);
 			}
+			context!.lineWidth = Math.max(0.55, baseRadius * 0.38);
+			context!.strokeStyle = `rgb(${color} / 0.26)`;
+			context!.stroke();
 		}
 
 		// Listen on the parent section by default, not the canvas itself:
