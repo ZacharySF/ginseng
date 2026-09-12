@@ -168,9 +168,10 @@
 		align-items: center;
 		color: var(--paper);
 		font-family: var(--font-sans);
-		font-size: 1.15rem;
+		font-size: 1.25rem;
 		font-weight: 800;
 		letter-spacing: 0.12em;
+		line-height: 1;
 		text-decoration: none;
 	}
 
