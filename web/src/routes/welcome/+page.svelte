@@ -49,9 +49,7 @@
 	</div>
 
 	<header class="welcome-nav">
-		<a class="nav-brand" href={resolve('/welcome')}>
-			<img class="nav-logo" src="/brand/ginseng-avatar-reversed.svg" alt="Ginseng" />
-		</a>
+		<a class="nav-brand" href={resolve('/welcome')}>GINSENG</a>
 		<nav class="nav-actions" aria-label="Account">
 			<a href={resolve('/login')}>Sign in</a>
 			<a class="nav-cta" href={resolve('/login?mode=sign-up')}>Create account</a>
@@ -61,7 +59,10 @@
 	<section class="hero" {@attach parallax()}>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<p class="hero-kicker">Liquidity workspace</p>
-			<h1>Ginseng</h1>
+			<h1 class="hero-logo">
+				<img src="/brand/ginseng-avatar-reversed.svg" alt="" />
+				<span>Ginseng</span>
+			</h1>
 			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
 				Variable-income earners can hold plenty of assets and still have a timing problem.
@@ -173,12 +174,6 @@
 		text-decoration: none;
 	}
 
-	.nav-logo {
-		display: block;
-		width: 1.6rem;
-		height: 1.6rem;
-		object-fit: contain;
-	}
 
 
 	.nav-actions {
@@ -246,13 +241,24 @@
 		text-transform: uppercase;
 	}
 
-	.hero-copy h1 {
+	.hero-logo {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
 		margin: 0;
 		font-size: clamp(2.6rem, 6vw, 4.8rem);
 		font-weight: 800;
 		letter-spacing: -0.035em;
 		line-height: 0.98;
 		text-wrap: balance;
+	}
+
+	.hero-logo img {
+		display: block;
+		flex: none;
+		width: 0.9em;
+		height: 0.9em;
+		object-fit: contain;
 	}
 
 	.hero-tagline {
@@ -502,6 +508,7 @@
 		.frozen { padding: 4rem 1.25rem; }
 		.final-cta { padding: 4rem 1.25rem; }
 	}
+
 	@media (max-width: 22rem) {
 		.nav-actions > a:not(.nav-cta) { display: none; }
 	}
