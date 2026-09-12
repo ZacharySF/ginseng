@@ -45,7 +45,7 @@
 
 <div class="welcome">
 	<div class="ambient-field" aria-hidden="true">
-		<canvas {@attach dotField({ boundless: true, pinned: true })}></canvas>
+		<canvas {@attach dotField({ boundless: true, stockTrace: true })}></canvas>
 	</div>
 
 	<header class="welcome-nav">
@@ -134,17 +134,17 @@
 		color: var(--ink);
 	}
 
-	/* The canvas is ordinary page content whose visible band is redrawn
-	   at the current scroll offset, so the ambient field stays pinned
-	   without relying on fixed-position compositing. */
 	.ambient-field {
-		position: absolute;
+		position: fixed;
 		inset: 0;
 		overflow: hidden;
+		pointer-events: none;
 	}
 
 	.ambient-field canvas {
 		display: block;
+		width: 100%;
+		height: 100%;
 		background: var(--cobalt-deep);
 	}
 

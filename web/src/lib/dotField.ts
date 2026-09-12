@@ -51,20 +51,23 @@ interface DotFieldOptions {
 	 *  would silently stop updating the moment the cursor crosses any
 	 *  of it. */
 	boundless?: boolean;
-	/** Size the canvas to the full document height and shift the drawn
-	 *  dots by the live scroll offset each frame, instead of sizing to
-	 *  the canvas's own (viewport-sized) layout box. Used instead of
-	 *  position:fixed/sticky to make the pattern look pinned to the
-	 *  viewport while scrolling: backdrop-filter reliably blurring a
-	 *  fixed/sticky backdrop is inconsistently supported across
-	 *  browsers, but blurring ordinary scrolling content — which is
-	 *  what this canvas becomes in this mode — is the well-tested case. */
-	pinned?: boolean;
+	/** Periodically draw a left-to-right market trace through existing
+	 *  grid points. The trace is omitted for reduced-motion users. */
+	stockTrace?: boolean;
 }
 
 interface Dot {
 	x: number;
 	y: number;
+	renderX: number;
+	renderY: number;
+	renderRadius: number;
+}
+
+interface StockTrace {
+	points: Dot[];
+	startedAt: number;
+	duration: number;
 }
 
 function roundedSquareWave(t: number, delta: number, a: number, f: number) {
@@ -88,6 +91,9 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		let dots: Dot[] = [];
+		let columns: Dot[][] = [];
+		let stockTrace: StockTrace | null = null;
+		let nextTraceAt = Number.POSITIVE_INFINITY;
 		let width = 0;
 		let height = 0;
 		let viewportHeight = 0;
@@ -98,41 +104,43 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 		function layout() {
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-			if (options.pinned) {
-				width = window.innerWidth;
-				viewportHeight = window.innerHeight;
-				height = Math.max(viewportHeight, document.documentElement.scrollHeight);
-				canvas.style.width = `${width}px`;
-				canvas.style.height = `${height}px`;
-			} else {
-				const rect = canvas.getBoundingClientRect();
-				width = rect.width;
-				viewportHeight = rect.height;
-				height = viewportHeight;
-			}
+			const rect = canvas.getBoundingClientRect();
+			width = rect.width;
+			viewportHeight = rect.height;
+			height = viewportHeight;
 
 			canvas.width = Math.round(width * dpr);
 			canvas.height = Math.round(height * dpr);
 			context!.setTransform(dpr, 0, 0, dpr, 0, 0);
 			context!.lineCap = 'round';
+			context!.lineJoin = 'round';
 			focus.x = width / 2;
 			focus.y = viewportHeight / 2;
 
-			// Hex-packed grid: alternate columns drop half a row. Laid out
-			// per viewport, not per document — in pinned mode the same
-			// viewport-sized tile is redrawn into whichever band of the
-			// tall canvas is currently on screen (see `frame`).
+			// Hex-packed grid extends three columns past each viewport edge
+			// so traces enter and leave without clipped markers.
 			dots = [];
-			const cols = Math.ceil(width / spacing) + 1;
+			columns = [];
+			const horizontalOverscan = 3;
+			const cols = Math.ceil(width / spacing) + 1 + horizontalOverscan * 2;
 			const rows = Math.ceil(viewportHeight / spacing) + 2;
 			for (let col = 0; col < cols; col++) {
+				const column: Dot[] = [];
 				const xJitter = (Math.random() - 0.5) * spacing * 0.12;
 				for (let row = 0; row < rows; row++) {
-					const x = col * spacing + xJitter;
+					const x = (col - horizontalOverscan) * spacing + xJitter;
 					const y = row * spacing + (col % 2 === 1 ? spacing / 2 : 0);
-					dots.push({ x, y });
+					const dot = { x, y, renderX: x, renderY: y, renderRadius: baseRadius };
+					column.push(dot);
+					dots.push(dot);
 				}
+				columns.push(column);
 			}
+
+			stockTrace = null;
+			nextTraceAt = options.stockTrace
+				? performance.now() + 2400 + Math.random() * 1800
+				: Number.POSITIVE_INFINITY;
 		}
 
 		function addAsteriskPath(x: number, y: number, radius: number) {
@@ -147,9 +155,140 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			context!.lineTo(x + diagonalX, y - diagonalY);
 		}
 
+		function createStockTrace(startedAt: number): StockTrace | null {
+			if (columns.length < 2 || columns[0].length < 7) return null;
+
+			const points: Dot[] = [];
+			const lastRow = columns[0].length - 1;
+			const minRow = 2;
+			const maxRow = lastRow - 2;
+			const rowRange = maxRow - minRow;
+			let row = minRow + Math.floor(rowRange * (0.2 + Math.random() * 0.6));
+			const columnStep = Math.max(1, Math.round(52 / spacing));
+
+			for (let col = 0; col < columns.length; col += columnStep) {
+				points.push(columns[col][row]);
+
+				let rowStep = Math.floor(Math.random() * 5) - 2;
+				if (rowStep === 0 && Math.random() < 0.7) {
+					rowStep = Math.random() < 0.5 ? -1 : 1;
+				}
+				row = Math.max(minRow, Math.min(maxRow, row + rowStep));
+			}
+
+			const finalColumn = columns.at(-1)!;
+			if (points.at(-1) !== finalColumn[row]) points.push(finalColumn[row]);
+
+			return { points, startedAt, duration: 4800 };
+		}
+
+		function smoothstep(value: number) {
+			const clamped = Math.max(0, Math.min(1, value));
+			return clamped * clamped * (3 - 2 * clamped);
+		}
+
+		function drawTraceSegments(
+			points: Dot[],
+			pointIndex: number,
+			segmentProgress: number,
+			scrollY: number,
+			direction: -1 | 0 | 1,
+			strokeStyle: string
+		) {
+			context!.beginPath();
+			for (let index = 0; index <= pointIndex && index < points.length - 1; index++) {
+				const from = points[index];
+				const to = points[index + 1];
+				const ratio = index < pointIndex ? 1 : segmentProgress;
+				if (ratio <= 0) continue;
+
+				const deltaY = to.y - from.y;
+				const segmentDirection = deltaY < -0.5 ? -1 : deltaY > 0.5 ? 1 : 0;
+				if (segmentDirection !== direction) continue;
+
+				context!.moveTo(from.renderX, from.renderY + scrollY);
+				context!.lineTo(
+					from.renderX + (to.renderX - from.renderX) * ratio,
+					from.renderY + (to.renderY - from.renderY) * ratio + scrollY
+				);
+			}
+			context!.lineWidth = 1.5;
+			context!.strokeStyle = strokeStyle;
+			context!.stroke();
+		}
+
+		function drawStockTrace(timeMs: number, scrollY: number) {
+			if (!options.stockTrace) return;
+
+			if (!stockTrace && timeMs >= nextTraceAt) {
+				stockTrace = createStockTrace(timeMs);
+			}
+			if (!stockTrace) return;
+
+			const age = (timeMs - stockTrace.startedAt) / stockTrace.duration;
+			if (age >= 1) {
+				stockTrace = null;
+				nextTraceAt = timeMs + 2600 + Math.random() * 2200;
+				return;
+			}
+
+			const points = stockTrace.points;
+			const drawProgress = smoothstep(age / 0.78);
+			const progress = drawProgress * (points.length - 1);
+			const pointIndex = Math.floor(progress);
+			const segmentProgress = progress - pointIndex;
+			const fade = age < 0.08
+				? smoothstep(age / 0.08)
+				: age > 0.86
+					? 1 - smoothstep((age - 0.86) / 0.14)
+					: 1;
+
+			const lineAlpha = (0.82 * fade).toFixed(3);
+			drawTraceSegments(
+				points,
+				pointIndex,
+				segmentProgress,
+				scrollY,
+				-1,
+				`rgb(133 251 175 / ${lineAlpha})`
+			);
+			drawTraceSegments(
+				points,
+				pointIndex,
+				segmentProgress,
+				scrollY,
+				1,
+				`rgb(255 140 151 / ${lineAlpha})`
+			);
+			drawTraceSegments(
+				points,
+				pointIndex,
+				segmentProgress,
+				scrollY,
+				0,
+				`rgb(${color} / ${(0.5 * fade).toFixed(3)})`
+			);
+
+			context!.beginPath();
+			const lastHighlighted = Math.min(points.length - 1, Math.ceil(progress));
+			for (let index = 0; index <= lastHighlighted; index++) {
+				const arrival = smoothstep(progress - index + 0.5);
+				if (arrival <= 0) continue;
+				const point = points[index];
+				addAsteriskPath(
+					point.renderX,
+					point.renderY + scrollY,
+					point.renderRadius * (1 + arrival * 0.9)
+				);
+			}
+			context!.lineWidth = Math.max(0.9, baseRadius * 0.68);
+			context!.strokeStyle = `rgb(${color} / ${(0.78 * fade).toFixed(3)})`;
+			context!.stroke();
+		}
+
 		function frame(timeMs: number) {
 			const time = timeMs * 0.001;
-			const scrollY = options.pinned ? window.scrollY : 0;
+			const scrollY = 0;
 			// Overscanned so dots animating past the viewport edge (the
 			// wave can push them outward by up to ~amplitude of their
 			// focus distance) don't leave a stale trailing edge.
@@ -176,21 +315,21 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 				const wave = roundedSquareWave(t, delta, amplitude, 1 / wavePeriod);
 
 				const scale = 1 + wave;
-				const px = focus.x + dx * scale;
-				const py = focus.y + dy * scale;
+				dot.renderX = focus.x + dx * scale;
+				dot.renderY = focus.y + dy * scale;
+				dot.renderRadius = Math.max(0.6, baseRadius * (1 + wave * 0.6));
 
-				const r = Math.max(0.6, baseRadius * (1 + wave * 0.6));
-
-				addAsteriskPath(px, py + scrollY, r);
+				addAsteriskPath(dot.renderX, dot.renderY + scrollY, dot.renderRadius);
 			}
 			context!.lineWidth = Math.max(0.55, baseRadius * 0.38);
 			context!.strokeStyle = `rgb(${color} / 0.3)`;
 			context!.stroke();
+			drawStockTrace(timeMs, scrollY);
 			raf = requestAnimationFrame(frame);
 		}
 
 		function drawStatic() {
-			const scrollY = options.pinned ? window.scrollY : 0;
+			const scrollY = 0;
 			context!.clearRect(0, scrollY, width, viewportHeight);
 			context!.beginPath();
 			for (const dot of dots) {
@@ -216,17 +355,9 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			: (canvas.parentElement ?? canvas);
 
 		function handleMove(event: PointerEvent) {
-			if (options.pinned) {
-				// Viewport-relative, matching the viewport-relative dot/focus
-				// math — not canvas-relative, since the canvas is now much
-				// taller than the viewport.
-				pointer.x = event.clientX;
-				pointer.y = event.clientY;
-			} else {
-				const rect = canvas.getBoundingClientRect();
-				pointer.x = event.clientX - rect.left;
-				pointer.y = event.clientY - rect.top;
-			}
+			const rect = canvas.getBoundingClientRect();
+			pointer.x = event.clientX - rect.left;
+			pointer.y = event.clientY - rect.top;
 			pointer.active = true;
 		}
 
@@ -250,23 +381,15 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			}
 		}
 
-		// In pinned mode the canvas's own size is set by `layout()` itself
-		// (from document.documentElement.scrollHeight); observing the
-		// canvas would re-trigger on every layout() call. Observe
-		// document.body instead — .ambient-field clips to it (overflow:
-		// hidden), so the canvas can never grow it, only shrink/grow in
-		// response to it.
 		const resizeObserver = new ResizeObserver(() => {
 			layout();
 			if (reduceMotion) drawStatic();
 		});
-		resizeObserver.observe(options.pinned ? document.body : canvas);
-		if (options.pinned) window.addEventListener('resize', layout);
+		resizeObserver.observe(canvas);
 
 		return () => {
 			cancelAnimationFrame(raf);
 			resizeObserver.disconnect();
-			if (options.pinned) window.removeEventListener('resize', layout);
 			listenTarget.removeEventListener('pointermove', handleMove as EventListener);
 			if (options.boundless) {
 				document.removeEventListener('mouseleave', handleLeave);
