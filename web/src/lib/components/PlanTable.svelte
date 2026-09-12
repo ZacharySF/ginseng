@@ -49,7 +49,7 @@
 					<span class="plan-index">0{index + 1}</span>
 					<div>
 						<h3>{plan.label}</h3>
-						<p>{plan.recommended ? 'Recommended under current policy' : plan.dominated ? 'Dominated under current policy' : 'Alternative funding path'}</p>
+						<p>{plan.explanation}</p>
 					</div>
 					{#if plan.recommended}<span class="plan-state">Selected</span>{/if}
 				</header>
@@ -217,4 +217,16 @@
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
+	/* Cobalt ledger skin */
+	.plans-empty, .recommendation-line, .plan-list { border-color: var(--rule); }
+	.plans-empty { background: var(--paper-soft); color: var(--ink); }
+	.plans-empty span, .recommendation-line > span, .plan-row header p { color: var(--ink-muted); }
+	.recommendation-line { background: var(--paper-deep); }
+	.recommendation-line p, .plan-metrics span, .plan-index, .plan-state { color: var(--ink-muted); }
+	.recommendation-line strong, .plan-index { color: var(--cobalt); }
+	.plan-list { background: var(--rule); }
+	.plan-row { background: var(--paper); }
+	.plan-row.recommended { background: var(--paper-soft); box-shadow: inset 3px 0 var(--cobalt); }
+	.plan-row h3, .plan-metrics strong { color: var(--ink); }
+	.plan-state { background: var(--cobalt); color: var(--paper); }
 </style>

@@ -131,4 +131,17 @@
 		.funding-inspector { grid-template-columns: 1fr; }
 		.funding-inspector section { border-right: 0; border-bottom: 1px solid #29292d; }
 	}
+	/* Cobalt ledger skin */
+	.terminal-view { background: var(--paper); color: var(--ink); }
+	.view-toolbar { background: var(--paper); border-color: var(--rule); }
+	.view-toolbar span, .view-toolbar p, .label { color: var(--ink-muted); }
+	.plan-console { border-color: var(--rule); }
+	.funding-inspector { background: var(--paper-soft); }
+	.funding-inspector section { border-color: var(--rule); }
+	.inspector-value { color: var(--cobalt); }
+	.inspector-value.attention, .terminal-state p { color: var(--negative); }
+	.funding-inspector span { color: var(--ink-muted); }
+	.comparison strong { color: var(--ink); }
+	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
 </style>

@@ -50,4 +50,18 @@
 	.scenario-read { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; border-top:1px solid #29292d; background:#29292d; }.scenario-read > div { display:grid; gap:.4rem; padding:.85rem 1rem; background:#0d0d0e; }.scenario-read strong { color:#e0e0e3; font-size:1.05rem; letter-spacing:-.04em; }.scenario-read strong.attention { color:#ff7186; }.scenario-read span { color:#919197; font-size:.7rem; line-height:1.35; }
 	.terminal-state,.terminal-loading { display:grid; place-content:center; gap:.5rem; height:calc(100dvh - 3rem); padding:2rem; background:#050505; color:#a2a2a8; font-family:var(--font-mono); font-size:.72rem; text-transform:uppercase; }.terminal-state p { color:#ff7186; }.terminal-state span { max-width:44ch; font-family:var(--font-sans); font-size:.82rem; text-transform:none; }.terminal-state button { justify-self:start; min-height:2.3rem; padding:0 .7rem; background:#18181a; border:1px solid #55555c; color:#fff; font:inherit; cursor:pointer; }
 	@media(max-width:65rem){.terminal-view{height:auto;min-height:calc(100dvh - 3rem);}.event-layout{grid-template-columns:1fr;flex:none;}.composer-pane{border-right:0;border-bottom:1px solid #29292d;overflow-y:visible;}.chart-pane{min-height:34rem}}@media(max-width:42rem){.view-toolbar{display:grid;gap:.2rem;padding:.6rem .75rem}.view-toolbar div{display:grid;gap:.2rem}.view-toolbar p{margin:0}.composer-pane,.simulation{padding:.75rem}.section-heading{display:grid}.scenario-read{grid-template-columns:1fr}}
+	/* Cobalt ledger skin */
+	.terminal-view { background: var(--paper); color: var(--ink); }
+	.view-toolbar { background: var(--paper); border-color: var(--rule); }
+	.view-toolbar span, .view-toolbar p, .label { color: var(--ink-muted); }
+	.composer-pane { background: var(--paper-soft); border-color: var(--rule); }
+	.section-heading h1 { color: var(--ink); }
+	.section-heading > span { color: var(--ink-muted); }
+	.scenario-read { background: var(--rule); border-color: var(--rule); }
+	.scenario-read > div { background: var(--paper-deep); }
+	.scenario-read strong { color: var(--ink); }
+	.scenario-read strong.attention, .terminal-state p { color: var(--negative); }
+	.scenario-read span, .terminal-state, .terminal-loading { color: var(--ink-muted); }
+	.terminal-state, .terminal-loading { background: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
 </style>

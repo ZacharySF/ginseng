@@ -255,4 +255,17 @@
 	.swatch-band {
 		background: rgb(200 200 204 / 30%);
 	}
+	/* Cobalt ledger skin */
+	.empty-state, .legend { color: var(--ink-muted); }
+	.axis-line { stroke: var(--rule-strong); }
+	.curve-line { stroke: var(--cobalt); }
+	.current-line { stroke: var(--ink); }
+	.reserve-dot { fill: var(--negative); }
+	.line-label { fill: var(--ink-soft); }
+	.estimate-band { fill: rgb(36 72 255 / 14%); }
+	.swatch-curve { background: var(--cobalt); }
+	.swatch-target { background: var(--warning); }
+	.swatch-current { background: var(--ink); }
+	.swatch-reserve { background: var(--negative); }
+	.swatch-band { background: rgb(36 72 255 / 30%); }
 </style>

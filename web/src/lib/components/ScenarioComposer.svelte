@@ -543,4 +543,28 @@
 			gap: 0.5rem;
 		}
 	}
+	/* Cobalt ledger skin */
+	.composer { color: var(--ink); }
+	.composer-header, .event-form { border-color: var(--rule); }
+	.composer-header h2, .event-label { color: var(--ink); }
+	.panel-kicker, .data-label, .form-heading p, .event-list-heading p { color: var(--ink-muted); }
+	.event-count { border-color: var(--rule-strong); color: var(--ink-soft); }
+	.event-count strong, .text-button { color: var(--cobalt); }
+	.scenario-settings, .composer-footer { background: var(--paper-soft); border-color: var(--rule); }
+	.scenario-settings > p, .composer-footer > div > p:last-child, .empty-events, .empty-events span { color: var(--ink-muted); }
+	select, input, .money-input { background: var(--paper); border-color: var(--rule-strong); color: var(--ink); }
+	select:focus, input:focus, .money-input:focus-within { border-color: var(--cobalt); box-shadow: 0 0 0 1px var(--cobalt); }
+	.event-form label { color: var(--ink-soft); }
+	.composer-grid, .event-list { background: var(--rule); border-color: var(--rule); }
+	.event-form, .event-list-wrap, .event-list li { background: var(--paper); }
+	.event-day { background: var(--cobalt); color: var(--paper); }
+	.event-amount { color: var(--warning); }
+	.icon-button, .text-button { color: var(--cobalt-deep); }
+	.icon-button:hover, .text-button:hover { background: var(--paper-deep); color: var(--cobalt); }
+	.icon-button--danger:hover, .form-error { color: var(--negative); }
+	.empty-events { background: var(--paper-soft); border-color: var(--rule-strong); }
+	.button-primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.button-primary:hover:not(:disabled) { background: var(--cobalt-bright); }
+	.button-secondary { background: var(--paper); border-color: var(--rule-strong); color: var(--ink); }
+	.button-secondary:hover:not(:disabled) { background: var(--paper-deep); border-color: var(--cobalt); }
 </style>

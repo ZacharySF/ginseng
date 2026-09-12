@@ -3,6 +3,8 @@
 	import { scenarioStore, COVERAGE_TARGET_OPTIONS } from '$lib/scenario.svelte';
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import CoverageCurve from '$lib/components/CoverageCurve.svelte';
+	import ReserveBufferCurve from '$lib/components/ReserveBufferCurve.svelte';
+	import ShortfallDistribution from '$lib/components/ShortfallDistribution.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -69,6 +71,47 @@
 						estimateBand={s.estimate_band}
 					/>
 				</section>
+
+				<div class="diagnostic-grid">
+					<section class="reserve-buffer-section" aria-labelledby="reserve-buffer-curve-title">
+						<div class="section-heading">
+							<div>
+								<p class="label">Policy sensitivity</p>
+								<h2 id="reserve-buffer-curve-title">Buffer drives reserve</h2>
+							</div>
+							<span>See the cash reserve needed if you changed the amount left untouched.</span>
+						</div>
+						<ReserveBufferCurve
+							points={s.reserve_buffer_curve}
+							operatingBuffer={s.operating_buffer}
+							requiredReserve={s.required_liquidity_reserve}
+						/>
+					</section>
+
+					<section class="shortfall-section" aria-labelledby="shortfall-distribution-title">
+						<div class="section-heading">
+							<div>
+								<p class="label">Path severity</p>
+								<h2 id="shortfall-distribution-title">How the downside fails</h2>
+							</div>
+						</div>
+						<div class="severity-readout">
+							<div>
+								<span>Shortfall chance</span>
+								<strong class="numeric">{formatPercent(s.severity.cash_shortfall_probability)}</strong>
+							</div>
+							<div>
+								<span>Average deficit</span>
+								<strong class="numeric">{formatCurrency(s.severity.avg_cash_deficit_when_short)}</strong>
+							</div>
+							<div>
+								<span>Dollar-days below buffer</span>
+								<strong class="numeric">{formatCurrency(s.severity.dollar_days_below_buffer)}</strong>
+							</div>
+						</div>
+						<ShortfallDistribution distribution={s.shortfall_distribution} />
+					</section>
+				</div>
 
 				{#if s.sensitivity.length > 0}
 					<section class="sensitivity-section" aria-labelledby="sensitivity-title">
@@ -190,14 +233,41 @@
 	.reserve-facts strong.gap { color: #ff7186; }
 
 	.curve-section {
-		flex: 1;
-		min-height: 0;
+		flex: none;
+		min-height: 24rem;
 		display: flex;
 		flex-direction: column;
 		padding: 1rem;
 		border-bottom: 1px solid #29292d;
 	}
 	.curve-section :global(.coverage-curve) { flex: 1; min-height: 0; }
+	.diagnostic-grid {
+		display: grid;
+		grid-template-columns: minmax(20rem, 1.1fr) minmax(20rem, 0.9fr);
+		border-bottom: 1px solid #29292d;
+	}
+	.reserve-buffer-section,
+	.shortfall-section {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		min-height: 21rem;
+		padding: 1rem;
+	}
+	.reserve-buffer-section { border-right: 1px solid #29292d; }
+	.reserve-buffer-section :global(.reserve-buffer-curve),
+	.shortfall-section :global(.shortfall-distribution) { flex: 1; min-height: 0; }
+	.severity-readout {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1px;
+		margin-bottom: 0.75rem;
+		background: #29292d;
+		border: 1px solid #29292d;
+	}
+	.severity-readout div { display: grid; gap: 0.25rem; min-width: 0; padding: 0.55rem; background: #101011; }
+	.severity-readout span { color: #9a9aa0; font-size: 0.62rem; line-height: 1.25; }
+	.severity-readout strong { color: #e8e8eb; font-size: 0.78rem; letter-spacing: -0.02em; }
 	.sensitivity-section { flex: none; padding: 1rem; border-bottom: 1px solid #29292d; }
 	.section-heading { flex: none; display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem; }
 	.section-heading div { display: grid; gap: 0.25rem; }
@@ -270,6 +340,8 @@
 		.reserve-layout { flex: none; grid-template-columns: 1fr; }
 		.reserve-console, .policy-console { overflow-y: visible; }
 		.curve-section { min-height: 22rem; }
+		.diagnostic-grid { grid-template-columns: 1fr; }
+		.reserve-buffer-section { border-right: 0; border-bottom: 1px solid #29292d; }
 		.policy-console { grid-template-columns: repeat(3, 1fr); border-left: 0; border-top: 1px solid #29292d; }
 		.policy-console section { border-right: 1px solid #29292d; border-bottom: 0; }
 	}
@@ -284,6 +356,33 @@
 		.section-heading { display: grid; }
 		.policy-console { grid-template-columns: 1fr; }
 		.policy-console section { border-right: 0; border-bottom: 1px solid #29292d; }
-		.curve-section, .sensitivity-section { padding: 0.75rem; }
+		.curve-section, .reserve-buffer-section, .shortfall-section, .sensitivity-section { padding: 0.75rem; }
+		.severity-readout { grid-template-columns: 1fr; }
 	}
+	/* Cobalt ledger skin */
+	.terminal-view { background: var(--paper); color: var(--ink); }
+	.view-toolbar { background: var(--paper); border-color: var(--rule); }
+	.view-toolbar span, .view-toolbar p, .label { color: var(--ink-muted); }
+	.policy-console { background: var(--paper-soft); border-color: var(--rule); }
+	.policy-console section { border-color: var(--rule); }
+	.policy-console label, .policy-console span, .reserve-read span, .section-heading > span { color: var(--ink-muted); }
+	.policy-console strong { color: var(--cobalt); }
+	.policy-console strong.gap, .reserve-facts strong.gap, .terminal-state p { color: var(--negative); }
+	.reserve-read { background: var(--paper); border-color: var(--rule); }
+	.reserve-value, .section-heading h2, .reserve-facts strong, .severity-readout strong, .sensitivity-list strong { color: var(--ink); }
+	.estimate { border-color: var(--rule); }
+	.estimate strong, .updating { color: var(--warning); }
+	.reserve-facts, .severity-readout, .sensitivity-list { background: var(--rule); border-color: var(--rule); }
+	.reserve-facts div, .severity-readout div, .sensitivity-list div { background: var(--paper-soft); }
+	.reserve-facts, .curve-section, .diagnostic-grid, .reserve-buffer-section, .sensitivity-section { border-color: var(--rule); }
+	.severity-readout span, .sensitivity-list span { color: var(--ink-soft); }
+	.sensitivity-list .estimated { box-shadow: inset 2px 0 var(--warning); }
+	.currency-input, .segmented { background: var(--paper); border-color: var(--rule-strong); }
+	.currency-input span { color: var(--cobalt); }
+	.currency-input input { color: var(--ink); }
+	.currency-input:focus-within { border-color: var(--cobalt); }
+	.segmented button { background: var(--paper); border-color: var(--rule); color: var(--ink-soft); }
+	.segmented button.active { background: var(--cobalt); color: var(--paper); }
+	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
 </style>

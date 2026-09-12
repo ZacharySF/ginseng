@@ -330,4 +330,21 @@
 	.swatch-shock {
 		background: #f45d77;
 	}
+	/* Cobalt ledger skin */
+	.empty-state { color: var(--ink-muted); }
+	.band { fill: rgb(36 72 255 / 14%); }
+	.median-line { stroke: var(--cobalt); }
+	.buffer-line { stroke: var(--warning); }
+	.zero-line, .shock-line { stroke: var(--negative); }
+	.line-label, .axis-label { fill: var(--ink-soft); }
+	.shock-dot { fill: var(--negative); }
+	.flow-baseline { stroke: var(--rule-strong); }
+	.income-mark { stroke: var(--cobalt-bright); }
+	.obligation-mark { stroke: var(--negative); }
+	.legend { color: var(--ink-muted); }
+	.swatch-band { background: rgb(36 72 255 / 38%); }
+	.swatch-median { background: var(--cobalt); }
+	.swatch-buffer { background: var(--warning); }
+	.swatch-zero, .swatch-obligation, .swatch-shock { background: var(--negative); }
+	.swatch-income { background: var(--cobalt-bright); }
 </style>

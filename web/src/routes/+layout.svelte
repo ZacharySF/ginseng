@@ -7,11 +7,13 @@
 
 	type AppRoute = '/' | '/future' | '/liquidity' | '/plans';
 
+	type NavIcon = 'workspace' | 'events' | 'reserve' | 'funding';
+
 	interface NavItem {
 		label: string;
 		shortLabel: string;
 		href: AppRoute;
-		index: string;
+		icon: NavIcon;
 	}
 
 	interface Props {
@@ -21,10 +23,10 @@
 	let { children }: Props = $props();
 
 	const navItems: NavItem[] = [
-		{ label: 'Workspace', shortLabel: 'Work', href: '/', index: '01' },
-		{ label: 'Events', shortLabel: 'Events', href: '/future', index: '02' },
-		{ label: 'Reserve', shortLabel: 'Reserve', href: '/liquidity', index: '03' },
-		{ label: 'Funding', shortLabel: 'Funding', href: '/plans', index: '04' }
+		{ label: 'Workspace', shortLabel: 'Work', href: '/', icon: 'workspace' },
+		{ label: 'Events', shortLabel: 'Events', href: '/future', icon: 'events' },
+		{ label: 'Reserve', shortLabel: 'Reserve', href: '/liquidity', icon: 'reserve' },
+		{ label: 'Funding', shortLabel: 'Funding', href: '/plans', icon: 'funding' }
 	];
 
 	function isActive(href: string) {
@@ -57,7 +59,22 @@
 					aria-label={item.label}
 					title={item.label}
 				>
-					{item.index}
+					<svg aria-hidden="true" viewBox="0 0 24 24">
+						{#if item.icon === 'workspace'}
+							<path d="M4 19V5m0 14h16M7 15l3-4 3 2 5-7" />
+						{:else if item.icon === 'events'}
+							<rect x="4" y="5" width="16" height="15" rx="2" />
+							<path d="M8 3v4m8-4v4M4 10h16m-8 3v4m-3-2h6" />
+						{:else if item.icon === 'reserve'}
+							<path d="M12 3 19 6v5c0 4.3-2.9 7.6-7 10-4.1-2.4-7-5.7-7-10V6l7-3Z" />
+							<path d="M9 12h6m-3-3v6" />
+						{:else}
+							<path d="M5 7h14M5 12h14M5 17h14" />
+							<circle cx="8" cy="7" r="1.5" />
+							<circle cx="15" cy="12" r="1.5" />
+							<circle cx="10" cy="17" r="1.5" />
+						{/if}
+					</svg>
 				</a>
 			{/each}
 		</nav>
@@ -85,10 +102,10 @@
 <style>
 	.terminal-shell {
 		display: grid;
-		grid-template-columns: 3.45rem minmax(0, 1fr);
-		grid-template-rows: 3rem minmax(0, 1fr);
+		grid-template-columns: 4rem minmax(0, 1fr);
+		grid-template-rows: 3.25rem minmax(0, 1fr);
 		height: 100dvh;
-		background: #050505;
+		background: var(--cobalt);
 	}
 
 	.terminal-topbar {
@@ -97,20 +114,21 @@
 		align-items: center;
 		gap: 1rem;
 		min-width: 0;
-		padding: 0 0.8rem;
-		background: #0c0c0d;
-		border-bottom: 1px solid #28282b;
-		color: #e9e9eb;
+		padding: 0 1rem;
+		background: var(--cobalt-deep);
+		border-bottom: 1px solid rgb(255 255 255 / 28%);
+		color: var(--paper);
 	}
 
 	.terminal-brand {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.6rem;
 		flex: none;
-		color: #f5f5f6;
-		font-size: 0.9rem;
-		font-weight: 760;
+		color: var(--paper);
+		font-family: var(--font-sans);
+		font-size: 1rem;
+		font-weight: 800;
 		letter-spacing: -0.04em;
 		text-decoration: none;
 	}
@@ -119,37 +137,28 @@
 		display: inline-flex;
 		align-items: end;
 		gap: 2px;
-		width: 1rem;
-		height: 1rem;
+		width: 1.05rem;
+		height: 1.05rem;
 		padding: 2px;
-		background: #f3f3f3;
-		border-radius: 0.15rem;
+		background: var(--paper);
 	}
 
 	.brand-mark span {
 		flex: 1;
-		background: #080809;
+		background: var(--cobalt);
 	}
 
-	.brand-mark span:nth-child(1) {
-		height: 40%;
-	}
-
-	.brand-mark span:nth-child(2) {
-		height: 72%;
-	}
-
-	.brand-mark span:nth-child(3) {
-		height: 100%;
-	}
+	.brand-mark span:nth-child(1) { height: 40%; }
+	.brand-mark span:nth-child(2) { height: 72%; }
+	.brand-mark span:nth-child(3) { height: 100%; }
 
 	.topbar-context,
 	.topbar-status,
 	.rail-meta {
-		color: #86868b;
+		color: rgb(255 255 255 / 74%);
 		font-family: var(--font-mono);
-		font-size: 0.63rem;
-		letter-spacing: 0.045em;
+		font-size: 0.62rem;
+		letter-spacing: 0.06em;
 		text-transform: uppercase;
 	}
 
@@ -168,58 +177,66 @@
 	}
 
 	.topbar-status i {
-		width: 0.4rem;
-		height: 0.4rem;
-		background: #38d3ba;
+		width: 0.45rem;
+		height: 0.45rem;
+		background: #b8c7ff;
 		border-radius: 50%;
+		box-shadow: 0 0 0 2px rgb(184 199 255 / 20%);
 	}
 
 	.terminal-rail {
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		background: #0a0a0b;
-		border-right: 1px solid #28282b;
+		background: var(--cobalt);
+		border-right: 1px solid rgb(255 255 255 / 30%);
 	}
 
 	.terminal-rail nav {
 		display: grid;
-		gap: 0.15rem;
-		padding: 0.4rem;
+		gap: 0.35rem;
+		padding: 0.55rem;
 	}
 
 	.rail-link {
 		display: grid;
 		place-items: center;
-		min-width: 2.5rem;
-		min-height: 2.5rem;
+		min-width: 2.85rem;
+		min-height: 2.85rem;
 		border: 1px solid transparent;
-		border-radius: 0.25rem;
-		color: #828288;
-		font-family: var(--font-mono);
-		font-size: 0.63rem;
-		font-weight: 700;
-		letter-spacing: 0.02em;
+		color: rgb(255 255 255 / 70%);
 		text-decoration: none;
+		transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+	}
+
+	.rail-link svg {
+		width: 1.2rem;
+		height: 1.2rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.75;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 
 	.rail-link:hover {
-		background: #1a1a1c;
-		border-color: #303034;
-		color: #f2f2f3;
+		background: rgb(255 255 255 / 15%);
+		color: var(--paper);
 	}
 
+	.rail-link:active { transform: scale(0.97); }
+
 	.rail-link--active {
-		background: #29292c;
-		border-color: #5b5b62;
-		color: #fff;
+		background: var(--paper);
+		border-color: var(--paper);
+		color: var(--cobalt);
 	}
 
 	.rail-meta {
 		margin: auto 0 0;
-		padding: 0.8rem 0.15rem;
-		border-top: 1px solid #28282b;
-		font-size: 0.55rem;
+		padding: 0.9rem 0.15rem;
+		border-top: 1px solid rgb(255 255 255 / 25%);
+		font-size: 0.53rem;
 		line-height: 1.5;
 		text-align: center;
 	}
@@ -228,27 +245,26 @@
 		min-width: 0;
 		min-height: 0;
 		width: 100%;
+		background: var(--paper);
 		overflow-y: auto;
 	}
 
-	.mobile-nav {
-		display: none;
-	}
+	.mobile-nav { display: none; }
 
 	@media (max-width: 48rem) {
 		.terminal-shell {
 			display: block;
 			height: auto;
 			min-height: 100dvh;
-			padding-bottom: 4.65rem;
+			padding-bottom: 4.9rem;
 		}
 
 		.terminal-topbar {
 			position: sticky;
 			z-index: 5;
 			top: 0;
-			min-height: 2.85rem;
-			padding: 0 0.75rem;
+			min-height: 3rem;
+			padding: 0 0.8rem;
 		}
 
 		.topbar-context {
@@ -258,18 +274,10 @@
 
 		.topbar-context span:last-child,
 		.topbar-context span:nth-child(2),
-		.topbar-status {
-			display: none;
-		}
+		.topbar-status { display: none; }
 
-		.terminal-rail {
-			display: none;
-		}
-
-		.app-main {
-			width: 100%;
-			overflow-y: visible;
-		}
+		.terminal-rail { display: none; }
+		.app-main { width: 100%; overflow-y: visible; }
 
 		.mobile-nav {
 			position: fixed;
@@ -280,24 +288,26 @@
 			display: grid;
 			grid-template-columns: repeat(4, 1fr);
 			padding: 0.3rem max(0.45rem, env(safe-area-inset-right)) calc(0.3rem + env(safe-area-inset-bottom)) max(0.45rem, env(safe-area-inset-left));
-			background: #111113;
-			border-top: 1px solid #343439;
+			background: var(--cobalt-deep);
+			border-top: 1px solid rgb(255 255 255 / 28%);
 		}
 
 		.mobile-nav-link {
 			display: grid;
 			place-items: center;
-			min-height: 2.7rem;
-			border-radius: 0.3rem;
-			color: #98989e;
-			font-size: 0.66rem;
+			min-height: 2.8rem;
+			color: rgb(255 255 255 / 70%);
+			font-family: var(--font-mono);
+			font-size: 0.63rem;
 			font-weight: 700;
+			letter-spacing: 0.045em;
 			text-decoration: none;
+			text-transform: uppercase;
 		}
 
 		.mobile-nav-link--active {
-			background: #2b2b2f;
-			color: #fff;
+			background: var(--paper);
+			color: var(--cobalt);
 		}
 	}
 </style>
