@@ -1,18 +1,21 @@
-// Shared runes-based scenario store (Future/Liquidity/Plans screens).
+// Shared runes-based scenario store used by every decision surface.
 //
-// Every mutation here re-requests the engine through `$lib/api`; nothing in
-// this module computes a financial value locally. The Today screen
-// (`routes/+page.svelte`) owns its own independent request/response pair —
-// this store starts at the healthy baseline (no obligations) and is mutated
-// only through `applyShock()`, `reset()`, and the policy setters below.
+// Every mutation re-requests the engine through `$lib/api`; this module only
+// validates scenario inputs and coordinates request state. The active request
+// begins at a healthy baseline and can hold user-authored future obligations,
+// the staged repair preset, and policy settings.
 import { postScenario } from './api';
 import type { Obligation, ScenarioRequest, ScenarioResponse } from './types';
 
 export type LoadState = 'loading' | 'ready' | 'unreachable' | 'error';
+export interface ObligationDraft {
+	label: string;
+	amount: number;
+	due_in_days: number;
+}
 
-// Coverage is capped at 95% for P0 (spec section 25) — two years of history
-// makes deeper tail estimates too uncertain to present as if solid.
 export const COVERAGE_TARGET_OPTIONS = [0.8, 0.9, 0.95] as const;
+export const HORIZON_OPTIONS = [14, 30, 60] as const;
 
 // The canonical HackRice shock (spec section 37): a future obligation, not
 // an already-completed debit. Cash today, the portfolio, and the market are
@@ -65,6 +68,7 @@ class ScenarioStore {
 
 	#requestSeq = 0;
 	#initialized = false;
+	#customObligationSequence = 0;
 
 	readonly hasShock = $derived(
 		CANONICAL_SHOCKS.every((shock) =>
@@ -73,6 +77,23 @@ class ScenarioStore {
 	);
 
 	readonly isBaseline = $derived(this.request.obligations.length === 0);
+
+	#normalizeObligation(obligation: Obligation): Obligation | null {
+		const label = obligation.label.trim();
+		const amount = Number(obligation.amount);
+		const dueInDays = Number(obligation.due_in_days);
+		if (
+			!label ||
+			!Number.isFinite(amount) ||
+			amount <= 0 ||
+			!Number.isInteger(dueInDays) ||
+			dueInDays < 1 ||
+			dueInDays > this.request.horizon_days
+		) {
+			return null;
+		}
+		return { id: obligation.id, label, amount, due_in_days: dueInDays };
+	}
 
 	async #refresh(): Promise<void> {
 		const seq = ++this.#requestSeq;
@@ -110,6 +131,58 @@ class ScenarioStore {
 		void this.#refresh();
 	}
 
+	/**
+	 * Add a user-authored future obligation and immediately re-run the engine.
+	 * Inputs are validated here so every surface shares the same scenario invariant.
+	 */
+	addObligation(draft: ObligationDraft): void {
+		const obligation = this.#normalizeObligation({
+			id: `custom-obligation-${++this.#customObligationSequence}`,
+			...draft
+		});
+		if (!obligation) return;
+
+		this.request = {
+			...this.request,
+			obligations: [...this.request.obligations, obligation]
+		};
+		void this.#refresh();
+	}
+
+	/** Update one existing obligation; invalid edits leave the active model untouched. */
+	updateObligation(id: string, draft: ObligationDraft): void {
+		const current = this.request.obligations.find((obligation) => obligation.id === id);
+		if (!current) return;
+
+		const next = this.#normalizeObligation({ id, ...draft });
+		if (!next) return;
+
+		this.request = {
+			...this.request,
+			obligations: this.request.obligations.map((obligation) =>
+				obligation.id === id ? next : obligation
+			)
+		};
+		void this.#refresh();
+	}
+
+	/** Remove one future obligation from the active model. */
+	removeObligation(id: string): void {
+		if (!this.request.obligations.some((obligation) => obligation.id === id)) return;
+		this.request = {
+			...this.request,
+			obligations: this.request.obligations.filter((obligation) => obligation.id !== id)
+		};
+		void this.#refresh();
+	}
+
+	/** Clear only added events; policy settings remain intact. */
+	clearObligations(): void {
+		if (this.request.obligations.length === 0) return;
+		this.request = { ...this.request, obligations: [] };
+		void this.#refresh();
+	}
+
 	applyShock(): void {
 		if (this.hasShock) return;
 		this.request = {
@@ -127,6 +200,19 @@ class ScenarioStore {
 	setCoverageTarget(value: number): void {
 		if (value === this.request.coverage_target) return;
 		this.request = { ...this.request, coverage_target: value };
+		void this.#refresh();
+	}
+
+	setHorizonDays(value: number): void {
+		if (!Number.isInteger(value) || value < 1 || value === this.request.horizon_days) return;
+		this.request = {
+			...this.request,
+			horizon_days: value,
+			obligations: this.request.obligations.map((obligation) => ({
+				...obligation,
+				due_in_days: Math.min(obligation.due_in_days, value)
+			}))
+		};
 		void this.#refresh();
 	}
 

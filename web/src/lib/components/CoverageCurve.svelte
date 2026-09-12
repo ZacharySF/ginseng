@@ -18,8 +18,10 @@
 
 	let { points, currentFunding, coverageTarget, requiredReserve, estimateBand }: Props = $props();
 
-	const WIDTH = 640;
-	const HEIGHT = 280;
+	let containerWidth = $state(640);
+	let containerHeight = $state(280);
+	const WIDTH = $derived(Math.max(360, containerWidth));
+	const HEIGHT = $derived(Math.max(200, containerHeight));
 	const MARGIN = { top: 20, right: 20, bottom: 32, left: 56 };
 
 	const layout = $derived.by(() => {
@@ -77,6 +79,7 @@
 	<p class="empty-state">No coverage curve for this scenario yet.</p>
 {:else}
 	<figure class="coverage-curve">
+		<div class="chart-frame" bind:clientWidth={containerWidth} bind:clientHeight={containerHeight}>
 		<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Liquidity coverage curve">
 			{#if layout.band}
 				<rect
@@ -132,13 +135,14 @@
 			<circle cx={layout.reserveX} cy={layout.reserveY} r="4.5" class="reserve-dot" />
 			<text
 				x={layout.reserveX}
-				y={layout.reserveY + 18}
+				y={layout.reserveY + 20}
 				class="line-label reserve-label"
 				text-anchor="middle"
 			>
 				Required reserve {formatCurrency(requiredReserve)}
 			</text>
 		</svg>
+		</div>
 		<figcaption class="legend">
 			<span class="legend-item"><span class="swatch swatch-curve"></span>Coverage curve</span>
 			<span class="legend-item"><span class="swatch swatch-target"></span>Coverage target</span>
@@ -154,41 +158,48 @@
 <style>
 	.empty-state {
 		padding: var(--space-6);
-		color: var(--color-text-faint);
+		color: #8b8b91;
 		font-size: var(--font-size-md);
 	}
 
 	.coverage-curve {
-		margin: 0;
 		display: flex;
 		flex-direction: column;
+		height: 100%;
+		margin: 0;
 		gap: var(--space-3);
 	}
 
+	.chart-frame {
+		flex: 1;
+		min-height: 0;
+	}
+
 	svg {
+		display: block;
 		width: 100%;
-		height: auto;
+		height: 100%;
 	}
 
 	.axis-line {
-		stroke: var(--color-border-strong);
+		stroke: #3a3a3f;
 		stroke-width: 1;
 	}
 
 	.curve-line {
 		fill: none;
-		stroke: var(--color-accent-strong);
+		stroke: #42d3ba;
 		stroke-width: 2.5;
 	}
 
 	.current-line {
-		stroke: var(--color-text);
+		stroke: #d8d8da;
 		stroke-width: 1.5;
 		stroke-dasharray: 3 3;
 	}
 
 	.reserve-dot {
-		fill: var(--color-danger);
+		fill: #f45d77;
 	}
 
 	.reserve-label {
@@ -196,12 +207,12 @@
 	}
 
 	.line-label {
-		fill: var(--color-text-dim);
+		fill: #c7c7cc;
 		font-size: 11px;
 	}
 
 	.estimate-band {
-		fill: color-mix(in srgb, var(--color-text-dim) 18%, transparent);
+		fill: rgb(200 200 204 / 14%);
 	}
 
 	.legend {
@@ -209,7 +220,7 @@
 		flex-wrap: wrap;
 		gap: var(--space-4);
 		font-size: var(--font-size-xs);
-		color: var(--color-text-dim);
+		color: #9a9aa0;
 	}
 
 	.legend-item {
@@ -226,22 +237,22 @@
 	}
 
 	.swatch-curve {
-		background: var(--color-accent-strong);
+		background: #42d3ba;
 	}
 
 	.swatch-target {
-		background: var(--color-warning);
+		background: #d8a84e;
 	}
 
 	.swatch-current {
-		background: var(--color-text);
+		background: #d8d8da;
 	}
 
 	.swatch-reserve {
-		background: var(--color-danger);
+		background: #f45d77;
 	}
 
 	.swatch-band {
-		background: color-mix(in srgb, var(--color-text-dim) 40%, transparent);
+		background: rgb(200 200 204 / 30%);
 	}
 </style>

@@ -2,9 +2,7 @@
 	import { onMount } from 'svelte';
 	import { scenarioStore, COVERAGE_TARGET_OPTIONS } from '$lib/scenario.svelte';
 	import { formatCurrency, formatPercent } from '$lib/format';
-	import HeroCard from '$lib/components/HeroCard.svelte';
 	import CoverageCurve from '$lib/components/CoverageCurve.svelte';
-	import type { SensitivityRow } from '$lib/types';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -28,314 +26,264 @@
 </script>
 
 <svelte:head>
-	<title>Ginseng — Liquidity</title>
+	<title>Ginseng — Reserve</title>
+	<meta
+		name="description"
+		content="Set an operating buffer and coverage target, then inspect the local liquidity reserve."
+	/>
 </svelte:head>
 
 {#if scenarioStore.response}
 	{@const s = scenarioStore.response}
-	<div class="liquidity-screen">
-		<header class="screen-header">
-			<h1 class="screen-title">Liquidity</h1>
-			<p class="screen-subtitle">Policy assumptions, the required reserve, and its uncertainty.</p>
+	<div class="terminal-view">
+		<header class="view-toolbar">
+			<div><strong>Reserve policy</strong><span>minimum liquid capital under active scenario</span></div>
+			<p>{formatPercent(s.coverage_target)} coverage target</p>
 		</header>
 
-		<section class="policy-controls" aria-label="Policy controls">
-			<div class="control">
-				<label for="operating-buffer" class="control-label">Operating buffer</label>
-				<input
-					id="operating-buffer"
-					type="number"
-					class="buffer-input"
-					min="0"
-					step="100"
-					value={scenarioStore.request.operating_buffer}
-					onchange={commitBuffer}
-					onkeydown={commitBufferOnEnter}
-				/>
-			</div>
+		<div class="reserve-layout">
+			<main class="reserve-console">
+				<section class="reserve-read" aria-labelledby="reserve-title">
+					<div>
+						<p class="label">Required liquidity reserve</p>
+						<p id="reserve-title" class="reserve-value numeric">{formatCurrency(s.required_liquidity_reserve)}</p>
+						<span>Above {formatCurrency(s.operating_buffer)} in {formatPercent(s.coverage_target)} of modeled paths.</span>
+					</div>
+					{#if s.estimate_band}
+						<div class="estimate"><p class="label">Model range</p><strong class="numeric">{formatCurrency(s.estimate_band.low)}–{formatCurrency(s.estimate_band.high)}</strong></div>
+					{/if}
+					<div class="reserve-facts">
+						<div><p class="label">Start funding</p><strong class="numeric">{formatCurrency(s.immediate_funding)}</strong></div>
+						<div><p class="label">Policy buffer</p><strong class="numeric">{formatCurrency(s.operating_buffer)}</strong></div>
+						<div><p class="label">Gap to reserve</p><strong class:gap={s.funding_gap > 0} class="numeric">{formatCurrency(s.funding_gap)}</strong></div>
+					</div>
+				</section>
 
-			<div class="control">
-				<span id="coverage-target-label" class="control-label">Coverage target</span>
-				<div class="segmented" role="group" aria-labelledby="coverage-target-label">
-					{#each COVERAGE_TARGET_OPTIONS as option (option)}
-						<button
-							type="button"
-							class="segment"
-							class:segment--active={scenarioStore.request.coverage_target === option}
-							aria-pressed={scenarioStore.request.coverage_target === option}
-							onclick={() => scenarioStore.setCoverageTarget(option)}
-						>
-							{formatPercent(option)}
-						</button>
-					{/each}
-				</div>
-			</div>
+				<section class="curve-section" aria-labelledby="coverage-curve-title">
+					<div class="section-heading"><div><p class="label">Coverage curve</p><h2 id="coverage-curve-title">Funding level versus confidence</h2></div><span>The target line crosses the reserve. The vertical band is model uncertainty.</span></div>
+					<CoverageCurve
+						points={s.coverage_curve}
+						currentFunding={s.immediate_funding}
+						coverageTarget={s.coverage_target}
+						requiredReserve={s.required_liquidity_reserve}
+						estimateBand={s.estimate_band}
+					/>
+				</section>
 
-			{#if scenarioStore.loadState === 'loading'}
-				<span class="updating" role="status" aria-live="polite">Updating…</span>
-			{/if}
-		</section>
-
-		<HeroCard
-			eyebrow="Required reserve"
-			value={formatCurrency(s.required_liquidity_reserve)}
-			supporting={`to stay above your ${formatCurrency(s.operating_buffer)} operating buffer in ${formatPercent(s.coverage_target)} of modeled paths`}
-			estimateRangeLabel={s.estimate_band ? 'Estimate range' : undefined}
-			estimateRangeValue={s.estimate_band
-				? `${formatCurrency(s.estimate_band.low)} – ${formatCurrency(s.estimate_band.high)}`
-				: undefined}
-		/>
-
-		<section class="chart-card" aria-label="Funding coverage curve">
-			<h2>Funding coverage curve</h2>
-			<CoverageCurve
-				points={s.coverage_curve}
-				currentFunding={s.immediate_funding}
-				coverageTarget={s.coverage_target}
-				requiredReserve={s.required_liquidity_reserve}
-				estimateBand={s.estimate_band}
-			/>
-		</section>
-
-		{#if s.sensitivity.length > 0}
-			<section class="chart-card" aria-label="Persistence sensitivity">
-				<h2>Persistence sensitivity</h2>
-				<p class="sensitivity-intro">
-					Required reserve at {formatPercent(s.coverage_target)} under different income-persistence
-					assumptions (mean block length, days).
-				</p>
-				<table class="sensitivity-table">
-					<caption class="sr-only">Required reserve by block-length assumption</caption>
-					<thead>
-						<tr>
-							<th scope="col">Block assumption</th>
-							<th scope="col">Required reserve</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each s.sensitivity as row (row.block_label)}
-							<tr class:estimated={row.is_estimated}>
-								<th scope="row">
-									{row.block_label}{#if row.is_estimated && !row.was_clipped} (data-estimated){/if}
-								</th>
-								<td>{formatCurrency(row.required_liquidity_reserve)}</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-				{#if s.sensitivity_verdict}
-					<p class="sensitivity-verdict">{s.sensitivity_verdict}</p>
+				{#if s.sensitivity.length > 0}
+					<section class="sensitivity-section" aria-labelledby="sensitivity-title">
+						<div class="section-heading"><div><p class="label">Stress read</p><h2 id="sensitivity-title">Income persistence</h2></div>{#if s.sensitivity_verdict}<span>{s.sensitivity_verdict}</span>{/if}</div>
+						<div class="sensitivity-list">
+							{#each s.sensitivity as row (row.block_label)}
+								<div class:estimated={row.is_estimated}><span>{row.block_label}{#if row.is_estimated && !row.was_clipped} / estimated{/if}</span><strong class="numeric">{formatCurrency(row.required_liquidity_reserve)}</strong></div>
+							{/each}
+						</div>
+					</section>
 				{/if}
-			</section>
-		{/if}
+			</main>
+
+			<aside class="policy-console" aria-label="Liquidity policy controls">
+				<section>
+					<p class="label">Operating buffer</p>
+					<label for="operating-buffer">Amount kept untouched</label>
+					<div class="currency-input"><span aria-hidden="true">$</span><input id="operating-buffer" type="number" class="numeric" min="0" step="100" value={scenarioStore.request.operating_buffer} onchange={commitBuffer} onkeydown={commitBufferOnEnter} /></div>
+				</section>
+				<section>
+					<p class="label" id="coverage-target-label">Coverage target</p>
+					<span>How often the modeled balance must remain above the buffer.</span>
+					<div class="segmented" role="group" aria-labelledby="coverage-target-label">
+						{#each COVERAGE_TARGET_OPTIONS as option (option)}
+							<button type="button" class:active={scenarioStore.request.coverage_target === option} aria-pressed={scenarioStore.request.coverage_target === option} onclick={() => scenarioStore.setCoverageTarget(option)}>{formatPercent(option)}</button>
+						{/each}
+					</div>
+				</section>
+				<section>
+					<p class="label">Policy status</p>
+					<strong class:gap={s.funding_gap > 0}>{s.funding_gap > 0 ? 'Funding action required' : 'Reserve covered'}</strong>
+					<span>{s.funding_gap > 0 ? 'Compare routes in Funding before committing cash.' : 'Current funding clears the chosen guardrail.'}</span>
+					{#if scenarioStore.loadState === 'loading'}<p class="updating" role="status" aria-live="polite">Recomputing…</p>{/if}
+				</section>
+			</aside>
+		</div>
 	</div>
 {:else if scenarioStore.loadState === 'unreachable' || scenarioStore.loadState === 'error'}
-	<div class="engine-down" role="alert">
-		<p class="engine-down-title">Engine unavailable</p>
-		<p class="engine-down-detail">{scenarioStore.errorMessage}</p>
-		<button type="button" class="retry-button" onclick={() => scenarioStore.refresh()}>Retry</button>
-	</div>
+	<div class="terminal-state" role="alert"><p>Local model unavailable</p><span>{scenarioStore.errorMessage}</span><button type="button" onclick={() => scenarioStore.refresh()}>Retry model</button></div>
 {:else}
-	<p class="status-text" role="status" aria-live="polite">Loading your liquidity picture…</p>
+	<p class="terminal-loading" role="status" aria-live="polite">Sizing local reserve…</p>
 {/if}
 
 <style>
-	.liquidity-screen {
+	.terminal-view {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-6);
+		height: calc(100dvh - 3rem);
+		background: #050505;
+		color: #e5e5e7;
 	}
 
-	.screen-header {
+	.view-toolbar {
+		flex: none;
 		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		min-height: 3.35rem;
+		padding: 0 1rem;
+		border-bottom: 1px solid #29292d;
+		background: #0c0c0d;
 	}
-
-	.screen-title {
-		font-size: var(--font-size-xl);
+	.view-toolbar div { display: flex; align-items: baseline; gap: 0.6rem; }
+	.view-toolbar strong { font-size: 0.86rem; letter-spacing: -0.02em; }
+	.view-toolbar span, .view-toolbar p, .label {
+		color: #898990;
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
 		font-weight: 700;
-	}
-
-	.screen-subtitle {
-		color: var(--color-text-dim);
-		font-size: var(--font-size-md);
-		max-width: 56ch;
-	}
-
-	.policy-controls {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--space-6);
-		flex-wrap: wrap;
-		padding: var(--space-5) var(--space-6);
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-	}
-
-	.control {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-	}
-
-	.control-label {
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.055em;
 		text-transform: uppercase;
-		color: var(--color-text-faint);
 	}
 
-	.buffer-input {
-		width: 10ch;
-		padding: var(--space-2) var(--space-3);
-		background: var(--color-bg-raised);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		color: var(--color-text);
-		font-size: var(--font-size-md);
-		font-variant-numeric: tabular-nums;
+	.reserve-layout {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 19rem;
 	}
-
-	.buffer-input:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
+	.reserve-console { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow-y: auto; }
+	.policy-console {
+		display: grid;
+		align-content: start;
+		min-height: 0;
+		overflow-y: auto;
+		border-left: 1px solid #29292d;
+		background: #0b0b0c;
 	}
+	.policy-console section { display: grid; gap: 0.65rem; padding: 1rem; border-bottom: 1px solid #29292d; }
+	.policy-console label, .policy-console span { color: #9999a0; font-size: 0.73rem; line-height: 1.4; }
+	.policy-console strong { color: #42d3ba; font-size: 0.9rem; }
+	.policy-console strong.gap { color: #ff7186; }
 
-	.segmented {
+	.reserve-read {
+		flex: none;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 1rem;
+		padding: 1rem;
+		border-bottom: 1px solid #29292d;
+		background: #0c0c0d;
+	}
+	.reserve-read > div:first-child { display: grid; gap: 0.35rem; }
+	.reserve-value { margin: 0; color: #f0f0f1; font-size: 2rem; font-weight: 760; letter-spacing: -0.07em; }
+	.reserve-read span { color: #96969c; font-size: 0.74rem; line-height: 1.4; }
+	.estimate { display: grid; align-content: start; gap: 0.35rem; padding-left: 1rem; border-left: 1px solid #29292d; }
+	.estimate strong { color: #d8a84e; font-size: 0.82rem; }
+	.reserve-facts {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1px;
+		background: #29292d;
+		border: 1px solid #29292d;
+	}
+	.reserve-facts div { display: grid; gap: 0.35rem; padding: 0.7rem; background: #101011; }
+	.reserve-facts strong { color: #e0e0e3; font-size: 0.92rem; letter-spacing: -0.02em; }
+	.reserve-facts strong.gap { color: #ff7186; }
+
+	.curve-section {
+		flex: 1;
+		min-height: 0;
 		display: flex;
-		gap: var(--space-1);
+		flex-direction: column;
+		padding: 1rem;
+		border-bottom: 1px solid #29292d;
 	}
+	.curve-section :global(.coverage-curve) { flex: 1; min-height: 0; }
+	.sensitivity-section { flex: none; padding: 1rem; border-bottom: 1px solid #29292d; }
+	.section-heading { flex: none; display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.85rem; }
+	.section-heading div { display: grid; gap: 0.25rem; }
+	.section-heading h2 { margin: 0; color: #e4e4e7; font-size: 0.92rem; letter-spacing: -0.02em; }
+	.section-heading > span { max-width: 40ch; color: #94949a; font-size: 0.72rem; line-height: 1.4; }
+	.sensitivity-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+		gap: 1px;
+		background: #29292d;
+		border: 1px solid #29292d;
+	}
+	.sensitivity-list div { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.7rem; background: #0d0d0e; }
+	.sensitivity-list span { color: #acacb1; font-size: 0.72rem; }
+	.sensitivity-list strong { color: #e3e3e6; font-size: 0.8rem; }
+	.sensitivity-list .estimated { box-shadow: inset 2px 0 #d8a84e; }
 
-	.segment {
-		padding: var(--space-2) var(--space-4);
-		background: var(--color-bg-raised);
-		border: 1px solid var(--color-border-strong);
-		color: var(--color-text-dim);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
+	.currency-input {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		border: 1px solid #45454b;
+		background: #060607;
+	}
+	.currency-input span { padding-left: 0.7rem; color: #42d3ba; font-family: var(--font-mono); }
+	.currency-input input { width: 100%; min-height: 2.45rem; padding: 0 0.65rem; border: 0; outline: 0; background: transparent; color: #f0f0f1; font: inherit; }
+	.currency-input:focus-within { border-color: #42d3ba; }
+	.segmented { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #45454b; }
+	.segmented button {
+		min-height: 2.3rem;
+		border: 0;
+		border-right: 1px solid #45454b;
+		background: #101011;
+		color: #a8a8ad;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		cursor: pointer;
+	}
+	.segmented button:last-child { border-right: 0; }
+	.segmented button.active { background: #1a5650; color: #c5fff5; }
+	.updating { margin: 0; color: #d8a84e; font-family: var(--font-mono); font-size: 0.66rem; text-transform: uppercase; }
+
+	.terminal-state, .terminal-loading {
+		display: grid;
+		place-content: center;
+		gap: 0.5rem;
+		min-height: calc(100dvh - 3rem);
+		padding: 2rem;
+		background: #050505;
+		color: #a2a2a8;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		text-transform: uppercase;
+	}
+	.terminal-state p { color: #ff7186; }
+	.terminal-state span { max-width: 44ch; font-family: var(--font-sans); font-size: 0.82rem; text-transform: none; }
+	.terminal-state button {
+		justify-self: start;
+		min-height: 2.3rem;
+		padding: 0 0.7rem;
+		background: #18181a;
+		border: 1px solid #55555c;
+		color: #fff;
+		font: inherit;
 		cursor: pointer;
 	}
 
-	.segment:first-child {
-		border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+	@media (max-width: 60rem) {
+		.terminal-view { height: auto; min-height: calc(100dvh - 3rem); }
+		.reserve-layout { flex: none; grid-template-columns: 1fr; }
+		.reserve-console, .policy-console { overflow-y: visible; }
+		.curve-section { min-height: 22rem; }
+		.policy-console { grid-template-columns: repeat(3, 1fr); border-left: 0; border-top: 1px solid #29292d; }
+		.policy-console section { border-right: 1px solid #29292d; border-bottom: 0; }
 	}
 
-	.segment:last-child {
-		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-	}
-
-	.segment:not(:first-child) {
-		border-left: none;
-	}
-
-	.segment--active {
-		background: var(--color-accent);
-		border-color: var(--color-accent);
-		color: var(--color-bg);
-	}
-
-	.segment:hover:not(.segment--active) {
-		background: var(--color-bg-card-hover);
-	}
-
-	.segment:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
-		position: relative;
-		z-index: 1;
-	}
-
-	.updating {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-faint);
-	}
-
-	.chart-card {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-4);
-		padding: var(--space-6);
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-	}
-
-	.status-text {
-		color: var(--color-text-dim);
-		font-size: var(--font-size-lg);
-	}
-
-	.engine-down {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--space-3);
-		max-width: 40ch;
-		padding: var(--space-6);
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-danger);
-		border-radius: var(--radius-md);
-	}
-
-	.engine-down-title {
-		font-size: var(--font-size-lg);
-		font-weight: 700;
-		color: var(--color-danger);
-	}
-
-	.engine-down-detail {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-dim);
-	}
-
-	.retry-button {
-		padding: var(--space-2) var(--space-5);
-		background: transparent;
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		color: var(--color-text);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.retry-button:hover {
-		background: var(--color-bg-card-hover);
-	}
-
-	.retry-button:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
-	}
-
-	.sensitivity-intro {
-		margin: 0 0 0.75rem;
-		color: var(--color-text-dim);
-		font-size: var(--font-size-sm);
-	}
-
-	.sensitivity-table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	.sensitivity-table th,
-	.sensitivity-table td {
-		text-align: left;
-		padding: 0.4rem 0.6rem;
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	.sensitivity-table tr.estimated {
-		font-weight: 600;
-	}
-
-	.sensitivity-verdict {
-		margin: 0.75rem 0 0;
-		color: var(--color-text-dim);
-		font-style: italic;
+	@media (max-width: 42rem) {
+		.view-toolbar { display: grid; gap: 0.2rem; padding: 0.6rem 0.75rem; }
+		.view-toolbar div { display: grid; gap: 0.2rem; }
+		.view-toolbar p { margin: 0; }
+		.reserve-read { grid-template-columns: 1fr; }
+		.estimate { padding: 0; border: 0; }
+		.reserve-facts { grid-template-columns: 1fr; }
+		.section-heading { display: grid; }
+		.policy-console { grid-template-columns: 1fr; }
+		.policy-console section { border-right: 0; border-bottom: 1px solid #29292d; }
+		.curve-section, .sensitivity-section { padding: 0.75rem; }
 	}
 </style>

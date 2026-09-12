@@ -15,9 +15,10 @@
 
 	let { cashPaths, operatingBuffer, obligations }: Props = $props();
 
-
-	const WIDTH = 720;
-	const HEIGHT = 340;
+	let containerWidth = $state(720);
+	let containerHeight = $state(340);
+	const WIDTH = $derived(Math.max(360, containerWidth));
+	const HEIGHT = $derived(Math.max(220, containerHeight));
 	const MARGIN = { top: 20, right: 20, bottom: 26, left: 60 };
 	const FLOW_STRIP_HEIGHT = 40;
 	const FLOW_STRIP_GAP = 14;
@@ -96,6 +97,7 @@
 	<p class="empty-state">No simulated cash paths for this scenario yet.</p>
 {:else}
 	<figure class="cash-path-chart">
+		<div class="chart-frame" bind:clientWidth={containerWidth} bind:clientHeight={containerHeight}>
 		<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Simulated future cash-position range">
 			<!-- Per-day p10-p90 cash-position range and median. -->
 			<path d={layout.bandPath} class="band" />
@@ -134,12 +136,9 @@
 					y2={layout.flowBaseline}
 					class="shock-line"
 				/>
-				<g class="shock-marker">
-					<circle cx={shock.x} cy={MARGIN.top + 10} r="4" class="shock-dot" />
-					<text x={shock.x} y={MARGIN.top + 4} class="shock-label" text-anchor="middle">
-						{shock.label} — {formatCurrency(shock.amount)}
-					</text>
-				</g>
+				<circle cx={shock.x} cy={MARGIN.top + 10} r="4" class="shock-dot">
+					<title>{shock.label} — {formatCurrency(shock.amount)}</title>
+				</circle>
 			{/each}
 
 			<!-- known income / obligation flow strip -->
@@ -184,6 +183,7 @@
 				Day {layout.lastDay}
 			</text>
 		</svg>
+		</div>
 		<figcaption class="legend">
 			<span class="legend-item"><span class="swatch swatch-band"></span>P10–P90 cash-position range</span>
 			<span class="legend-item"><span class="swatch swatch-median"></span>Median cash position</span>
@@ -201,83 +201,84 @@
 <style>
 	.empty-state {
 		padding: var(--space-6);
-		color: var(--color-text-faint);
+		color: #8b8b91;
 		font-size: var(--font-size-md);
 	}
 
 	.cash-path-chart {
-		margin: 0;
 		display: flex;
 		flex-direction: column;
+		height: 100%;
+		margin: 0;
 		gap: var(--space-3);
 	}
 
+	.chart-frame {
+		flex: 1;
+		min-height: 0;
+	}
+
 	svg {
+		display: block;
 		width: 100%;
-		height: auto;
+		height: 100%;
 	}
 
 	.band {
-		fill: color-mix(in srgb, var(--color-accent) 22%, transparent);
+		fill: rgb(46 190 172 / 13%);
 		stroke: none;
 	}
 
 	.median-line {
 		fill: none;
-		stroke: var(--color-accent-strong);
+		stroke: #42d3ba;
 		stroke-width: 2.5;
 	}
 
 	.buffer-line {
-		stroke: var(--color-warning);
+		stroke: #d8a84e;
 		stroke-width: 1.5;
 		stroke-dasharray: 6 4;
 	}
 
 	.zero-line {
-		stroke: var(--color-danger);
-		stroke-width: 1.5;
-		stroke-dasharray: 2 3;
+		stroke: #a74252;
+		stroke-width: 1;
+		stroke-dasharray: 3 4;
 	}
 
 	.line-label {
-		fill: var(--color-text-dim);
+		fill: #c7c7cc;
 		font-size: 11px;
 	}
 
 	.shock-line {
-		stroke: var(--color-danger);
-		stroke-width: 1.5;
-		stroke-dasharray: 4 3;
+		stroke: #f45d77;
+		stroke-width: 1;
+		stroke-dasharray: 3 4;
 	}
 
 	.shock-dot {
-		fill: var(--color-danger);
-	}
-
-	.shock-label {
-		fill: var(--color-text);
-		font-size: 11px;
-		font-weight: 600;
+		fill: #f45d77;
 	}
 
 	.flow-baseline {
-		stroke: var(--color-border-strong);
+		stroke: #37373b;
 		stroke-width: 1;
 	}
 
 	.income-mark {
-		stroke: var(--color-positive);
+		stroke: #2c8f81;
 		stroke-width: 3;
 	}
 
 	.obligation-mark {
-		stroke: var(--color-danger);
+		stroke: #a74354;
 		stroke-width: 3;
 	}
 
 	.axis-label {
-		fill: var(--color-text-faint);
+		fill: #8b8b91;
 		font-size: 11px;
 	}
 
@@ -286,7 +287,7 @@
 		flex-wrap: wrap;
 		gap: var(--space-4);
 		font-size: var(--font-size-xs);
-		color: var(--color-text-dim);
+		color: #9a9aa0;
 	}
 
 	.legend-item {
@@ -303,30 +304,30 @@
 	}
 
 	.swatch-band {
-		background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+		background: rgb(46 190 172 / 40%);
 	}
 
 	.swatch-median {
-		background: var(--color-accent-strong);
+		background: #42d3ba;
 	}
 
 	.swatch-buffer {
-		background: var(--color-warning);
+		background: #d8a84e;
 	}
 
 	.swatch-zero {
-		background: var(--color-danger);
+		background: #a74252;
 	}
 
 	.swatch-income {
-		background: var(--color-positive);
+		background: #2c8f81;
 	}
 
 	.swatch-obligation {
-		background: var(--color-danger);
+		background: #a74354;
 	}
 
 	.swatch-shock {
-		background: var(--color-text);
+		background: #f45d77;
 	}
 </style>

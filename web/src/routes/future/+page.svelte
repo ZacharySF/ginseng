@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
+	import { formatCurrency, formatPercent } from '$lib/format';
 	import CashPathChart from '$lib/components/CashPathChart.svelte';
+	import ScenarioComposer from '$lib/components/ScenarioComposer.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -9,199 +11,43 @@
 </script>
 
 <svelte:head>
-	<title>Ginseng — Future</title>
+	<title>Ginseng — Events terminal</title>
+	<meta name="description" content="Build an editable future-cost scenario and inspect its modeled cash consequences." />
 </svelte:head>
 
 {#if scenarioStore.response}
 	{@const s = scenarioStore.response}
-	<div class="future-screen">
-		<header class="screen-header">
-			<h1 class="screen-title">Future</h1>
-			<p class="screen-subtitle">
-				The per-day cash-position range across {scenarioStore.request.paths.toLocaleString()} simulated futures.
-			</p>
+	<div class="terminal-view">
+		<header class="view-toolbar">
+			<div><strong>Event ledger</strong><span>schedule commitments against the active cash path</span></div>
+			<p>{scenarioStore.request.paths.toLocaleString()} modeled paths</p>
 		</header>
 
-		<section class="shock-controls" aria-label="Shock control">
-			<p id="repair-schedule" class="shock-schedule">
-				$1,500 deposit due day 3; $3,000 balance due day 17.
-			</p>
-			<button
-				type="button"
-				class="shock-button"
-				onclick={() => scenarioStore.applyShock()}
-				disabled={scenarioStore.hasShock}
-				aria-describedby="repair-schedule"
-			>
-				Insert $4,500 repair schedule
-			</button>
-			<button
-				type="button"
-				class="reset-button"
-				onclick={() => scenarioStore.reset()}
-				disabled={scenarioStore.isBaseline}
-			>
-				Reset to baseline
-			</button>
-			{#if scenarioStore.loadState === 'loading'}
-				<span class="updating" role="status" aria-live="polite">Updating…</span>
-			{/if}
-		</section>
-
-		<section class="chart-card" aria-label="Cash path chart">
-			<CashPathChart
-				cashPaths={s.cash_paths}
-				operatingBuffer={s.operating_buffer}
-				obligations={scenarioStore.request.obligations}
-			/>
-		</section>
+		<div class="event-layout">
+			<section class="composer-pane"><ScenarioComposer /></section>
+			<main class="chart-pane">
+				<section class="simulation" aria-labelledby="cash-path-title">
+					<div class="section-heading"><div><p class="label">Cash-path simulation</p><h1 id="cash-path-title">Projected available cash</h1></div><span>Median line, middle 80% field, operating buffer, and scheduled event markers.</span></div>
+					<CashPathChart cashPaths={s.cash_paths} operatingBuffer={s.operating_buffer} obligations={scenarioStore.request.obligations} />
+				</section>
+				<section class="scenario-read" aria-label="Current scenario read">
+					<div><p class="label">Funding gap</p><strong class:attention={s.funding_gap > 0} class="numeric">{formatCurrency(s.funding_gap)}</strong><span>Required to satisfy the active reserve policy.</span></div>
+					<div><p class="label">Shortfall chance</p><strong class:attention={s.severity.cash_shortfall_probability > 0} class="numeric">{formatPercent(s.severity.cash_shortfall_probability)}</strong><span>Modeled paths falling below zero.</span></div>
+					<div><p class="label">Required reserve</p><strong class="numeric">{formatCurrency(s.required_liquidity_reserve)}</strong><span>Liquid reserve at the chosen coverage target.</span></div>
+				</section>
+			</main>
+		</div>
 	</div>
 {:else if scenarioStore.loadState === 'unreachable' || scenarioStore.loadState === 'error'}
-	<div class="engine-down" role="alert">
-		<p class="engine-down-title">Engine unavailable</p>
-		<p class="engine-down-detail">{scenarioStore.errorMessage}</p>
-		<button type="button" class="retry-button" onclick={() => scenarioStore.refresh()}>Retry</button>
-	</div>
+	<div class="terminal-state" role="alert"><p>Local model unavailable</p><span>{scenarioStore.errorMessage}</span><button type="button" onclick={() => scenarioStore.refresh()}>Retry model</button></div>
 {:else}
-	<p class="status-text" role="status" aria-live="polite">Loading your future cash paths…</p>
+	<p class="terminal-loading" role="status" aria-live="polite">Building future cash paths…</p>
 {/if}
 
 <style>
-	.future-screen {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-6);
-	}
-
-	.screen-header {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
-	}
-
-	.screen-title {
-		font-size: var(--font-size-xl);
-		font-weight: 700;
-	}
-
-	.screen-subtitle {
-		color: var(--color-text-dim);
-		font-size: var(--font-size-md);
-		max-width: 56ch;
-	}
-
-	.shock-controls {
-		display: flex;
-		align-items: center;
-		gap: var(--space-4);
-		flex-wrap: wrap;
-	}
-
-	.shock-schedule {
-		flex-basis: 100%;
-		margin: 0;
-		color: var(--color-text-dim);
-		font-size: var(--font-size-sm);
-	}
-
-	.shock-button,
-	.reset-button {
-		padding: var(--space-3) var(--space-5);
-		border-radius: var(--radius-sm);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.shock-button {
-		background: var(--color-danger);
-		border: 1px solid var(--color-danger);
-		color: var(--color-bg);
-	}
-
-	.shock-button:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--color-danger) 85%, white);
-	}
-
-	.reset-button {
-		background: transparent;
-		border: 1px solid var(--color-border-strong);
-		color: var(--color-text);
-	}
-
-	.reset-button:hover:not(:disabled) {
-		background: var(--color-bg-card-hover);
-	}
-
-	.shock-button:disabled,
-	.reset-button:disabled {
-		opacity: 0.45;
-		cursor: not-allowed;
-	}
-
-	.shock-button:focus-visible,
-	.reset-button:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
-	}
-
-	.updating {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-faint);
-	}
-
-	.chart-card {
-		padding: var(--space-6);
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-	}
-
-	.status-text {
-		color: var(--color-text-dim);
-		font-size: var(--font-size-lg);
-	}
-
-	.engine-down {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: var(--space-3);
-		max-width: 40ch;
-		padding: var(--space-6);
-		background: var(--color-bg-card);
-		border: 1px solid var(--color-danger);
-		border-radius: var(--radius-md);
-	}
-
-	.engine-down-title {
-		font-size: var(--font-size-lg);
-		font-weight: 700;
-		color: var(--color-danger);
-	}
-
-	.engine-down-detail {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-dim);
-	}
-
-	.retry-button {
-		padding: var(--space-2) var(--space-5);
-		background: transparent;
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		color: var(--color-text);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		cursor: pointer;
-	}
-
-	.retry-button:hover {
-		background: var(--color-bg-card-hover);
-	}
-
-	.retry-button:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 2px;
-	}
+	.terminal-view { display:flex; flex-direction:column; height:calc(100dvh - 3rem); background:#050505; color:#e5e5e7; }.view-toolbar { flex:none; display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:3.35rem; padding:0 1rem; border-bottom:1px solid #29292d; background:#0c0c0d; }.view-toolbar div { display:flex; align-items:baseline; gap:.6rem; }.view-toolbar strong { font-size:.86rem; letter-spacing:-.02em; }.view-toolbar span,.view-toolbar p,.label { color:#898990; font-family:var(--font-mono); font-size:.62rem; font-weight:700; letter-spacing:.055em; text-transform:uppercase; }
+	.event-layout { flex:1; min-height:0; display:grid; grid-template-columns:minmax(24rem, 1fr) minmax(0,1.1fr); }.composer-pane { min-height:0; overflow-y:auto; padding:1rem; border-right:1px solid #29292d; background:#0a0a0b; }.chart-pane { display:grid; grid-template-rows:minmax(0,1fr) auto; min-width:0; min-height:0; }.simulation { display:flex; flex-direction:column; min-width:0; min-height:0; padding:1rem; overflow:hidden; }.simulation :global(.cash-path-chart) { flex:1; min-height:0; }.section-heading { flex:none; display:flex; justify-content:space-between; gap:1rem; margin-bottom:.85rem; }.section-heading div { display:grid; gap:.25rem; }.section-heading h1 { margin:0; color:#e5e5e7; font-size:.94rem; letter-spacing:-.02em; }.section-heading > span { max-width:37ch; color:#96969c; font-size:.72rem; line-height:1.4; }
+	.scenario-read { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; border-top:1px solid #29292d; background:#29292d; }.scenario-read > div { display:grid; gap:.4rem; padding:.85rem 1rem; background:#0d0d0e; }.scenario-read strong { color:#e0e0e3; font-size:1.05rem; letter-spacing:-.04em; }.scenario-read strong.attention { color:#ff7186; }.scenario-read span { color:#919197; font-size:.7rem; line-height:1.35; }
+	.terminal-state,.terminal-loading { display:grid; place-content:center; gap:.5rem; height:calc(100dvh - 3rem); padding:2rem; background:#050505; color:#a2a2a8; font-family:var(--font-mono); font-size:.72rem; text-transform:uppercase; }.terminal-state p { color:#ff7186; }.terminal-state span { max-width:44ch; font-family:var(--font-sans); font-size:.82rem; text-transform:none; }.terminal-state button { justify-self:start; min-height:2.3rem; padding:0 .7rem; background:#18181a; border:1px solid #55555c; color:#fff; font:inherit; cursor:pointer; }
+	@media(max-width:65rem){.terminal-view{height:auto;min-height:calc(100dvh - 3rem);}.event-layout{grid-template-columns:1fr;flex:none;}.composer-pane{border-right:0;border-bottom:1px solid #29292d;overflow-y:visible;}.chart-pane{min-height:34rem}}@media(max-width:42rem){.view-toolbar{display:grid;gap:.2rem;padding:.6rem .75rem}.view-toolbar div{display:grid;gap:.2rem}.view-toolbar p{margin:0}.composer-pane,.simulation{padding:.75rem}.section-heading{display:grid}.scenario-read{grid-template-columns:1fr}}
 </style>
