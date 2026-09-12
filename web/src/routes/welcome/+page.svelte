@@ -45,7 +45,7 @@
 <div class="welcome">
 	<header class="welcome-nav">
 		<a class="nav-brand" href={resolve('/welcome')}>
-			<span class="nav-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
+			<span class="nav-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
 			<span>Ginseng</span>
 		</a>
 		<nav class="nav-actions" aria-label="Account">
@@ -64,7 +64,7 @@
 			/>
 		</svg>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<span class="hero-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
+			<span class="hero-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
 			<p class="hero-body">
@@ -169,8 +169,6 @@
 		justify-content: center;
 		width: 1.4rem;
 		height: 1.4rem;
-		padding: 2px;
-		background: var(--paper);
 	}
 
 	.nav-mark img, .hero-mark img, .footer-mark img {
@@ -459,7 +457,6 @@
 		text-transform: uppercase;
 	}
 
-	.footer-mark { background: none; }
 
 	@media (max-width: 64rem) {
 		.how-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
