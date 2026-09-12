@@ -45,7 +45,7 @@
 
 <div class="welcome">
 	<div class="ambient-field" aria-hidden="true">
-		<canvas {@attach dotField()}></canvas>
+		<canvas {@attach dotField({ boundless: true, pinned: true })}></canvas>
 	</div>
 
 	<header class="welcome-nav">
@@ -130,19 +130,22 @@
 
 <style>
 	.welcome {
+		position: relative;
 		color: var(--ink);
 	}
 
+	/* The canvas is ordinary page content whose visible band is redrawn
+	   at the current scroll offset, so the ambient field stays pinned
+	   without relying on fixed-position compositing. */
 	.ambient-field {
-		position: fixed;
+		position: absolute;
 		inset: 0;
-		background: var(--cobalt-deep);
+		overflow: hidden;
 	}
 
 	.ambient-field canvas {
-		width: 100%;
-		height: 100%;
 		display: block;
+		background: var(--cobalt-deep);
 	}
 
 	.welcome-nav {
@@ -392,15 +395,42 @@
 
 	.frozen {
 		position: relative;
+		overflow: hidden;
 		display: grid;
 		place-items: center;
 		gap: 1.2rem;
 		padding: 6rem 1.75rem;
-		background: rgb(0 0 0 / 55%);
+		background: transparent;
 		text-align: center;
 	}
 
+
+	.frozen::before {
+		content: '';
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		background: rgb(0 0 0 / 14%);
+		backdrop-filter: blur(2px);
+		-webkit-backdrop-filter: blur(2px);
+		pointer-events: none;
+	}
+
+	.frozen::after {
+		content: '';
+		position: absolute;
+		z-index: 2;
+		inset: 0;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+		background-size: 160px 160px;
+		opacity: 0.68;
+		mix-blend-mode: overlay;
+		pointer-events: none;
+	}
+
 	.frozen-statement {
+		position: relative;
+		z-index: 3;
 		margin: 0;
 		max-width: 24ch;
 		color: var(--paper);
@@ -412,6 +442,8 @@
 	}
 
 	.frozen-body {
+		position: relative;
+		z-index: 3;
 		margin: 0;
 		max-width: 46ch;
 		color: rgb(255 255 255 / 72%);

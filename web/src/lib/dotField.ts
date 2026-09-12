@@ -43,6 +43,23 @@ interface DotFieldOptions {
 	amplitude?: number;
 	/** px radius of the 8-lobed ripple warp */
 	ringWarp?: number;
+	/** Track the pointer across the whole document instead of just this
+	 *  canvas's parent, and never "leave" until the pointer exits the
+	 *  window. For a page-spanning field whose own parent no longer
+	 *  contains the content painted over it (that content lives in
+	 *  unrelated sibling sections), so parentElement-scoped tracking
+	 *  would silently stop updating the moment the cursor crosses any
+	 *  of it. */
+	boundless?: boolean;
+	/** Size the canvas to the full document height and shift the drawn
+	 *  dots by the live scroll offset each frame, instead of sizing to
+	 *  the canvas's own (viewport-sized) layout box. Used instead of
+	 *  position:fixed/sticky to make the pattern look pinned to the
+	 *  viewport while scrolling: backdrop-filter reliably blurring a
+	 *  fixed/sticky backdrop is inconsistently supported across
+	 *  browsers, but blurring ordinary scrolling content — which is
+	 *  what this canvas becomes in this mode — is the well-tested case. */
+	pinned?: boolean;
 }
 
 interface Dot {
@@ -73,25 +90,40 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 		let dots: Dot[] = [];
 		let width = 0;
 		let height = 0;
+		let viewportHeight = 0;
 		let raf = 0;
 		const focus = { x: 0, y: 0 };
 		const pointer = { x: 0, y: 0, active: false };
 
 		function layout() {
-			const rect = canvas.getBoundingClientRect();
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
-			width = rect.width;
-			height = rect.height;
+
+			if (options.pinned) {
+				width = window.innerWidth;
+				viewportHeight = window.innerHeight;
+				height = Math.max(viewportHeight, document.documentElement.scrollHeight);
+				canvas.style.width = `${width}px`;
+				canvas.style.height = `${height}px`;
+			} else {
+				const rect = canvas.getBoundingClientRect();
+				width = rect.width;
+				viewportHeight = rect.height;
+				height = viewportHeight;
+			}
+
 			canvas.width = Math.round(width * dpr);
 			canvas.height = Math.round(height * dpr);
 			context!.setTransform(dpr, 0, 0, dpr, 0, 0);
 			focus.x = width / 2;
-			focus.y = height / 2;
+			focus.y = viewportHeight / 2;
 
-			// Hex-packed grid: alternate columns drop half a row.
+			// Hex-packed grid: alternate columns drop half a row. Laid out
+			// per viewport, not per document — in pinned mode the same
+			// viewport-sized tile is redrawn into whichever band of the
+			// tall canvas is currently on screen (see `frame`).
 			dots = [];
 			const cols = Math.ceil(width / spacing) + 1;
-			const rows = Math.ceil(height / spacing) + 2;
+			const rows = Math.ceil(viewportHeight / spacing) + 2;
 			for (let col = 0; col < cols; col++) {
 				const xJitter = (Math.random() - 0.5) * spacing * 0.12;
 				for (let row = 0; row < rows; row++) {
@@ -104,16 +136,21 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 
 		function frame(timeMs: number) {
 			const time = timeMs * 0.001;
+			const scrollY = options.pinned ? window.scrollY : 0;
+			// Overscanned so dots animating past the viewport edge (the
+			// wave can push them outward by up to ~amplitude of their
+			// focus distance) don't leave a stale trailing edge.
+			const overscan = 120;
 
 			// Focus drifts to the pointer while it's over the panel, and
 			// back to center once it leaves — same math either way, so the
 			// field never "resets", it just glides.
 			const targetX = pointer.active ? pointer.x : width / 2;
-			const targetY = pointer.active ? pointer.y : height / 2;
+			const targetY = pointer.active ? pointer.y : viewportHeight / 2;
 			focus.x += (targetX - focus.x) * 0.04;
 			focus.y += (targetY - focus.y) * 0.04;
 
-			context!.clearRect(0, 0, width, height);
+			context!.clearRect(0, scrollY - overscan, width, viewportHeight + overscan * 2);
 			for (const dot of dots) {
 				const dx = dot.x - focus.x;
 				const dy = dot.y - focus.y;
@@ -132,36 +169,49 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 
 				context!.beginPath();
 				context!.fillStyle = `rgb(${color} / ${alpha.toFixed(3)})`;
-				context!.arc(px, py, r, 0, Math.PI * 2);
+				context!.arc(px, py + scrollY, r, 0, Math.PI * 2);
 				context!.fill();
 			}
 			raf = requestAnimationFrame(frame);
 		}
 
 		function drawStatic() {
-			context!.clearRect(0, 0, width, height);
+			const scrollY = options.pinned ? window.scrollY : 0;
+			context!.clearRect(0, scrollY, width, viewportHeight);
 			context!.fillStyle = `rgb(${color} / 0.26)`;
 			for (const dot of dots) {
 				context!.beginPath();
-				context!.arc(dot.x, dot.y, baseRadius, 0, Math.PI * 2);
+				context!.arc(dot.x, dot.y + scrollY, baseRadius, 0, Math.PI * 2);
 				context!.fill();
 			}
 		}
 
-		// Listen on the parent section, not the canvas itself: `.hero-copy`
-		// (headline, body, buttons) paints on top of the canvas and would
-		// otherwise steal pointermove/pointerleave the instant the cursor
-		// crosses onto it, snapping the focus back to center mid-hover.
-		// pointermove bubbles up from any descendant; pointerleave only
-		// fires once the pointer exits the whole section, not on
-		// parent-to-child handoffs, so this tracks the cursor everywhere
-		// inside the panel and only resets on a true exit.
-		const listenTarget = canvas.parentElement ?? canvas;
+		// Listen on the parent section by default, not the canvas itself:
+		// `.hero-copy` (headline, body, buttons) paints on top of the
+		// canvas and would otherwise steal pointermove/pointerleave the
+		// instant the cursor crosses onto it, snapping the focus back to
+		// center mid-hover. pointermove bubbles up from any descendant;
+		// pointerleave only fires once the pointer exits the whole
+		// section, not on parent-to-child handoffs, so this tracks the
+		// cursor everywhere inside the panel and only resets on a true
+		// exit. `boundless` widens this to the whole document, for a
+		// field whose overlapping content isn't a descendant at all.
+		const listenTarget: Document | HTMLElement = options.boundless
+			? document
+			: (canvas.parentElement ?? canvas);
 
 		function handleMove(event: PointerEvent) {
-			const rect = canvas.getBoundingClientRect();
-			pointer.x = event.clientX - rect.left;
-			pointer.y = event.clientY - rect.top;
+			if (options.pinned) {
+				// Viewport-relative, matching the viewport-relative dot/focus
+				// math — not canvas-relative, since the canvas is now much
+				// taller than the viewport.
+				pointer.x = event.clientX;
+				pointer.y = event.clientY;
+			} else {
+				const rect = canvas.getBoundingClientRect();
+				pointer.x = event.clientX - rect.left;
+				pointer.y = event.clientY - rect.top;
+			}
 			pointer.active = true;
 		}
 
@@ -175,21 +225,39 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			drawStatic();
 		} else {
 			raf = requestAnimationFrame(frame);
-			listenTarget.addEventListener('pointermove', handleMove);
-			listenTarget.addEventListener('pointerleave', handleLeave);
+			listenTarget.addEventListener('pointermove', handleMove as EventListener);
+			if (options.boundless) {
+				// There is no reliable "pointerleave the document" event;
+				// this fires when the cursor exits the browser viewport.
+				document.addEventListener('mouseleave', handleLeave);
+			} else {
+				listenTarget.addEventListener('pointerleave', handleLeave as EventListener);
+			}
 		}
 
+		// In pinned mode the canvas's own size is set by `layout()` itself
+		// (from document.documentElement.scrollHeight); observing the
+		// canvas would re-trigger on every layout() call. Observe
+		// document.body instead — .ambient-field clips to it (overflow:
+		// hidden), so the canvas can never grow it, only shrink/grow in
+		// response to it.
 		const resizeObserver = new ResizeObserver(() => {
 			layout();
 			if (reduceMotion) drawStatic();
 		});
-		resizeObserver.observe(canvas);
+		resizeObserver.observe(options.pinned ? document.body : canvas);
+		if (options.pinned) window.addEventListener('resize', layout);
 
 		return () => {
 			cancelAnimationFrame(raf);
 			resizeObserver.disconnect();
-			listenTarget.removeEventListener('pointermove', handleMove);
-			listenTarget.removeEventListener('pointerleave', handleLeave);
+			if (options.pinned) window.removeEventListener('resize', layout);
+			listenTarget.removeEventListener('pointermove', handleMove as EventListener);
+			if (options.boundless) {
+				document.removeEventListener('mouseleave', handleLeave);
+			} else {
+				listenTarget.removeEventListener('pointerleave', handleLeave as EventListener);
+			}
 		};
 	};
 }
