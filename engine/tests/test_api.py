@@ -30,6 +30,7 @@ SCENARIO_BODY_FIELDS = {
     "severity",
     "estimate_band",
     "coverage_curve",
+    "reserve_buffer_curve",
     "cash_paths",
     "shortfall_distribution",
     "plans",
@@ -147,6 +148,31 @@ def test_scenario_returns_exactly_the_frozen_field_set_with_valid_types():
     assert max(fundings) >= body["immediate_funding"]  # the chart spans today's funding
     assert all(later > earlier for earlier, later in zip(fundings, fundings[1:]))
     assert all(later >= earlier for earlier, later in zip(coverages, coverages[1:]))
+
+
+def test_reserve_buffer_curve_matches_the_schema_and_passes_through_the_active_point():
+    # 655.0 is off the uniform 50-dollar sweep grid, so it can only appear
+    # through exact insertion of the active operating buffer.
+    body = _post(obligations=REPAIR_SCHEDULE, operating_buffer=655.0)
+    curve = body["reserve_buffer_curve"]
+    assert len(curve) >= 2
+    for point in curve:
+        assert set(point) == {"operating_buffer", "required_liquidity_reserve"}
+        assert isinstance(point["operating_buffer"], float)
+        assert isinstance(point["required_liquidity_reserve"], float)
+
+    buffers = [point["operating_buffer"] for point in curve]
+    reserves = [point["required_liquidity_reserve"] for point in curve]
+    assert buffers[0] == 0.0  # the sweep starts at no buffer
+    assert 655.0 in buffers  # the off-grid active buffer lands exactly
+    assert max(buffers) == 2000.0  # max(2000.0, 655.0 * 2.0)
+    assert all(later > earlier for earlier, later in zip(buffers, buffers[1:]))
+    assert all(later >= earlier for earlier, later in zip(reserves, reserves[1:]))
+
+    # The active point is the displayed scenario reserve under the same
+    # cash matrix and coverage target, not a fresh re-estimate.
+    active = next(point for point in curve if point["operating_buffer"] == body["operating_buffer"])
+    assert active["required_liquidity_reserve"] == body["required_liquidity_reserve"]
 
 
 def test_scenario_array_lengths_match_horizon_days_and_histogram_bins():

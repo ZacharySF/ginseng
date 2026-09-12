@@ -1,4 +1,4 @@
-"""Liquidity metrics (spec sections 21-27, 32, 34).
+"""Liquidity metrics (spec sections 21-27, 32, 34, 69).
 
 All quantities are computed from `X_{j,t}`, the cumulative future net cash
 flow per simulated path (spec 21), and `B_{j,t} = C + X_{j,t}`, simulated
@@ -81,6 +81,27 @@ def coverage_curve(
     ]
 
 
+def reserve_buffer_curve(
+    cash_matrix: np.ndarray, coverage_target: float, active_buffer: float, n_points: int = 41
+) -> list[dict]:
+    """Reserve-vs-buffer curve (spec 69): operating buffer on the x-axis,
+    required liquidity reserve on the y-axis, swept over the same cash
+    matrix and coverage target as the displayed reserve. The sweep spans
+    zero to `max(2000, 2 * active_buffer)` and contains the active buffer
+    exactly, so the curve always passes through the displayed point."""
+    upper = max(2000.0, active_buffer * 2.0)
+    grid = np.unique(np.append(np.linspace(0.0, upper, n_points), active_buffer))
+    return [
+        {
+            "operating_buffer": float(buffer),
+            "required_liquidity_reserve": required_liquidity_reserve(
+                required_liquidity_per_path(cash_matrix, float(buffer)), coverage_target
+            ),
+        }
+        for buffer in grid
+    ]
+
+
 def shortfall_distribution(
     cash_matrix: np.ndarray, immediate_funding: float, n_bins: int = 30
 ) -> dict:
@@ -111,6 +132,7 @@ class ScenarioMetrics:
     coverage_at_current_funding: float
     severity: dict
     coverage_curve: list
+    reserve_buffer_curve: list
     cash_paths: dict
     shortfall_distribution: dict
 
@@ -144,6 +166,7 @@ def compute_scenario_metrics(
         coverage_at_current_funding=coverage_at_funding(required_per_path, immediate_funding),
         severity=severity_metrics(matrix, immediate_funding, operating_buffer),
         coverage_curve=coverage_curve(required_per_path, immediate_funding),
+        reserve_buffer_curve=reserve_buffer_curve(matrix, coverage_target, operating_buffer),
         cash_paths=paths,
         shortfall_distribution=shortfall_distribution(matrix, immediate_funding),
     )

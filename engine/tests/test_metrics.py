@@ -11,10 +11,12 @@ import pytest
 
 from ginseng.generate import acceptance_report, generate_persona
 from ginseng.metrics import (
+    compute_scenario_metrics,
     coverage_at_funding,
     coverage_curve,
     required_liquidity_per_path,
     required_liquidity_reserve,
+    reserve_buffer_curve,
     severity_metrics,
 )
 from ginseng.simulate import cash_paths, draw_bundle
@@ -139,6 +141,41 @@ def test_coverage_curve_is_monotone_and_spans_zero_funding_to_beyond_today():
     assert all(later > earlier for earlier, later in zip(fundings, fundings[1:]))
     assert all(later >= earlier for earlier, later in zip(coverages, coverages[1:]))
     assert all(0.0 <= coverage <= 1.0 for coverage in coverages)
+
+
+# --- Reserve-vs-buffer curve (P0) ---
+
+
+def test_reserve_buffer_curve_spans_zero_through_the_active_buffer_to_a_fixed_bound():
+    # The path bottoms out at -1500, so R(b) = b + 1500 exactly at any
+    # coverage target, and the off-grid active buffer must still appear.
+    path = np.array([[100.0, -100.0, -1500.0, -1400.0, 1200.0]])
+    curve = reserve_buffer_curve(path, 0.95, active_buffer=750.5)
+    buffers = [point["operating_buffer"] for point in curve]
+    reserves = [point["required_liquidity_reserve"] for point in curve]
+    assert len(curve) >= 2
+    assert buffers[0] == 0.0  # the sweep starts at no buffer
+    assert 750.5 in buffers  # the off-grid active buffer lands exactly
+    assert max(buffers) == 2000.0  # max(2000.0, 750.5 * 2.0)
+    assert all(later > earlier for earlier, later in zip(buffers, buffers[1:]))
+    assert all(later >= earlier for earlier, later in zip(reserves, reserves[1:]))
+    assert all(reserve == buffer + 1500.0 for buffer, reserve in zip(buffers, reserves))
+
+
+def test_scenario_metrics_curve_is_anchored_to_the_displayed_reserve():
+    state = make_history_state()
+    bundle = draw_bundle(state, horizon_days=30, n_paths=240, seed=53, mean_block_length=10)
+    obligations = (Obligation("bill", "Future bill", 1200.0, 8),)
+    computed = compute_scenario_metrics(state, bundle, obligations, 0.95, BUFFER)
+    buffers = [point["operating_buffer"] for point in computed.reserve_buffer_curve]
+    assert buffers[0] == 0.0
+    assert max(buffers) == max(2000.0, BUFFER * 2.0)
+    active = next(
+        point for point in computed.reserve_buffer_curve if point["operating_buffer"] == BUFFER
+    )
+    # Bit-identical, not approximate: the active point re-evaluates the
+    # displayed reserve on nothing but the buffer axis.
+    assert active["required_liquidity_reserve"] == computed.required_liquidity_reserve
 
 
 # --- Section 74: Running-minimum semantics ---

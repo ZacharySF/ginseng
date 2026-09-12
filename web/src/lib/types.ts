@@ -34,6 +34,11 @@ export interface CoverageCurvePoint {
 	coverage: number;
 }
 
+export interface ReserveBufferCurvePoint {
+	operating_buffer: number;
+	required_liquidity_reserve: number;
+}
+
 export interface CashPaths {
 	days: number[];
 	p10: number[];
@@ -99,6 +104,7 @@ export interface ScenarioResponse {
 	severity: Severity;
 	estimate_band: EstimateBand | null;
 	coverage_curve: CoverageCurvePoint[];
+	reserve_buffer_curve: ReserveBufferCurvePoint[];
 	cash_paths: CashPaths;
 	shortfall_distribution: ShortfallDistribution;
 	plans: Plan[];

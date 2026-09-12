@@ -54,6 +54,12 @@ class CoveragePoint(BaseModel):
     coverage: float
 
 
+
+class ReserveBufferPoint(BaseModel):
+    operating_buffer: float
+    required_liquidity_reserve: float
+
+
 class CashPaths(BaseModel):
     days: list[int]
     p10: list[float]
@@ -85,6 +91,7 @@ class ScenarioResponse(BaseModel):
     severity: SeverityMetrics
     estimate_band: dict[str, float] | None = None
     coverage_curve: list[CoveragePoint]
+    reserve_buffer_curve: list[ReserveBufferPoint]
     cash_paths: CashPaths
     shortfall_distribution: ShortfallDistribution
     plans: list[dict[str, Any]] = Field(default_factory=list)
@@ -195,6 +202,9 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         severity=SeverityMetrics(**computed.severity),
         estimate_band={"low": band.low, "high": band.high},
         coverage_curve=[CoveragePoint(**point) for point in computed.coverage_curve],
+        reserve_buffer_curve=[
+            ReserveBufferPoint(**point) for point in computed.reserve_buffer_curve
+        ],
         cash_paths=CashPaths(**computed.cash_paths),
         shortfall_distribution=ShortfallDistribution(**computed.shortfall_distribution),
         plans=plans,
