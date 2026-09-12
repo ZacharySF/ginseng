@@ -61,8 +61,8 @@
 	<meta name="description" content="Sign in to your Ginseng liquidity workspace." />
 </svelte:head>
 
-<div class="auth-screen">
-	<section class="auth-hero" {@attach parallax()}>
+<div class="auth-screen" {@attach parallax()}>
+	<section class="auth-hero">
 		<svg class="hero-curve" data-parallax-strength="10 6" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
 			<rect x="152" y="0" width="80" height="260" class="hero-band" />
 			<line x1="0" y1="64" x2="400" y2="64" class="hero-target-line" />
@@ -187,7 +187,7 @@
 		width: calc(100% + 40px);
 		height: calc(100% + 40px);
 		transform: translate3d(0, 0, 0);
-		transition: transform 340ms cubic-bezier(0.23, 1, 0.32, 1);
+		transition: transform 850ms cubic-bezier(0.19, 1, 0.22, 1);
 		will-change: transform;
 		pointer-events: none;
 	}
@@ -212,7 +212,7 @@
 		max-width: 30rem;
 		color: var(--paper);
 		transform: translate3d(0, 0, 0);
-		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+		transition: transform 650ms cubic-bezier(0.19, 1, 0.22, 1);
 		will-change: transform;
 	}
 
