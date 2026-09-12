@@ -411,8 +411,8 @@
 		z-index: 1;
 		inset: 0;
 		background: rgb(0 0 0 / 14%);
-		backdrop-filter: blur(2px);
-		-webkit-backdrop-filter: blur(2px);
+		backdrop-filter: blur(2.5px);
+		-webkit-backdrop-filter: blur(2.5px);
 		pointer-events: none;
 	}
 
