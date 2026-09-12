@@ -64,7 +64,7 @@
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
-		<canvas class="hero-field" {@attach dotField({ spacing: 30, radius: 1.5 })}></canvas>
+		<canvas class="hero-field" {@attach dotField()}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-kicker" href={resolve('/welcome')}>Ginseng · Liquidity workspace</a>
 			<h1>A timing problem, modeled.</h1>

@@ -56,7 +56,7 @@
 	</header>
 
 	<section class="hero" {@attach parallax()}>
-		<canvas class="hero-field" {@attach dotField({ spacing: 32, radius: 1.6 })}></canvas>
+		<canvas class="hero-field" {@attach dotField()}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
@@ -201,7 +201,7 @@
 		display: flex;
 		align-items: center;
 		min-height: calc(100dvh - 3.5rem);
-		padding: 3rem 3.5rem;
+		padding: 3rem 1.75rem;
 		background: var(--cobalt-deep);
 	}
 
@@ -216,7 +216,8 @@
 		position: relative;
 		display: grid;
 		gap: 1.2rem;
-		max-width: 34rem;
+		max-width: 42rem;
+		margin: 0 auto;
 		color: var(--paper);
 		transform: translate3d(0, 0, 0);
 		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);

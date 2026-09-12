@@ -61,12 +61,12 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 		const context = canvas.getContext('2d');
 		if (!context) return;
 
-		const spacing = options.spacing ?? 30;
-		const baseRadius = options.radius ?? 1.5;
+		const spacing = options.spacing ?? 26;
+		const baseRadius = options.radius ?? 2.1;
 		const color = options.color ?? '255 255 255';
 		const waveSpeed = options.waveSpeed ?? 260;
 		const wavePeriod = options.wavePeriod ?? 5.4;
-		const amplitude = options.amplitude ?? 0.1;
+		const amplitude = options.amplitude ?? 0.15;
 		const ringWarp = options.ringWarp ?? spacing * 0.5;
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -127,8 +127,8 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 				const scale = 1 + wave;
 				const px = focus.x + dx * scale;
 				const py = focus.y + dy * scale;
-				const alpha = Math.min(0.32, Math.max(0.05, 0.16 + wave * 0.6));
-				const r = Math.max(0.4, baseRadius * (1 + wave * 0.5));
+				const alpha = Math.min(0.55, Math.max(0.1, 0.26 + wave * 0.7));
+				const r = Math.max(0.6, baseRadius * (1 + wave * 0.6));
 
 				context!.beginPath();
 				context!.fillStyle = `rgb(${color} / ${alpha.toFixed(3)})`;
@@ -140,7 +140,7 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 
 		function drawStatic() {
 			context!.clearRect(0, 0, width, height);
-			context!.fillStyle = `rgb(${color} / 0.16)`;
+			context!.fillStyle = `rgb(${color} / 0.26)`;
 			for (const dot of dots) {
 				context!.beginPath();
 				context!.arc(dot.x, dot.y, baseRadius, 0, Math.PI * 2);
