@@ -19,7 +19,8 @@ from typing import Any
 
 import httpx
 
-NESSIE_BASE_URL = "http://api.nessieisreal.com"
+# HTTPS only: the plain-HTTP host refuses connections.
+NESSIE_BASE_URL = "https://api.nessieisreal.com"
 
 
 class NessieError(RuntimeError):
@@ -126,52 +127,72 @@ class NessieProvider:
 
     # --- sample workspace ---------------------------------------------
 
-    def sample_workspace(
-        self,
-        max_accounts: int = 3,
-        max_transactions_per_account: int = 10,
-        customer_attempts: int = 3,
-    ) -> dict[str, Any]:
-        """Build a compact review payload from the first customer that
-        actually has accounts. Every record carries ``source: nessie``
-        and the response is flagged ``simulated: True`` so no consumer
-        can mistake it for the user's real finances."""
-        customers = self.list_customers()
-        chosen: dict[str, Any] | None = None
-        accounts: list[dict[str, Any]] = []
-
-        for candidate in customers[: max(1, customer_attempts)]:
-            candidate_accounts = self.accounts_for_customer(str(candidate.get("_id", "")))
-            if candidate_accounts:
-                chosen = candidate
-                accounts = candidate_accounts
-                break
-
-        if chosen is None:
-            raise NessieError("No Nessie customer with accounts was found.")
-
-        accounts = accounts[: max(1, max_accounts)]
+    def _activity(
+        self, accounts: list[dict[str, Any]], max_transactions_per_account: int
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         transactions: list[dict[str, Any]] = []
         bills: list[dict[str, Any]] = []
         for raw_account in accounts:
             account_id = str(raw_account.get("_id", ""))
             deposits = self.deposits_for_account(account_id)[: max(0, max_transactions_per_account)]
             transactions.extend(self.normalize_deposit(deposit, account_id) for deposit in deposits)
-            for bill in self.bills_for_account(account_id):
-                bills.append(self.normalize_bill(bill, account_id))
-
+            bills.extend(
+                self.normalize_bill(bill, account_id)
+                for bill in self.bills_for_account(account_id)
+            )
         transactions.sort(key=lambda item: item["date"], reverse=True)
         bills.sort(key=lambda item: item["payment_date"])
+        return transactions, bills
 
+    def _payload(
+        self,
+        customer: dict[str, Any],
+        accounts: list[dict[str, Any]],
+        transactions: list[dict[str, Any]],
+        bills: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         return {
             "label": "sample",
             "simulated": True,
             "customer": {
-                "external_id": str(chosen.get("_id", "")),
-                "first_name": chosen.get("first_name"),
-                "last_name": chosen.get("last_name"),
+                "external_id": str(customer.get("_id", "")),
+                "first_name": customer.get("first_name"),
+                "last_name": customer.get("last_name"),
             },
             "accounts": [self.normalize_account(raw_account) for raw_account in accounts],
             "transactions": transactions,
             "bills": bills,
         }
+
+    def sample_workspace(
+        self,
+        max_accounts: int = 3,
+        max_transactions_per_account: int = 10,
+        customer_attempts: int = 12,
+    ) -> dict[str, Any]:
+        """Build a compact review payload. Most Nessie mock customers
+        have accounts but no deposits or bills, which makes for a
+        pointless preview, so candidates are scanned for one with real
+        activity and the first account-holder is only the fallback.
+        Every record carries ``source: nessie`` and the response is
+        flagged ``simulated: True`` so no consumer can mistake it for
+        the user's real finances."""
+        fallback: tuple[dict[str, Any], list[dict[str, Any]]] | None = None
+
+        for candidate in self.list_customers()[: max(1, customer_attempts)]:
+            accounts = self.accounts_for_customer(str(candidate.get("_id", "")))
+            if not accounts:
+                continue
+            selected = accounts[: max(1, max_accounts)]
+            if fallback is None:
+                fallback = (candidate, selected)
+            transactions, bills = self._activity(selected, max_transactions_per_account)
+            if transactions or bills:
+                return self._payload(candidate, selected, transactions, bills)
+
+        if fallback is None:
+            raise NessieError("No Nessie customer with accounts was found.")
+
+        customer, selected = fallback
+        transactions, bills = self._activity(selected, max_transactions_per_account)
+        return self._payload(customer, selected, transactions, bills)

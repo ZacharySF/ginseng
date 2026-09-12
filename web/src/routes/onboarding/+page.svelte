@@ -154,8 +154,16 @@
 
 <div class="onboarding">
 	<header class="onboarding-header">
-		<span class="header-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
-		<p class="header-kicker">Liquidity workspace</p>
+		<div class="header-brand">
+			<span class="header-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
+			<p class="header-kicker">Liquidity workspace</p>
+		</div>
+		{#if authStore.status === 'signed-in' && authStore.user}
+			<div class="header-account">
+				<span class="header-email">{authStore.user.email}</span>
+				<button type="button" class="text-button" onclick={() => authStore.signOut()}>Sign out</button>
+			</div>
+		{/if}
 	</header>
 
 	{#if !profileReady}
@@ -181,8 +189,11 @@
 						class:done={step > s.id}
 						aria-current={step === s.id ? 'step' : undefined}
 					>
-						<span>{s.id}</span>
-						{s.label}
+						<span class="step-badge" aria-hidden="true">{step > s.id ? '✓' : s.id}</span>
+						<span class="step-label">{s.label}</span>
+						<span class="visually-hidden">
+							{step > s.id ? '(completed)' : step === s.id ? '(current step)' : '(not started)'}
+						</span>
 					</li>
 				{/each}
 			</ol>
@@ -237,7 +248,10 @@
 					</p>
 				{/if}
 			{:else}
-				<h1>Review your sample workspace</h1>
+				<div class="review-heading">
+					<h1>Review your sample workspace</h1>
+					<span class="sample-chip">Simulated</span>
+				</div>
 				<p class="body-copy">
 					This is <strong>simulated banking data</strong> from Ginseng's demo provider —
 					not your real accounts. It exists so you can see the full model running before
@@ -272,8 +286,15 @@
 					</div>
 				{:else if sample && sample.status === 'ok'}
 					{@const data = sample.data}
-					<section class="sample-section" aria-label="Sample accounts">
-						<h2>Accounts — {data.customer.first_name ?? ''} {data.customer.last_name ?? '(sample customer)'}</h2>
+					<p class="sample-meta">
+						Sample profile: <strong>{[data.customer.first_name, data.customer.last_name].filter(Boolean).join(' ') || 'Unnamed sample customer'}</strong>
+					</p>
+
+					<section class="sample-section" aria-labelledby="sample-accounts-heading">
+						<div class="section-head">
+							<h2 id="sample-accounts-heading">Accounts</h2>
+							<span class="section-count">{data.accounts.length}</span>
+						</div>
 						<table class="sample-table">
 							<caption class="visually-hidden">Simulated accounts</caption>
 							<thead>
@@ -283,7 +304,7 @@
 								{#each data.accounts as account (account.external_id)}
 									<tr>
 										<td>{account.name}</td>
-										<td>{account.kind}</td>
+										<td class="capitalize">{account.kind}</td>
 										<td class="num">{money(account.balance)}</td>
 									</tr>
 								{/each}
@@ -291,28 +312,41 @@
 						</table>
 					</section>
 
-					<section class="sample-section" aria-label="Sample recent activity">
-						<h2>Recent activity</h2>
-						<table class="sample-table">
-							<caption class="visually-hidden">Simulated deposits</caption>
-							<thead>
-								<tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col" class="num">Amount</th></tr>
-							</thead>
-							<tbody>
-								{#each data.transactions.slice(0, 8) as transaction (transaction.external_id)}
-									<tr>
-										<td>{transaction.date}</td>
-										<td>{transaction.description ?? 'Deposit'}</td>
-										<td class="num">{money(transaction.amount)}</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
+					<section class="sample-section" aria-labelledby="sample-activity-heading">
+						<div class="section-head">
+							<h2 id="sample-activity-heading">Recent activity</h2>
+							<span class="section-count">{data.transactions.length}</span>
+						</div>
+						{#if data.transactions.length === 0}
+							<p class="section-empty">
+								This sample profile has no posted transactions. The forecast needs real
+								history, which arrives with CSV import.
+							</p>
+						{:else}
+							<table class="sample-table">
+								<caption class="visually-hidden">Simulated deposits</caption>
+								<thead>
+									<tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col" class="num">Amount</th></tr>
+								</thead>
+								<tbody>
+									{#each data.transactions.slice(0, 8) as transaction (transaction.external_id)}
+										<tr>
+											<td class="num-plain">{transaction.date}</td>
+											<td>{transaction.description ?? 'Deposit'}</td>
+											<td class="num">{money(transaction.amount)}</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						{/if}
 					</section>
 
 					{#if data.bills.length > 0}
-						<section class="sample-section" aria-label="Sample bills">
-							<h2>Bills</h2>
+						<section class="sample-section" aria-labelledby="sample-bills-heading">
+							<div class="section-head">
+								<h2 id="sample-bills-heading">Scheduled bills</h2>
+								<span class="section-count">{data.bills.length}</span>
+							</div>
 							<table class="sample-table">
 								<caption class="visually-hidden">Simulated bills</caption>
 								<thead>
@@ -321,8 +355,11 @@
 								<tbody>
 									{#each data.bills.slice(0, 5) as bill (bill.external_id)}
 										<tr>
-											<td>{bill.payee}{bill.recurring ? ' (recurring)' : ''}</td>
-											<td>{bill.payment_date}</td>
+											<td>
+												{bill.payee}
+												{#if bill.recurring}<span class="row-tag">Recurring</span>{/if}
+											</td>
+											<td class="num-plain">{bill.payment_date}</td>
 											<td class="num">{money(bill.amount)}</td>
 										</tr>
 									{/each}
@@ -379,10 +416,51 @@
 	}
 
 	.onboarding-header {
-		display: grid;
-		justify-items: center;
-		gap: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		width: 100%;
+		max-width: 38rem;
 	}
+
+	.header-brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.header-account {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.7rem;
+		min-width: 0;
+	}
+
+	.header-email {
+		overflow: hidden;
+		color: var(--ink-soft);
+		font-size: 0.78rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.text-button {
+		flex: none;
+		min-height: 2.75rem;
+		padding: 0 0.2rem;
+		background: none;
+		border: 0;
+		color: var(--cobalt);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.text-button:hover { color: var(--cobalt-deep); }
 
 	.header-mark {
 		display: inline-flex;
@@ -397,7 +475,7 @@
 
 	.header-kicker {
 		margin: 0;
-		color: var(--ink-muted);
+		color: var(--ink-soft);
 		font-family: var(--font-mono);
 		font-size: 0.68rem;
 		font-weight: 700;
@@ -445,7 +523,7 @@
 		color: var(--ink);
 	}
 
-	.quiet { color: var(--ink-muted); }
+	.quiet { color: var(--ink-soft); }
 
 	.needs-list {
 		display: grid;
@@ -487,7 +565,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.45rem;
-		color: var(--ink-muted);
+		color: var(--ink-soft);
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: 700;
@@ -495,18 +573,36 @@
 		text-transform: uppercase;
 	}
 
-	.steps li span {
+	.steps li span.step-badge {
 		display: inline-grid;
+		flex: none;
 		place-items: center;
-		width: 1.35rem;
-		height: 1.35rem;
+		width: 1.4rem;
+		height: 1.4rem;
 		border: 1px solid var(--rule-strong);
 		font-size: 0.62rem;
+		transition: background-color 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 160ms cubic-bezier(0.23, 1, 0.32, 1), color 160ms cubic-bezier(0.23, 1, 0.32, 1);
 	}
 
 	.steps li.current { color: var(--ink); }
-	.steps li.current span { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
-	.steps li.done span { background: var(--paper-soft); border-color: var(--rule); color: var(--ink-soft); }
+
+	.steps li.current span.step-badge {
+		background: var(--cobalt);
+		border-color: var(--cobalt);
+		color: var(--paper);
+	}
+
+	.steps li.done { color: var(--ink-soft); }
+
+	.steps li.done span.step-badge {
+		background: var(--paper-soft);
+		border-color: var(--control-border);
+		color: var(--ink-soft);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.steps li span.step-badge { transition: none; }
+	}
 
 	.path-field {
 		display: grid;
@@ -548,7 +644,7 @@
 		padding: 0.15rem 0.4rem;
 		background: var(--paper-soft);
 		border: 1px solid var(--rule);
-		color: var(--ink-muted);
+		color: var(--ink-soft);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		font-weight: 700;
@@ -556,7 +652,7 @@
 		text-transform: uppercase;
 	}
 
-	.path-body { color: var(--ink-muted); font-size: 0.82rem; line-height: 1.5; }
+	.path-body { color: var(--ink-soft); font-size: 0.82rem; line-height: 1.5; }
 
 	.notice {
 		margin: 0;
@@ -583,7 +679,7 @@
 	.sample-loading {
 		padding: 1.5rem;
 		background: var(--paper-soft);
-		color: var(--ink-muted);
+		color: var(--ink-soft);
 		font-size: 0.85rem;
 		text-align: center;
 	}
@@ -611,7 +707,7 @@
 		padding: 0.45rem 0.6rem;
 		background: var(--paper-soft);
 		border-bottom: 1px solid var(--rule);
-		color: var(--ink-muted);
+		color: var(--ink-soft);
 		font-family: var(--font-mono);
 		font-size: 0.62rem;
 		font-weight: 700;
@@ -689,9 +785,100 @@
 		border: 0;
 	}
 
+	/* One visible focus treatment for every control in the flow. */
+	.button:focus-visible,
+	.text-button:focus-visible,
+	.path-option input:focus-visible,
+	.consent input:focus-visible {
+		outline: 2px solid var(--cobalt);
+		outline-offset: 2px;
+	}
+
+	.path-option:has(input:focus-visible) {
+		outline: 2px solid var(--cobalt);
+		outline-offset: 2px;
+	}
+
+	.review-heading {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		flex-wrap: wrap;
+	}
+
+	.sample-chip {
+		padding: 0.2rem 0.45rem;
+		background: var(--warning);
+		color: var(--paper);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	.sample-meta {
+		margin: 0;
+		color: var(--ink-soft);
+		font-size: 0.82rem;
+	}
+
+	.sample-meta strong { color: var(--ink-soft); }
+
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin-bottom: 0.4rem;
+	}
+
+	.section-count {
+		color: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 0.66rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 700;
+	}
+
+	.section-empty {
+		margin: 0;
+		padding: 0.75rem 0.85rem;
+		background: var(--paper-soft);
+		color: var(--ink-soft);
+		font-size: 0.82rem;
+		line-height: 1.5;
+	}
+
+	.sample-table .capitalize { text-transform: capitalize; }
+	.sample-table .num-plain { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+	.row-tag {
+		display: inline-block;
+		margin-left: 0.35rem;
+		padding: 0.05rem 0.3rem;
+		background: var(--paper-soft);
+		color: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		vertical-align: 0.08em;
+	}
+
+	@media (max-width: 40rem) {
+		.onboarding-header { max-width: 100%; }
+		.header-email { display: none; }
+		.actions { flex-direction: column-reverse; }
+		.actions .button { width: 100%; }
+	}
+
 	@media (max-width: 30rem) {
 		.onboarding { padding: 2rem 1rem 3rem; }
 		.panel { padding: 1.4rem; }
-		.steps { gap: 0.8rem; }
+		.steps { gap: 0.7rem; }
+		.step-label { display: none; }
+		.sample-table { font-size: 0.8rem; }
+		.sample-table th, .sample-table td { padding: 0.4rem 0.45rem; }
 	}
 </style>
