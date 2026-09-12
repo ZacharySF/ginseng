@@ -55,16 +55,13 @@
 	</header>
 
 	<section class="hero" {@attach parallax()}>
-		<svg class="hero-curve" data-parallax-strength="10 6" viewBox="0 0 800 420" preserveAspectRatio="none" aria-hidden="true">
-			<rect x="300" y="0" width="140" height="420" class="hero-band" />
-			<line x1="0" y1="120" x2="800" y2="120" class="hero-target-line" />
-			<path
-				d="M0,380 C 140,364 240,330 300,240 C 350,164 400,90 460,66 C 560,28 680,18 800,16"
-				class="hero-curve-line"
-			/>
-		</svg>
+		<img
+			class="hero-illustration"
+			src="/brand/ginseng-mark-reversed-transparent.svg"
+			alt=""
+			data-parallax-strength="12 7"
+		/>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<span class="hero-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
 			<p class="hero-body">
@@ -127,8 +124,7 @@
 	</section>
 
 	<footer class="welcome-footer">
-		<span class="footer-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
-		<span>Ginseng</span>
+		<span class="footer-mark">Ginseng</span>
 	</footer>
 </div>
 
@@ -154,16 +150,16 @@
 	.nav-brand {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.6rem;
+		gap: 0.55rem;
 		color: var(--paper);
-		font-family: var(--font-sans);
-		font-size: 1rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
+		font-family: var(--font-serif);
+		font-size: 1.15rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
 		text-decoration: none;
 	}
 
-	.nav-mark, .hero-mark, .footer-mark {
+	.nav-mark {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -171,7 +167,7 @@
 		height: 1.4rem;
 	}
 
-	.nav-mark img, .hero-mark img, .footer-mark img {
+	.nav-mark img {
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
@@ -208,38 +204,32 @@
 		overflow: hidden;
 		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
 		min-height: calc(100dvh - 3.5rem);
-		padding: 3rem 1.75rem;
+		padding: 3rem 3.5rem;
 		background: var(--cobalt-deep);
 	}
 
-	.hero-curve {
+	.hero-illustration {
 		position: absolute;
-		inset: -30px;
-		width: calc(100% + 60px);
-		height: calc(100% + 60px);
+		right: -2.5rem;
+		bottom: -2.5rem;
+		height: 112%;
+		width: auto;
+		max-width: none;
+		opacity: 0.94;
 		transform: translate3d(0, 0, 0);
 		transition: transform 340ms cubic-bezier(0.23, 1, 0.32, 1);
 		will-change: transform;
 		pointer-events: none;
 	}
 
-	.hero-band { fill: rgb(255 255 255 / 6%); }
-	.hero-target-line { stroke: rgb(255 255 255 / 22%); stroke-width: 1; stroke-dasharray: 6 6; }
-	.hero-curve-line {
-		fill: none;
-		stroke: var(--cobalt-bright);
-		stroke-width: 3;
-		stroke-linecap: round;
-		opacity: 0.85;
-	}
-
 	.hero-copy {
 		position: relative;
 		display: grid;
 		gap: 1.2rem;
-		max-width: 42rem;
-		margin: 0 auto;
+		max-width: 34rem;
 		color: var(--paper);
 		transform: translate3d(0, 0, 0);
 		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -247,8 +237,9 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hero-curve, .hero-copy { transition: none; }
+		.hero-illustration, .hero-copy { transition: none; }
 	}
+
 
 	.hero-kicker {
 		margin: 0;
@@ -262,10 +253,11 @@
 
 	.hero-copy h1 {
 		margin: 0;
-		font-size: clamp(2.6rem, 6vw, 4.8rem);
-		font-weight: 800;
-		letter-spacing: -0.035em;
-		line-height: 0.98;
+		font-family: var(--font-serif);
+		font-size: clamp(2.4rem, 5.6vw, 4.4rem);
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		line-height: 1.04;
 		text-wrap: balance;
 	}
 
@@ -337,9 +329,10 @@
 	.how h2 {
 		margin: 0 0 2.5rem;
 		max-width: 30ch;
+		font-family: var(--font-serif);
 		font-size: clamp(1.7rem, 3vw, 2.4rem);
-		font-weight: 800;
-		letter-spacing: -0.025em;
+		font-weight: 700;
+		letter-spacing: -0.005em;
 		text-wrap: balance;
 	}
 
@@ -405,10 +398,11 @@
 		margin: 0;
 		max-width: 24ch;
 		color: var(--paper);
+		font-family: var(--font-serif);
 		font-size: clamp(1.9rem, 4vw, 3rem);
-		font-weight: 800;
-		letter-spacing: -0.03em;
-		line-height: 1.08;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		line-height: 1.1;
 		text-wrap: balance;
 	}
 
@@ -431,9 +425,10 @@
 
 	.final-cta h2 {
 		margin: 0;
+		font-family: var(--font-serif);
 		font-size: clamp(1.8rem, 3.4vw, 2.6rem);
-		font-weight: 800;
-		letter-spacing: -0.03em;
+		font-weight: 700;
+		letter-spacing: -0.01em;
 	}
 
 	.final-note {
@@ -465,7 +460,7 @@
 	@media (max-width: 48rem) {
 		.welcome-nav { padding: 0 1rem; }
 		.hero { padding: 2.5rem 1.25rem; align-items: start; min-height: auto; padding-top: 3.5rem; padding-bottom: 3.5rem; }
-		.hero-copy { margin: 0; }
+		.hero-illustration { display: none; }
 		.how { padding: 3.5rem 1.25rem; }
 		.how-grid { grid-template-columns: 1fr; }
 		.frozen { padding: 4rem 1.25rem; }

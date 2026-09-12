@@ -6,6 +6,8 @@
 	// whole app silently fell back to a generic system sans.
 	// Source: https://fontsource.org/docs/getting-started/install#3-import-the-font
 	import '@fontsource-variable/archivo-narrow/wght.css';
+	import '@fontsource/playfair-display/700.css';
+	import '@fontsource/playfair-display/700-italic.css';
 	import '../app.css';
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -46,7 +48,7 @@
 
 {#if holdForGate}
 	<div class="auth-gate" role="status" aria-live="polite">
-		<span class="auth-gate-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+		<span class="auth-gate-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
 	</div>
 {:else}
 	{@render children()}
@@ -62,23 +64,14 @@
 
 	.auth-gate-mark {
 		display: inline-flex;
-		align-items: end;
-		gap: 3px;
-		width: 1.7rem;
-		height: 1.7rem;
-		padding: 3px;
-		background: var(--paper);
+		align-items: center;
+		justify-content: center;
+		width: 2.4rem;
+		height: 2.4rem;
 		animation: gate-pulse 1.1s ease-in-out infinite;
 	}
 
-	.auth-gate-mark span {
-		flex: 1;
-		background: var(--cobalt);
-	}
-
-	.auth-gate-mark span:nth-child(1) { height: 40%; }
-	.auth-gate-mark span:nth-child(2) { height: 72%; }
-	.auth-gate-mark span:nth-child(3) { height: 100%; }
+	.auth-gate-mark img { width: 100%; height: 100%; object-fit: contain; }
 
 	@keyframes gate-pulse {
 		0%, 100% { opacity: 1; }

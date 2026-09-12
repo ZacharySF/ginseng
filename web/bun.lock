@@ -6,6 +6,7 @@
       "name": "ginseng-web",
       "dependencies": {
         "@fontsource-variable/archivo-narrow": "^5.3.0",
+        "@fontsource/playfair-display": "^5.3.0",
         "@supabase/supabase-js": "^2.116.0",
       },
       "devDependencies": {
@@ -73,6 +74,8 @@
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
     "@fontsource-variable/archivo-narrow": ["@fontsource-variable/archivo-narrow@5.3.0", "", {}, "sha512-MFED5VqaINcaYHXzXuaJQLg9Bsp5MXcpMGpUA4L6A0EPEoAO4q29YcZci9o4x4Q4Gah7Sg+wQkD+LYPk9APHbg=="],
+
+    "@fontsource/playfair-display": ["@fontsource/playfair-display@5.3.0", "", {}, "sha512-uJSABalvdWc10fEPppQjQocamT21LEyRfzzWfRfqbkPz+sRv+kKpYDKyluBUskvJREkJTos9epj1WjQROGu99Q=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 

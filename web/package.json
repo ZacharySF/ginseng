@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/archivo-narrow": "^5.3.0",
+		"@fontsource/playfair-display": "^5.3.0",
 		"@supabase/supabase-js": "^2.116.0"
 	}
 }

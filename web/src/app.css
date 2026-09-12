@@ -1,10 +1,15 @@
 /* Ginseng is a cash-flow workbench rendered as an editorial ledger:
-   cobalt carries navigation and action; paper carries the decision. */
+   cobalt carries navigation and action; paper carries the decision.
+   --cobalt is the exact brand blue (#0100F4) from the official mark;
+   bright/deep/ink hold the same hue and full saturation at the prior
+   ramp's lightness steps, so nothing built against the old values
+   needed a second contrast pass. */
 
 :root {
 	color-scheme: light;
 
 	--font-sans: "Archivo Narrow Variable", "Archivo Narrow", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+	--font-serif: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
 	--font-mono: "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
 
 	--paper: #f7f7f2;
@@ -13,10 +18,10 @@
 	--ink: #070c56;
 	--ink-soft: #3b428d;
 	--ink-muted: #676dab;
-	--cobalt: #1229de;
-	--cobalt-bright: #2448ff;
-	--cobalt-deep: #07137f;
-	--cobalt-ink: #05094a;
+	--cobalt: #0100f4;
+	--cobalt-bright: #2524ff;
+	--cobalt-deep: #000086;
+	--cobalt-ink: #00004f;
 	--rule: #c5c9e7;
 	--rule-strong: #9399cb;
 	/* Dedicated control border, not a reused surface token — separate from

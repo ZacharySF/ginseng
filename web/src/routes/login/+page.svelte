@@ -63,19 +63,14 @@
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
-		<svg class="hero-curve" data-parallax-strength="10 6" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
-			<rect x="152" y="0" width="80" height="260" class="hero-band" />
-			<line x1="0" y1="64" x2="400" y2="64" class="hero-target-line" />
-			<path
-				d="M0,232 C 70,224 120,206 152,148 C 178,100 200,52 232,40 C 280,24 340,18 400,16"
-				class="hero-curve-line"
-			/>
-		</svg>
+		<img
+			class="hero-illustration"
+			src="/brand/ginseng-mark-reversed-transparent.svg"
+			alt=""
+			data-parallax-strength="10 6"
+		/>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<a class="hero-mark" href={resolve('/welcome')} aria-label="Ginseng home">
-				<img src="/brand/ginseng-avatar-reversed.svg" alt="" />
-			</a>
-			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
+			<a class="hero-kicker" href={resolve('/welcome')}>Ginseng · Liquidity workspace</a>
 			<h1>A timing problem, modeled.</h1>
 			<p class="hero-body">
 				2,000 simulated cash paths show the dollar amount your next 30 days actually require
@@ -181,30 +176,23 @@
 
 	/* Background layer: least movement. Overscanned beyond the panel edge
 	   so parallax translation never reveals a gap at the boundary. */
-	.hero-curve {
+	.hero-illustration {
 		position: absolute;
-		inset: -20px;
-		width: calc(100% + 40px);
-		height: calc(100% + 40px);
+		right: -2.5rem;
+		top: -2.5rem;
+		height: 116%;
+		width: auto;
+		max-width: none;
+		opacity: 0.94;
 		transform: translate3d(0, 0, 0);
 		transition: transform 850ms cubic-bezier(0.19, 1, 0.22, 1);
 		will-change: transform;
 		pointer-events: none;
 	}
 
-	.hero-band { fill: rgb(255 255 255 / 6%); }
-	.hero-target-line { stroke: rgb(255 255 255 / 22%); stroke-width: 1; stroke-dasharray: 5 5; }
-	.hero-curve-line {
-		fill: none;
-		stroke: var(--cobalt-bright);
-		stroke-width: 2.5;
-		stroke-linecap: round;
-		opacity: 0.85;
-	}
-
-	/* Foreground layer: most movement — the copy and mark are what the eye
-	   reads first, so they lead the parallax. Transform only; the panel's
-	   own size (set by .auth-screen's grid-template-columns) is untouched. */
+	/* Foreground layer: most movement — the copy is what the eye reads
+	   first, so it leads the parallax. Transform only; the panel's own
+	   size (set by .auth-screen's grid-template-columns) is untouched. */
 	.hero-copy {
 		position: relative;
 		display: grid;
@@ -217,20 +205,8 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.hero-curve, .hero-copy { transition: none; }
+		.hero-illustration, .hero-copy { transition: none; }
 	}
-
-	.hero-mark {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 3rem;
-		height: 3rem;
-		margin-bottom: 0.4rem;
-	}
-
-	.hero-mark img { width: 100%; height: 100%; object-fit: contain; }
-	.hero-mark:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 
 	.hero-kicker {
 		margin: 0;
@@ -240,13 +216,19 @@
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
+		text-decoration: none;
+		justify-self: start;
 	}
+
+	.hero-kicker:hover { color: var(--paper); }
+	.hero-kicker:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 
 	.hero-copy h1 {
 		margin: 0;
-		font-size: clamp(2rem, 3.6vw, 3rem);
-		font-weight: 800;
-		letter-spacing: -0.03em;
+		font-family: var(--font-serif);
+		font-size: clamp(2.1rem, 3.8vw, 3.2rem);
+		font-weight: 700;
+		letter-spacing: -0.01em;
 		line-height: 1.05;
 		text-wrap: balance;
 	}
