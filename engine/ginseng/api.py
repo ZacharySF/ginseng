@@ -11,9 +11,11 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+from ginseng.providers.nessie import NessieError, NessieProvider
 
 from ginseng.generate import DEFAULT_SEED, generate_persona
 from ginseng.metrics import compute_scenario_metrics
@@ -104,6 +106,51 @@ class HealthResponse(BaseModel):
     status: str
     seed_default: int
 
+
+class NessieStatusResponse(BaseModel):
+	configured: bool
+
+
+class SampleCustomerResponse(BaseModel):
+	external_id: str
+	first_name: str | None = None
+	last_name: str | None = None
+
+
+class SampleAccountResponse(BaseModel):
+	source: str
+	external_id: str
+	kind: str
+	name: str
+	balance: float
+
+
+class SampleTransactionResponse(BaseModel):
+	source: str
+	external_id: str
+	account_external_id: str
+	date: str
+	amount: float
+	description: str | None = None
+
+
+class SampleBillResponse(BaseModel):
+	source: str
+	external_id: str
+	account_external_id: str
+	payee: str
+	amount: float
+	payment_date: str
+	recurring: bool
+
+
+class NessieSampleResponse(BaseModel):
+	label: str
+	simulated: bool
+	customer: SampleCustomerResponse
+	accounts: list[SampleAccountResponse]
+	transactions: list[SampleTransactionResponse]
+	bills: list[SampleBillResponse]
 
 app = FastAPI(title="Ginseng Engine")
 
@@ -212,3 +259,21 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         sensitivity=[vars(row) for row in rows],
         sensitivity_verdict=uncertainty.stability_verdict(rows),
     )
+
+
+@app.get("/providers/nessie/status", response_model=NessieStatusResponse)
+def nessie_status() -> NessieStatusResponse:
+	# Only reveals whether the engine holds a key — never the key.
+	return NessieStatusResponse(configured=NessieProvider().configured)
+
+
+@app.get("/providers/nessie/sample", response_model=NessieSampleResponse)
+def nessie_sample() -> NessieSampleResponse:
+	provider = NessieProvider()
+	if not provider.configured:
+		raise HTTPException(status_code=503, detail="Nessie provider is not configured.")
+	try:
+		payload = provider.sample_workspace()
+	except NessieError as error:
+		raise HTTPException(status_code=502, detail=str(error)) from error
+	return NessieSampleResponse(**payload)

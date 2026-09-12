@@ -118,3 +118,49 @@ export interface HealthResponse {
 	status: string;
 	seed_default: number;
 }
+
+// Provider scaffolding — sample workspace payloads normalized by the
+// engine (see ginseng/providers/nessie.py). `simulated: true` marks the
+// whole payload as demo data; the UI must never present it as the
+// user's real finances.
+export interface SampleCustomer {
+	external_id: string;
+	first_name: string | null;
+	last_name: string | null;
+}
+
+export interface SampleAccount {
+	source: 'nessie';
+	external_id: string;
+	kind: 'checking' | 'savings' | 'credit';
+	name: string;
+	balance: number;
+}
+
+export interface SampleTransaction {
+	source: 'nessie';
+	external_id: string;
+	account_external_id: string;
+	date: string;
+	amount: number;
+	description: string | null;
+}
+
+export interface SampleBill {
+	source: 'nessie';
+	external_id: string;
+	account_external_id: string;
+	payee: string;
+	amount: number;
+	payment_date: string;
+	recurring: boolean;
+}
+
+export interface NessieSampleResponse {
+	label: 'sample';
+	simulated: true;
+	customer: SampleCustomer;
+	accounts: SampleAccount[];
+	transactions: SampleTransaction[];
+	bills: SampleBill[];
+}

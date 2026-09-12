@@ -12,6 +12,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { authStore } from '$lib/auth.svelte';
+	import { profileStore } from '$lib/profile.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -21,26 +22,63 @@
 
 	const LOGIN_PATH = '/login';
 	const WELCOME_PATH = '/welcome';
+	const ONBOARDING_PATH = '/onboarding';
 	const PUBLIC_PATHS = [LOGIN_PATH, WELCOME_PATH];
-
 	// Every route below `/` needs a signed-in session except the public
 	// marketing/auth pair; `unconfigured` (no Supabase env at all, e.g.
 	// local dev without `web/.env`) bypasses the gate so the offline
 	// cash-model demo keeps working without an account. Signed-out
 	// visitors land on the landing page, not straight on the form — the
 	// landing page's own CTAs link into `/login`.
+	//
+	// Once signed in, the profile row decides the destination: an
+	// unfinished onboarding is routed to `/onboarding`, a completed one
+	// into the app. Public pages hold until the profile resolves so the
+	// user is sent directly to the right place instead of bouncing.
 	$effect(() => {
-		if (authStore.status === 'signed-out' && !PUBLIC_PATHS.includes(page.url.pathname)) {
-			goto(resolve('/welcome'), { replaceState: true });
-		} else if (authStore.status === 'signed-in' && PUBLIC_PATHS.includes(page.url.pathname)) {
-			goto(resolve('/'), { replaceState: true });
+		if (authStore.status === 'signed-in') {
+			if (profileStore.status === 'idle') void profileStore.load();
+		} else if (authStore.status === 'signed-out' && profileStore.status !== 'idle' && profileStore.status !== 'bypassed') {
+			profileStore.reset();
+		}
+	});
+
+	$effect(() => {
+		const pathname = page.url.pathname;
+		if (authStore.status === 'signed-out') {
+			if (!PUBLIC_PATHS.includes(pathname)) {
+				goto(resolve('/welcome'), { replaceState: true });
+			}
+			return;
+		}
+		if (authStore.status !== 'signed-in') return;
+
+		if (PUBLIC_PATHS.includes(pathname)) {
+			if (profileStore.status === 'loaded' || profileStore.status === 'missing') {
+				goto(profileStore.needsOnboarding ? resolve('/onboarding') : resolve('/'), { replaceState: true });
+			}
+			return;
+		}
+
+		if (pathname === resolve('/onboarding')) {
+			if (profileStore.status === 'loaded' && profileStore.profile?.onboarding_completed) {
+				goto(resolve('/'), { replaceState: true });
+			}
+			return;
+		}
+
+		if (profileStore.needsOnboarding) {
+			goto(resolve('/onboarding'), { replaceState: true });
 		}
 	});
 
 	const holdForGate = $derived(
 		authStore.status === 'loading' ||
 			(authStore.status === 'signed-out' && !PUBLIC_PATHS.includes(page.url.pathname)) ||
-			(authStore.status === 'signed-in' && PUBLIC_PATHS.includes(page.url.pathname))
+			(authStore.status === 'signed-in' && PUBLIC_PATHS.includes(page.url.pathname)) ||
+			(authStore.status === 'signed-in' &&
+				page.url.pathname !== resolve('/onboarding') &&
+				(profileStore.status === 'loading' || profileStore.status === 'idle'))
 	);
 </script>
 

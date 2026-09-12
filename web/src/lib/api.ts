@@ -2,7 +2,7 @@
 // outcomes explicitly — never coalesce them into a single boolean, and never
 // substitute a fabricated or fixture number for a value the engine did not
 // return.
-import type { HealthResponse, ScenarioRequest, ScenarioResponse } from './types';
+import type { HealthResponse, NessieSampleResponse, ScenarioRequest, ScenarioResponse } from './types';
 
 const ENGINE_BASE_URL = 'http://localhost:8000';
 const REQUEST_TIMEOUT_MS = 8000;
@@ -18,6 +18,8 @@ export type EngineResult<T> =
 
 export type HealthResult = EngineResult<HealthResponse>;
 export type ScenarioResult = EngineResult<ScenarioResponse>;
+export type NessieSampleResult = EngineResult<NessieSampleResponse>;
+export type NessieStatusResult = EngineResult<{ configured: boolean }>;
 
 function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
 	return fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
@@ -77,4 +79,26 @@ export async function postScenario(request: ScenarioRequest): Promise<ScenarioRe
 		return { status: 'engine-unreachable', message: describeNetworkError(error) };
 	}
 	return parseJsonResponse<ScenarioResponse>(response);
+}
+
+// Provider scaffolding. The sample payload is simulated banking data
+// normalized by the engine; the API key never reaches this bundle.
+export async function getNessieStatus(): Promise<NessieStatusResult> {
+	let response: Response;
+	try {
+		response = await fetchWithTimeout(`${ENGINE_BASE_URL}/providers/nessie/status`, { method: 'GET' });
+	} catch (error) {
+		return { status: 'engine-unreachable', message: describeNetworkError(error) };
+	}
+	return parseJsonResponse<{ configured: boolean }>(response);
+}
+
+export async function getNessieSample(): Promise<NessieSampleResult> {
+	let response: Response;
+	try {
+		response = await fetchWithTimeout(`${ENGINE_BASE_URL}/providers/nessie/sample`, { method: 'GET' });
+	} catch (error) {
+		return { status: 'engine-unreachable', message: describeNetworkError(error) };
+	}
+	return parseJsonResponse<NessieSampleResponse>(response);
 }
