@@ -60,7 +60,8 @@
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<p class="hero-kicker">Liquidity workspace</p>
 			<h1 class="hero-logo" aria-label="Ginseng">
-				<img src="/brand/ginseng-lockup-horizontal.svg" alt="" />
+				<img class="hero-logo-mark" src="/brand/ginseng-avatar-reversed.svg" alt="" />
+				<img class="hero-logo-wordmark" src="/brand/ginseng-wordmark-reversed.svg" alt="" />
 			</h1>
 			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
@@ -167,9 +168,9 @@
 		align-items: center;
 		color: var(--paper);
 		font-family: var(--font-sans);
-		font-size: 1rem;
+		font-size: 1.15rem;
 		font-weight: 800;
-		letter-spacing: -0.04em;
+		letter-spacing: 0.12em;
 		text-decoration: none;
 	}
 
@@ -241,14 +242,25 @@
 	}
 
 	.hero-logo {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
 		margin: 0;
 		line-height: 0;
 	}
 
 	.hero-logo img {
 		display: block;
-		width: clamp(14rem, 32vw, 22rem);
+		flex: none;
 		height: auto;
+	}
+
+	.hero-logo-mark {
+		width: clamp(4rem, 8vw, 6rem);
+	}
+
+	.hero-logo-wordmark {
+		width: clamp(11rem, 25vw, 18rem);
 	}
 
 	.hero-tagline {
