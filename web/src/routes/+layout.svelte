@@ -1,27 +1,17 @@
 <script lang="ts">
 	// Archivo Narrow Variable, self-hosted so the editorial-ledger headline
 	// character renders identically offline and on every judge's machine —
-	// the prior --font-sans stack named "Arial Narrow"/"Liberation Sans
+	// a prior --font-sans stack named "Arial Narrow"/"Liberation Sans
 	// Narrow", neither of which exists as a real installable font, so the
 	// whole app silently fell back to a generic system sans.
 	// Source: https://fontsource.org/docs/getting-started/install#3-import-the-font
 	import '@fontsource-variable/archivo-narrow/wght.css';
 	import '../app.css';
 	import type { Snippet } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { scenarioStore } from '$lib/scenario.svelte';
-
-	type AppRoute = '/' | '/future' | '/liquidity' | '/plans';
-
-	type NavIcon = 'workspace' | 'events' | 'reserve' | 'funding';
-
-	interface NavItem {
-		label: string;
-		shortLabel: string;
-		href: AppRoute;
-		icon: NavIcon;
-	}
+	import { resolve } from '$app/paths';
+	import { authStore } from '$lib/auth.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -29,292 +19,69 @@
 
 	let { children }: Props = $props();
 
-	const navItems: NavItem[] = [
-		{ label: 'Workspace', shortLabel: 'Work', href: '/', icon: 'workspace' },
-		{ label: 'Events', shortLabel: 'Events', href: '/future', icon: 'events' },
-		{ label: 'Reserve', shortLabel: 'Reserve', href: '/liquidity', icon: 'reserve' },
-		{ label: 'Funding', shortLabel: 'Funding', href: '/plans', icon: 'funding' }
-	];
+	const LOGIN_PATH = '/login';
 
-	function isActive(href: string) {
-		return page.url.pathname === href;
-	}
+	// Every route below `/` needs a signed-in session except `/login` itself;
+	// `unconfigured` (no Supabase env at all, e.g. local dev without
+	// `web/.env`) bypasses the gate so the offline cash-model demo keeps
+	// working without an account.
+	$effect(() => {
+		if (authStore.status === 'signed-out' && page.url.pathname !== LOGIN_PATH) {
+			goto(resolve('/login'), { replaceState: true });
+		} else if (authStore.status === 'signed-in' && page.url.pathname === LOGIN_PATH) {
+			goto(resolve('/'), { replaceState: true });
+		}
+	});
+
+	const holdForGate = $derived(
+		authStore.status === 'loading' ||
+			(authStore.status === 'signed-out' && page.url.pathname !== LOGIN_PATH) ||
+			(authStore.status === 'signed-in' && page.url.pathname === LOGIN_PATH)
+	);
 </script>
 
-<div class="terminal-shell">
-	<header class="terminal-topbar">
-		<a class="terminal-brand" href={resolve('/')} aria-label="Ginseng workspace">
-			<span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-			<span>Ginseng</span>
-		</a>
-		<div class="topbar-context">
-			<span>Cash workspace</span>
-			<span aria-hidden="true">/</span>
-			<span>{scenarioStore.request.horizon_days} day forward view</span>
-		</div>
-		<p class="topbar-status"><i aria-hidden="true"></i>Model ready</p>
-	</header>
-
-	<aside class="terminal-rail">
-		<nav aria-label="Primary">
-			{#each navItems as item (item.href)}
-				<a
-					class="rail-link"
-					class:rail-link--active={isActive(item.href)}
-					href={resolve(item.href)}
-					aria-current={isActive(item.href) ? 'page' : undefined}
-					aria-label={item.label}
-					title={item.label}
-				>
-					<svg aria-hidden="true" viewBox="0 0 24 24">
-						{#if item.icon === 'workspace'}
-							<path d="M4 19V5m0 14h16M7 15l3-4 3 2 5-7" />
-						{:else if item.icon === 'events'}
-							<rect x="4" y="5" width="16" height="15" rx="2" />
-							<path d="M8 3v4m8-4v4M4 10h16m-8 3v4m-3-2h6" />
-						{:else if item.icon === 'reserve'}
-							<path d="M12 3 19 6v5c0 4.3-2.9 7.6-7 10-4.1-2.4-7-5.7-7-10V6l7-3Z" />
-							<path d="M9 12h6m-3-3v6" />
-						{:else}
-							<path d="M5 7h14M5 12h14M5 17h14" />
-							<circle cx="8" cy="7" r="1.5" />
-							<circle cx="15" cy="12" r="1.5" />
-							<circle cx="10" cy="17" r="1.5" />
-						{/if}
-					</svg>
-				</a>
-			{/each}
-		</nav>
-		<p class="rail-meta">{scenarioStore.request.paths.toLocaleString()}<br />paths</p>
-	</aside>
-
-	<main class="app-main">
-		{@render children()}
-	</main>
-
-	<nav class="mobile-nav" aria-label="Primary">
-		{#each navItems as item (item.href)}
-			<a
-				class="mobile-nav-link"
-				class:mobile-nav-link--active={isActive(item.href)}
-				href={resolve(item.href)}
-				aria-current={isActive(item.href) ? 'page' : undefined}
-			>
-				<span>{item.shortLabel}</span>
-			</a>
-		{/each}
-	</nav>
-</div>
+{#if holdForGate}
+	<div class="auth-gate" role="status" aria-live="polite">
+		<span class="auth-gate-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+	</div>
+{:else}
+	{@render children()}
+{/if}
 
 <style>
-	.terminal-shell {
+	.auth-gate {
 		display: grid;
-		grid-template-columns: 4rem minmax(0, 1fr);
-		grid-template-rows: 3.25rem minmax(0, 1fr);
-		height: 100dvh;
+		place-items: center;
+		min-height: 100dvh;
 		background: var(--cobalt);
 	}
 
-	.terminal-topbar {
-		grid-column: 1 / -1;
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		min-width: 0;
-		padding: 0 1rem;
-		background: var(--cobalt-deep);
-		border-bottom: 1px solid rgb(255 255 255 / 28%);
-		color: var(--paper);
-	}
-
-	.terminal-brand {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6rem;
-		flex: none;
-		color: var(--paper);
-		font-family: var(--font-sans);
-		font-size: 1rem;
-		font-weight: 800;
-		letter-spacing: -0.04em;
-		text-decoration: none;
-	}
-
-	.brand-mark {
+	.auth-gate-mark {
 		display: inline-flex;
 		align-items: end;
-		gap: 2px;
-		width: 1.05rem;
-		height: 1.05rem;
-		padding: 2px;
+		gap: 3px;
+		width: 1.7rem;
+		height: 1.7rem;
+		padding: 3px;
 		background: var(--paper);
+		animation: gate-pulse 1.1s ease-in-out infinite;
 	}
 
-	.brand-mark span {
+	.auth-gate-mark span {
 		flex: 1;
 		background: var(--cobalt);
 	}
 
-	.brand-mark span:nth-child(1) { height: 40%; }
-	.brand-mark span:nth-child(2) { height: 72%; }
-	.brand-mark span:nth-child(3) { height: 100%; }
+	.auth-gate-mark span:nth-child(1) { height: 40%; }
+	.auth-gate-mark span:nth-child(2) { height: 72%; }
+	.auth-gate-mark span:nth-child(3) { height: 100%; }
 
-	.topbar-context,
-	.topbar-status,
-	.rail-meta {
-		color: rgb(255 255 255 / 74%);
-		font-family: var(--font-mono);
-		font-size: 0.62rem;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+	@keyframes gate-pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.55; }
 	}
 
-	.topbar-context {
-		display: flex;
-		gap: 0.45rem;
-		white-space: nowrap;
-	}
-
-	.topbar-status {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		margin-left: auto;
-		white-space: nowrap;
-	}
-
-	.topbar-status i {
-		width: 0.45rem;
-		height: 0.45rem;
-		background: #b8c7ff;
-		border-radius: 50%;
-		box-shadow: 0 0 0 2px rgb(184 199 255 / 20%);
-	}
-
-	.terminal-rail {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		background: var(--cobalt);
-		border-right: 1px solid rgb(255 255 255 / 30%);
-	}
-
-	.terminal-rail nav {
-		display: grid;
-		gap: 0.35rem;
-		padding: 0.55rem;
-	}
-
-	.rail-link {
-		display: grid;
-		place-items: center;
-		min-width: 2.85rem;
-		min-height: 2.85rem;
-		border: 1px solid transparent;
-		color: rgb(255 255 255 / 70%);
-		text-decoration: none;
-		transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
-	}
-
-	.rail-link svg {
-		width: 1.2rem;
-		height: 1.2rem;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 1.75;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-	}
-
-	.rail-link:hover {
-		background: rgb(255 255 255 / 15%);
-		color: var(--paper);
-	}
-
-	.rail-link:active { transform: scale(0.97); }
-
-	.rail-link--active {
-		background: var(--paper);
-		border-color: var(--paper);
-		color: var(--cobalt);
-	}
-
-	.rail-meta {
-		margin: auto 0 0;
-		padding: 0.9rem 0.15rem;
-		border-top: 1px solid rgb(255 255 255 / 25%);
-		font-size: 0.53rem;
-		line-height: 1.5;
-		text-align: center;
-	}
-
-	.app-main {
-		min-width: 0;
-		min-height: 0;
-		width: 100%;
-		background: var(--paper);
-		overflow-y: auto;
-	}
-
-	.mobile-nav { display: none; }
-
-	@media (max-width: 48rem) {
-		.terminal-shell {
-			display: block;
-			height: auto;
-			min-height: 100dvh;
-			padding-bottom: 4.9rem;
-		}
-
-		.terminal-topbar {
-			position: sticky;
-			z-index: 5;
-			top: 0;
-			min-height: 3rem;
-			padding: 0 0.8rem;
-		}
-
-		.topbar-context {
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
-
-		.topbar-context span:last-child,
-		.topbar-context span:nth-child(2),
-		.topbar-status { display: none; }
-
-		.terminal-rail { display: none; }
-		.app-main { width: 100%; overflow-y: visible; }
-
-		.mobile-nav {
-			position: fixed;
-			z-index: 10;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-			padding: 0.3rem max(0.45rem, env(safe-area-inset-right)) calc(0.3rem + env(safe-area-inset-bottom)) max(0.45rem, env(safe-area-inset-left));
-			background: var(--cobalt-deep);
-			border-top: 1px solid rgb(255 255 255 / 28%);
-		}
-
-		.mobile-nav-link {
-			display: grid;
-			place-items: center;
-			min-height: 2.8rem;
-			color: rgb(255 255 255 / 70%);
-			font-family: var(--font-mono);
-			font-size: 0.63rem;
-			font-weight: 700;
-			letter-spacing: 0.045em;
-			text-decoration: none;
-			text-transform: uppercase;
-		}
-
-		.mobile-nav-link--active {
-			background: var(--paper);
-			color: var(--cobalt);
-		}
+	@media (prefers-reduced-motion: reduce) {
+		.auth-gate-mark { animation: none; }
 	}
 </style>

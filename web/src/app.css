@@ -19,6 +19,11 @@
 	--cobalt-ink: #05094a;
 	--rule: #c5c9e7;
 	--rule-strong: #9399cb;
+	/* Dedicated control border, not a reused surface token — separate from
+	   --rule-strong because that one sits under 3:1 against --paper-deep,
+	   short of the WCAG 1.4.11 non-text contrast minimum for a boundary
+	   that carries all the meaning (no icon backs up an empty input). */
+	--control-border: #6a71b0;
 	--positive: #1649bb;
 	--negative: #ae2948;
 	--negative-soft: #f7e2e7;

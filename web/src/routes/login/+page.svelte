@@ -1,0 +1,397 @@
+<script lang="ts">
+	import { authStore } from '$lib/auth.svelte';
+
+	type Mode = 'sign-in' | 'sign-up';
+
+	let mode = $state<Mode>('sign-in');
+	let email = $state('');
+	let password = $state('');
+	let submitting = $state(false);
+	let errorMessage = $state('');
+	let confirmationPending = $state(false);
+
+	const canSubmit = $derived(
+		email.trim().length > 3 && password.length >= 6 && !submitting
+	);
+
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		if (!canSubmit) return;
+
+		submitting = true;
+		errorMessage = '';
+		try {
+			if (mode === 'sign-in') {
+				await authStore.signInWithPassword(email.trim(), password);
+			} else {
+				const { needsEmailConfirmation } = await authStore.signUp(email.trim(), password);
+				if (needsEmailConfirmation) {
+					confirmationPending = true;
+				}
+			}
+		} catch (error) {
+			errorMessage = error instanceof Error ? error.message : 'Something went wrong. Try again.';
+		} finally {
+			submitting = false;
+		}
+	}
+
+	function switchMode(next: Mode) {
+		mode = next;
+		errorMessage = '';
+		confirmationPending = false;
+	}
+</script>
+
+<svelte:head>
+	<title>Ginseng — Sign in</title>
+	<meta name="description" content="Sign in to your Ginseng liquidity workspace." />
+</svelte:head>
+
+<div class="auth-screen">
+	<section class="auth-hero" aria-hidden="true">
+		<svg class="hero-curve" viewBox="0 0 400 260" preserveAspectRatio="none">
+			<rect x="152" y="0" width="80" height="260" class="hero-band" />
+			<line x1="0" y1="64" x2="400" y2="64" class="hero-target-line" />
+			<path
+				d="M0,232 C 70,224 120,206 152,148 C 178,100 200,52 232,40 C 280,24 340,18 400,16"
+				class="hero-curve-line"
+			/>
+		</svg>
+		<div class="hero-copy">
+			<span class="hero-mark"><span></span><span></span><span></span></span>
+			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
+			<h1>A timing problem, modeled.</h1>
+			<p class="hero-body">
+				2,000 simulated cash paths show the dollar amount your next 30 days actually require
+				— and what closes the gap when today's cash can't.
+			</p>
+		</div>
+	</section>
+
+	<section class="auth-panel">
+		<div class="auth-card">
+			<div class="auth-mode" role="group" aria-label="Choose sign in or create account">
+				<button
+					type="button"
+					class:active={mode === 'sign-in'}
+					aria-pressed={mode === 'sign-in'}
+					onclick={() => switchMode('sign-in')}
+				>
+					Sign in
+				</button>
+				<button
+					type="button"
+					class:active={mode === 'sign-up'}
+					aria-pressed={mode === 'sign-up'}
+					onclick={() => switchMode('sign-up')}
+				>
+					Create account
+				</button>
+			</div>
+
+			{#if authStore.status === 'unconfigured'}
+				<p class="auth-status-message">
+					Supabase is not configured for this build. Set <code>PUBLIC_SUPABASE_URL</code> and
+					<code>PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> in <code>web/.env</code> to continue.
+				</p>
+			{:else if confirmationPending}
+				<div class="auth-confirm">
+					<p>Check <strong>{email}</strong> for a confirmation link.</p>
+					<span>Sign-in unlocks once the email is confirmed.</span>
+					<button type="button" class="text-button" onclick={() => switchMode('sign-in')}>
+						Back to sign in
+					</button>
+				</div>
+			{:else}
+				<form onsubmit={handleSubmit}>
+					<label>
+						<span>Email</span>
+						<input type="email" autocomplete="email" bind:value={email} required />
+					</label>
+					<label>
+						<span>Password</span>
+						<input
+							type="password"
+							autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+							minlength="6"
+							bind:value={password}
+							required
+						/>
+					</label>
+					{#if errorMessage}
+						<p class="auth-error" role="alert">{errorMessage}</p>
+					{/if}
+					<button type="submit" class="auth-submit" disabled={!canSubmit}>
+						{#if submitting}
+							{mode === 'sign-in' ? 'Signing in…' : 'Creating account…'}
+						{:else}
+							{mode === 'sign-in' ? 'Sign in' : 'Create account'}
+						{/if}
+					</button>
+				</form>
+			{/if}
+		</div>
+	</section>
+</div>
+
+<style>
+	.auth-screen {
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+		min-height: 100dvh;
+		background: var(--paper);
+	}
+
+	.auth-hero {
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		align-items: end;
+		padding: 2.5rem;
+		background: var(--cobalt-deep);
+	}
+
+	.hero-curve {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.hero-band { fill: rgb(255 255 255 / 6%); }
+	.hero-target-line { stroke: rgb(255 255 255 / 22%); stroke-width: 1; stroke-dasharray: 5 5; }
+	.hero-curve-line {
+		fill: none;
+		stroke: var(--cobalt-bright);
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		opacity: 0.85;
+	}
+
+	.hero-copy {
+		position: relative;
+		display: grid;
+		gap: 0.9rem;
+		max-width: 30rem;
+		color: var(--paper);
+	}
+
+	.hero-mark {
+		display: inline-flex;
+		align-items: end;
+		gap: 3px;
+		width: 1.7rem;
+		height: 1.7rem;
+		padding: 3px;
+		margin-bottom: 0.4rem;
+		background: var(--paper);
+	}
+
+	.hero-mark span { flex: 1; background: var(--cobalt); }
+	.hero-mark span:nth-child(1) { height: 40%; }
+	.hero-mark span:nth-child(2) { height: 72%; }
+	.hero-mark span:nth-child(3) { height: 100%; }
+
+	.hero-kicker {
+		margin: 0;
+		color: rgb(255 255 255 / 74%);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.hero-copy h1 {
+		margin: 0;
+		font-size: clamp(2rem, 3.6vw, 3rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		line-height: 1.05;
+		text-wrap: balance;
+	}
+
+	.hero-body {
+		margin: 0;
+		max-width: 38ch;
+		color: rgb(255 255 255 / 78%);
+		font-size: 0.92rem;
+		line-height: 1.5;
+		text-wrap: pretty;
+	}
+
+	.auth-panel {
+		display: grid;
+		place-items: center;
+		padding: 2rem;
+	}
+
+	.auth-card {
+		display: grid;
+		gap: 1.1rem;
+		width: 100%;
+		max-width: 22rem;
+	}
+
+	.auth-mode {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		border: 1px solid var(--control-border);
+	}
+
+	.auth-mode button {
+		min-height: 2.6rem;
+		background: var(--paper);
+		border: 0;
+		color: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.auth-mode button:not(:last-child) { border-right: 1px solid var(--control-border); }
+	.auth-mode button.active { background: var(--cobalt); color: var(--paper); }
+	.auth-mode button:hover:not(.active) { background: var(--paper-deep); }
+
+	form {
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	label {
+		display: grid;
+		gap: 0.35rem;
+		color: var(--ink-muted);
+		font-family: var(--font-mono);
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	input {
+		min-height: 2.65rem;
+		padding: 0 0.75rem;
+		background: var(--paper-deep);
+		border: 1px solid var(--control-border);
+		color: var(--ink);
+		font-family: var(--font-sans);
+		font-size: 0.95rem;
+	}
+
+	input:focus-visible {
+		outline: 2px solid var(--cobalt);
+		outline-offset: 1px;
+	}
+
+	.auth-error {
+		margin: 0;
+		padding: 0.6rem 0.7rem;
+		background: var(--negative-soft);
+		border-left: 3px solid var(--negative);
+		color: var(--negative);
+		font-size: 0.82rem;
+		line-height: 1.4;
+	}
+
+	.auth-submit {
+		min-height: 2.85rem;
+		margin-top: 0.15rem;
+		background: var(--cobalt);
+		border: 1px solid var(--cobalt);
+		color: var(--paper);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		cursor: pointer;
+		transition: background-color 160ms ease;
+	}
+
+	.auth-submit:hover:not(:disabled) { background: var(--cobalt-bright); }
+	.auth-submit:active:not(:disabled) { transform: scale(0.98); }
+
+	.auth-submit:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.auth-status-message {
+		margin: 0;
+		padding: 0.9rem;
+		background: var(--paper-soft);
+		border-left: 3px solid var(--warning);
+		color: var(--ink-soft);
+		font-size: 0.85rem;
+		line-height: 1.5;
+	}
+
+	.auth-status-message code {
+		font-family: var(--font-mono);
+		font-size: 0.82em;
+	}
+
+	.auth-confirm {
+		display: grid;
+		gap: 0.5rem;
+		padding: 1rem;
+		background: var(--paper-soft);
+		border-left: 3px solid var(--cobalt);
+	}
+
+	.auth-confirm p {
+		margin: 0;
+		color: var(--ink);
+		font-size: 0.9rem;
+	}
+
+	.auth-confirm span {
+		color: var(--ink-muted);
+		font-size: 0.8rem;
+		line-height: 1.4;
+	}
+
+	.text-button {
+		justify-self: start;
+		padding: 0;
+		background: none;
+		border: 0;
+		color: var(--cobalt);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.text-button:hover { color: var(--cobalt-deep); }
+
+	@media (max-width: 56rem) {
+		.auth-screen {
+			grid-template-columns: 1fr;
+			min-height: auto;
+		}
+
+		.auth-panel { order: 1; padding: 2.5rem 1.25rem 1.5rem; }
+
+		.auth-hero {
+			order: 2;
+			align-items: start;
+			min-height: 14rem;
+			padding: 1.75rem 1.25rem;
+		}
+
+		.hero-body { display: none; }
+	}
+
+	@media (max-width: 26rem) {
+		.auth-panel { padding: 2rem 1rem 1.5rem; }
+		.auth-hero { min-height: 11rem; padding: 1.5rem 1rem; }
+	}
+</style>
