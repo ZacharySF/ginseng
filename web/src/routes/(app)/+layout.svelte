@@ -36,7 +36,7 @@
 <div class="terminal-shell">
 	<header class="terminal-topbar">
 		<a class="terminal-brand" href={resolve('/')} aria-label="Ginseng workspace">
-			<span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+			<span class="brand-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
 			<span>Ginseng</span>
 		</a>
 		<div class="topbar-context">
@@ -142,22 +142,19 @@
 
 	.brand-mark {
 		display: inline-flex;
-		align-items: end;
-		gap: 2px;
-		width: 1.05rem;
-		height: 1.05rem;
+		align-items: center;
+		justify-content: center;
+		width: 1.4rem;
+		height: 1.4rem;
 		padding: 2px;
 		background: var(--paper);
 	}
 
-	.brand-mark span {
-		flex: 1;
-		background: var(--cobalt);
+	.brand-mark img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
-
-	.brand-mark span:nth-child(1) { height: 40%; }
-	.brand-mark span:nth-child(2) { height: 72%; }
-	.brand-mark span:nth-child(3) { height: 100%; }
 
 	.topbar-context,
 	.topbar-status,

@@ -45,7 +45,7 @@
 <div class="welcome">
 	<header class="welcome-nav">
 		<a class="nav-brand" href={resolve('/welcome')}>
-			<span class="nav-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+			<span class="nav-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
 			<span>Ginseng</span>
 		</a>
 		<nav class="nav-actions" aria-label="Account">
@@ -64,7 +64,7 @@
 			/>
 		</svg>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<span class="hero-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+			<span class="hero-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
 			<p class="hero-body">
@@ -127,7 +127,7 @@
 	</section>
 
 	<footer class="welcome-footer">
-		<span class="footer-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+		<span class="footer-mark" aria-hidden="true"><img src="/brand/ginseng-avatar.svg" alt="" /></span>
 		<span>Ginseng</span>
 	</footer>
 </div>
@@ -165,18 +165,19 @@
 
 	.nav-mark, .hero-mark, .footer-mark {
 		display: inline-flex;
-		align-items: end;
-		gap: 2px;
-		width: 1.05rem;
-		height: 1.05rem;
+		align-items: center;
+		justify-content: center;
+		width: 1.4rem;
+		height: 1.4rem;
 		padding: 2px;
 		background: var(--paper);
 	}
 
-	.nav-mark span, .hero-mark span, .footer-mark span { flex: 1; background: var(--cobalt); }
-	.nav-mark span:nth-child(1), .hero-mark span:nth-child(1), .footer-mark span:nth-child(1) { height: 40%; }
-	.nav-mark span:nth-child(2), .hero-mark span:nth-child(2), .footer-mark span:nth-child(2) { height: 72%; }
-	.nav-mark span:nth-child(3), .hero-mark span:nth-child(3), .footer-mark span:nth-child(3) { height: 100%; }
+	.nav-mark img, .hero-mark img, .footer-mark img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
 
 	.nav-actions {
 		display: flex;
@@ -458,8 +459,7 @@
 		text-transform: uppercase;
 	}
 
-	.footer-mark { background: var(--cobalt); }
-	.footer-mark span { background: var(--paper); }
+	.footer-mark { background: none; }
 
 	@media (max-width: 64rem) {
 		.how-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

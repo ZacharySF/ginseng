@@ -73,7 +73,7 @@
 		</svg>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-mark" href={resolve('/welcome')} aria-label="Ginseng home">
-				<span></span><span></span><span></span>
+				<img src="/brand/ginseng-avatar.svg" alt="" />
 			</a>
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
@@ -222,20 +222,17 @@
 
 	.hero-mark {
 		display: inline-flex;
-		align-items: end;
-		gap: 3px;
-		width: 1.7rem;
-		height: 1.7rem;
+		align-items: center;
+		justify-content: center;
+		width: 2.4rem;
+		height: 2.4rem;
 		padding: 3px;
 		margin-bottom: 0.4rem;
 		background: var(--paper);
 	}
 
+	.hero-mark img { width: 100%; height: 100%; object-fit: contain; }
 	.hero-mark:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
-	.hero-mark span { flex: 1; background: var(--cobalt); }
-	.hero-mark span:nth-child(1) { height: 40%; }
-	.hero-mark span:nth-child(2) { height: 72%; }
-	.hero-mark span:nth-child(3) { height: 100%; }
 
 	.hero-kicker {
 		margin: 0;
