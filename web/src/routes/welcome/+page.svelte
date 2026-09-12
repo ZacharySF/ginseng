@@ -44,6 +44,10 @@
 </svelte:head>
 
 <div class="welcome">
+	<div class="ambient-field" aria-hidden="true">
+		<canvas {@attach dotField()}></canvas>
+	</div>
+
 	<header class="welcome-nav">
 		<a class="nav-brand" href={resolve('/welcome')}>
 			<span class="nav-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
@@ -56,10 +60,10 @@
 	</header>
 
 	<section class="hero" {@attach parallax()}>
-		<canvas class="hero-field" {@attach dotField()}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
-			<h1>A timing problem, modeled.</h1>
+			<p class="hero-kicker">Liquidity workspace</p>
+			<h1>Ginseng</h1>
+			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
 				Variable-income earners can hold plenty of assets and still have a timing problem.
 				Ginseng runs 2,000 simulated cash paths to show the dollar amount your next 30 days
@@ -126,8 +130,19 @@
 
 <style>
 	.welcome {
-		background: var(--paper);
 		color: var(--ink);
+	}
+
+	.ambient-field {
+		position: fixed;
+		inset: 0;
+		background: var(--cobalt-deep);
+	}
+
+	.ambient-field canvas {
+		width: 100%;
+		height: 100%;
+		display: block;
 	}
 
 	.welcome-nav {
@@ -202,14 +217,7 @@
 		align-items: center;
 		min-height: calc(100dvh - 3.5rem);
 		padding: 3rem 1.75rem;
-		background: var(--cobalt-deep);
-	}
-
-	.hero-field {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
+		background: transparent;
 	}
 
 	.hero-copy {
@@ -245,6 +253,15 @@
 		font-weight: 800;
 		letter-spacing: -0.035em;
 		line-height: 0.98;
+		text-wrap: balance;
+	}
+
+	.hero-tagline {
+		margin: 0;
+		color: rgb(255 255 255 / 88%);
+		font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+		font-weight: 700;
+		letter-spacing: -0.015em;
 		text-wrap: balance;
 	}
 
@@ -298,9 +315,11 @@
 	.hero-secondary:hover { border-color: var(--paper); }
 
 	.how {
+		position: relative;
 		padding: 5rem 1.75rem;
 		max-width: 68rem;
 		margin: 0 auto;
+		background: var(--paper);
 	}
 
 	.section-kicker {
@@ -372,11 +391,12 @@
 	}
 
 	.frozen {
+		position: relative;
 		display: grid;
 		place-items: center;
 		gap: 1.2rem;
 		padding: 6rem 1.75rem;
-		background: var(--cobalt-ink);
+		background: rgb(0 0 0 / 55%);
 		text-align: center;
 	}
 
@@ -401,10 +421,12 @@
 	}
 
 	.final-cta {
+		position: relative;
 		display: grid;
 		place-items: center;
 		gap: 1.1rem;
 		padding: 6rem 1.75rem;
+		background: var(--paper);
 		text-align: center;
 	}
 
@@ -422,12 +444,14 @@
 	}
 
 	.welcome-footer {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 0.55rem;
 		padding: 1.6rem;
 		border-top: 1px solid var(--rule);
+		background: var(--paper);
 		color: var(--ink-muted);
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
