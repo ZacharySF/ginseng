@@ -212,10 +212,9 @@
 
 	.hero-copy h1 {
 		margin: 0;
-		font-family: var(--font-serif);
-		font-size: clamp(2.1rem, 3.8vw, 3.2rem);
-		font-weight: 700;
-		letter-spacing: -0.01em;
+		font-size: clamp(2rem, 3.6vw, 3rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
 		line-height: 1.05;
 		text-wrap: balance;
 	}

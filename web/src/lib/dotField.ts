@@ -148,6 +148,16 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			}
 		}
 
+		// Listen on the parent section, not the canvas itself: `.hero-copy`
+		// (headline, body, buttons) paints on top of the canvas and would
+		// otherwise steal pointermove/pointerleave the instant the cursor
+		// crosses onto it, snapping the focus back to center mid-hover.
+		// pointermove bubbles up from any descendant; pointerleave only
+		// fires once the pointer exits the whole section, not on
+		// parent-to-child handoffs, so this tracks the cursor everywhere
+		// inside the panel and only resets on a true exit.
+		const listenTarget = canvas.parentElement ?? canvas;
+
 		function handleMove(event: PointerEvent) {
 			const rect = canvas.getBoundingClientRect();
 			pointer.x = event.clientX - rect.left;
@@ -165,8 +175,8 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 			drawStatic();
 		} else {
 			raf = requestAnimationFrame(frame);
-			canvas.addEventListener('pointermove', handleMove);
-			canvas.addEventListener('pointerleave', handleLeave);
+			listenTarget.addEventListener('pointermove', handleMove);
+			listenTarget.addEventListener('pointerleave', handleLeave);
 		}
 
 		const resizeObserver = new ResizeObserver(() => {
@@ -178,8 +188,8 @@ export function dotField(options: DotFieldOptions = {}): Attachment<HTMLCanvasEl
 		return () => {
 			cancelAnimationFrame(raf);
 			resizeObserver.disconnect();
-			canvas.removeEventListener('pointermove', handleMove);
-			canvas.removeEventListener('pointerleave', handleLeave);
+			listenTarget.removeEventListener('pointermove', handleMove);
+			listenTarget.removeEventListener('pointerleave', handleLeave);
 		};
 	};
 }

@@ -148,10 +148,10 @@
 		align-items: center;
 		gap: 0.55rem;
 		color: var(--paper);
-		font-family: var(--font-serif);
-		font-size: 1.15rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
+		font-family: var(--font-sans);
+		font-size: 1rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 		text-decoration: none;
 	}
 
@@ -241,11 +241,10 @@
 
 	.hero-copy h1 {
 		margin: 0;
-		font-family: var(--font-serif);
-		font-size: clamp(2.4rem, 5.6vw, 4.4rem);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		line-height: 1.04;
+		font-size: clamp(2.6rem, 6vw, 4.8rem);
+		font-weight: 800;
+		letter-spacing: -0.035em;
+		line-height: 0.98;
 		text-wrap: balance;
 	}
 
@@ -317,10 +316,9 @@
 	.how h2 {
 		margin: 0 0 2.5rem;
 		max-width: 30ch;
-		font-family: var(--font-serif);
 		font-size: clamp(1.7rem, 3vw, 2.4rem);
-		font-weight: 700;
-		letter-spacing: -0.005em;
+		font-weight: 800;
+		letter-spacing: -0.025em;
 		text-wrap: balance;
 	}
 
@@ -386,11 +384,10 @@
 		margin: 0;
 		max-width: 24ch;
 		color: var(--paper);
-		font-family: var(--font-serif);
 		font-size: clamp(1.9rem, 4vw, 3rem);
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		line-height: 1.1;
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		line-height: 1.08;
 		text-wrap: balance;
 	}
 
@@ -413,10 +410,9 @@
 
 	.final-cta h2 {
 		margin: 0;
-		font-family: var(--font-serif);
 		font-size: clamp(1.8rem, 3.4vw, 2.6rem);
-		font-weight: 700;
-		letter-spacing: -0.01em;
+		font-weight: 800;
+		letter-spacing: -0.03em;
 	}
 
 	.final-note {

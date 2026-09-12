@@ -6,8 +6,6 @@
 	// whole app silently fell back to a generic system sans.
 	// Source: https://fontsource.org/docs/getting-started/install#3-import-the-font
 	import '@fontsource-variable/archivo-narrow/wght.css';
-	import '@fontsource/playfair-display/700.css';
-	import '@fontsource/playfair-display/700-italic.css';
 	import '../app.css';
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';

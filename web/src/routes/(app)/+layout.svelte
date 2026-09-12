@@ -133,10 +133,10 @@
 		gap: 0.55rem;
 		flex: none;
 		color: var(--paper);
-		font-family: var(--font-serif);
-		font-size: 1.1rem;
-		font-weight: 700;
-		letter-spacing: -0.01em;
+		font-family: var(--font-sans);
+		font-size: 1rem;
+		font-weight: 800;
+		letter-spacing: -0.04em;
 		text-decoration: none;
 	}
 
