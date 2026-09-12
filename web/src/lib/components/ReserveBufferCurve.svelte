@@ -79,7 +79,7 @@
 				<text x={layout.plotRight} y={HEIGHT - 4} text-anchor="end" class="measure-label">Operating buffer</text>
 			</svg>
 		</div>
-		<figcaption>Every point uses this scenario’s same modeled cash paths and coverage target.</figcaption>
+		<figcaption>Every point uses this scenario's same modeled cash paths and coverage target.</figcaption>
 	</figure>
 {/if}
 

@@ -25,7 +25,7 @@
 		{
 			icon: 'reserve',
 			title: 'See the exact reserve',
-			body: 'A running-minimum liquidity requirement at your coverage target — not a guess, a number the model can defend.'
+			body: 'A running-minimum liquidity requirement at your coverage target, computed straight from the simulated paths.'
 		},
 		{
 			icon: 'funding',
