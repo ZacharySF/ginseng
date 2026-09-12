@@ -170,7 +170,7 @@
 		font-family: var(--font-sans);
 		font-size: 1.25rem;
 		font-weight: 800;
-		letter-spacing: 0.12em;
+		letter-spacing: 0.16em;
 		line-height: 1;
 		text-decoration: none;
 	}
