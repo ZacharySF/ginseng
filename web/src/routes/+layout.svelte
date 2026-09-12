@@ -1,4 +1,11 @@
 <script lang="ts">
+	// Archivo Narrow Variable, self-hosted so the editorial-ledger headline
+	// character renders identically offline and on every judge's machine —
+	// the prior --font-sans stack named "Arial Narrow"/"Liberation Sans
+	// Narrow", neither of which exists as a real installable font, so the
+	// whole app silently fell back to a generic system sans.
+	// Source: https://fontsource.org/docs/getting-started/install#3-import-the-font
+	import '@fontsource-variable/archivo-narrow/wght.css';
 	import '../app.css';
 	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';

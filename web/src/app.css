@@ -4,7 +4,7 @@
 :root {
 	color-scheme: light;
 
-	--font-sans: "Arial Narrow", "Liberation Sans Narrow", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Archivo Narrow Variable", "Archivo Narrow", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 	--font-mono: "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
 
 	--paper: #f7f7f2;
