@@ -37,6 +37,8 @@ SCENARIO_BODY_FIELDS = {
     "recommendation",
     "sensitivity",
     "sensitivity_verdict",
+    "wrong_way_risk",
+    "optimal_plan",
 }
 
 REPAIR_SCHEDULE = [

@@ -9,7 +9,7 @@ this module hardcodes a balance.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -199,6 +199,7 @@ class FinancialState:
     operating_buffer: float
     coverage_target: float
     forecast_horizon: int
+    portfolio_daily_returns: tuple[tuple[date, float], ...] = field(default_factory=tuple)
 
     # ---- Funding classes (spec section 8): always derived ----
 

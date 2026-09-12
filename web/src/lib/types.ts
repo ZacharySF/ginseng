@@ -87,6 +87,26 @@ export interface SensitivityRow {
 	is_estimated: boolean;
 }
 
+export interface WrongWayRisk {
+	fraction_forced_to_sell: number;
+	portfolio_return_all_paths: number;
+	portfolio_return_when_forced: number | null;
+	wrong_way_risk_present: boolean;
+}
+
+export interface OptimalPlan {
+	credit_draw: number;
+	liquidation_amount: number;
+	deferral_fraction: number;
+	cvar_cost: number;
+	var_cost: number;
+	expected_cost: number;
+	cash_shortfall_probability: number;
+	implied_liquidity_price: number | null;
+	cost_is_path_dependent: boolean;
+	solver_status: string;
+}
+
 export interface ScenarioResponse {
 	as_of: string;
 	seed: number;
@@ -111,6 +131,8 @@ export interface ScenarioResponse {
 	recommendation: Recommendation | null;
 	sensitivity: SensitivityRow[];
 	sensitivity_verdict: string | null;
+	wrong_way_risk: WrongWayRisk | null;
+	optimal_plan: OptimalPlan | null;
 }
 
 

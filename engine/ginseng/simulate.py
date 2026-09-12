@@ -229,6 +229,25 @@ def known_flows(
     return np.cumsum(income_daily), np.cumsum(obligation_daily)
 
 
+def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray:
+    """Per-path, per-day resampled discretionary spending, shape (n_paths, horizon_days).
+    Used by funding.py and optimizer.py."""
+    disc = _joint_history(state)["discretionary_spending"].to_numpy()
+    return disc[bundle.index_matrix]
+
+
+def portfolio_value_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray | None:
+    """Per-path portfolio market value at each forecast day, shape (n_paths, horizon_days).
+    Returns None when state.portfolio_daily_returns is empty."""
+    if not state.portfolio_daily_returns:
+        return None
+    joint = _joint_history(state)
+    returns_map = {d: r for d, r in state.portfolio_daily_returns}
+    mkt = np.array([returns_map.get(ts.date(), 0.0) for ts in joint.index])
+    daily = mkt[bundle.index_matrix]  # (n_paths, horizon_days)
+    return state.marketable_backup_capital * np.cumprod(1.0 + daily, axis=1)
+
+
 def cash_paths(
     state: FinancialState, bundle: DrawBundle, obligations: Sequence[Obligation] = ()
 ) -> np.ndarray:

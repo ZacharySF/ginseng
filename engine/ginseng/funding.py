@@ -21,7 +21,12 @@ from typing import Sequence
 import numpy as np
 
 from ginseng.metrics import severity_metrics
-from ginseng.simulate import DrawBundle, cash_paths
+from ginseng.simulate import (
+    DrawBundle,
+    cash_paths,
+    discretionary_resampled_paths as _discretionary_resampled,
+    portfolio_value_paths as _portfolio_value_paths,
+)
 from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot, TransactionType
 
 
@@ -290,24 +295,6 @@ def _liquidate(
 # --------------------------------------------------------------------------
 
 
-def _discretionary_history_series(state: FinancialState) -> np.ndarray:
-    """The historical discretionary-spending series over the exact window
-    `simulate.cash_paths` resamples (spec 15), built from
-    `FinancialState`'s public API so the per-path, per-day discretionary
-    values it uses internally can be reproduced here for the
-    protective-spending and hybrid-deferral scenarios."""
-    start = min(t.txn_date for t in state.transactions)
-    end = state.as_of
-    return state.daily_series(TransactionType.EXPENSE_DISCRETIONARY_VARIABLE, start, end).to_numpy()
-
-
-def _discretionary_resampled(state: FinancialState, bundle: DrawBundle) -> np.ndarray:
-    """Per-path, per-day resampled discretionary spending, shape
-    `(n_paths, horizon_days)`, indexed by `bundle.index_matrix` exactly as
-    `simulate.cash_paths` indexes its own discretionary column."""
-    series = _discretionary_history_series(state)
-    return series[bundle.index_matrix]
-
 
 def _avg_daily_discretionary_spend(state: FinancialState) -> float:
     """Historical average daily discretionary spending, used only to size
@@ -517,10 +504,18 @@ def evaluate_plan(
     if spec.credit_draw > 0 and credit_account is not None:
         adjustment[0] += spec.credit_draw
         adjustment[credit_due_day - 1] -= credit_payment_due_amount
-    if spec.liquidation_target > 0:
-        adjustment[settlement_day - 1] += investment_sold
 
     per_path_adjustment = np.broadcast_to(adjustment, (n_paths, horizon_days)).copy()
+
+    if spec.liquidation_target > 0:
+        pv_matrix = _portfolio_value_paths(state, eval_bundle)
+        settle_col = min(settlement_day - 1, eval_bundle.horizon_days - 1)
+        if pv_matrix is not None:
+            scale = pv_matrix[:, settle_col] / max(state.marketable_backup_capital, 1e-9)
+            per_path_proceeds = investment_sold * np.clip(scale, 0.0, None)
+            per_path_adjustment[:, settle_col] += per_path_proceeds
+        else:
+            per_path_adjustment[:, settle_col] += investment_sold
 
     deferred_spending = 0.0
     if spec.discretionary_reduction_fraction > 0:

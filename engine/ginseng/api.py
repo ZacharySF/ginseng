@@ -19,6 +19,7 @@ from ginseng.generate import DEFAULT_SEED, generate_persona
 from ginseng.metrics import compute_scenario_metrics
 from ginseng.simulate import draw_bundle
 from ginseng.funding import FundingConfig, build_candidates, evaluate_plan
+from ginseng.optimizer import optimize_funding
 from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.state import FinancialState, Obligation
 from ginseng import uncertainty
@@ -41,6 +42,9 @@ class ScenarioRequest(BaseModel):
     paths: int = 2000
     mean_block_length: int | None = None
     obligations: list[ObligationRequest] = Field(default_factory=list)
+    overdraft_apr: float = 0.2999
+    buffer_tolerance_dollar_days: float | None = None
+    capital_gains_rate: float = 0.15
 
 
 class SeverityMetrics(BaseModel):
@@ -98,6 +102,8 @@ class ScenarioResponse(BaseModel):
     recommendation: dict[str, Any] | None = None
     sensitivity: list[dict[str, Any]] = Field(default_factory=list)
     sensitivity_verdict: str | None = None
+    wrong_way_risk: dict[str, Any] | None = None
+    optimal_plan: dict[str, Any] | None = None
 
 
 class HealthResponse(BaseModel):
@@ -181,9 +187,19 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         results = [evaluate_plan(persona, bundle, obligations, spec) for spec in specs]
         recommendation = recommend(results, FundingPolicy())
         plans, recommendation_dict = to_contract(results, recommendation)
+        optimal = optimize_funding(
+            persona, bundle, obligations,
+            coverage_target=request.coverage_target,
+            operating_buffer=request.operating_buffer,
+            overdraft_apr=request.overdraft_apr,
+            buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
+            capital_gains_rate=request.capital_gains_rate,
+        )
+        optimal_plan_dict = vars(optimal) if optimal is not None else None
     else:
         plans = []
         recommendation_dict = None
+        optimal_plan_dict = None
 
     return ScenarioResponse(
         as_of=persona.as_of.isoformat(),
@@ -211,4 +227,6 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         recommendation=recommendation_dict,
         sensitivity=[vars(row) for row in rows],
         sensitivity_verdict=uncertainty.stability_verdict(rows),
+        wrong_way_risk=computed.wrong_way_risk,
+        optimal_plan=optimal_plan_dict,
     )

@@ -93,6 +93,12 @@ _DISCRETIONARY_SHAPE = 2.0
 _SPEND_MOMENTUM = 0.75
 _SPEND_MOMENTUM_SD = 0.18
 
+# Market returns: GBM with mild regime-driven drift so income-market
+# correlation emerges naturally from the joint bootstrap (spec 8.3)
+_MARKET_MU_BUSY = 0.10 / 365       # annualised ~10% in busy regime
+_MARKET_MU_DRY = -0.05 / 365       # mild drag in dry spells
+_MARKET_SIGMA = 0.16 / np.sqrt(365)  # annualised ~16% vol
+
 
 def _next_occurrence(as_of: date, day_of_month: int) -> int:
     """Days from `as_of` (inclusive of `as_of` itself, offset 0) until the
@@ -362,6 +368,13 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
         ),
     )
 
+    # Market returns: drawn at the end so the existing random stream
+    # (and thus all transaction amounts, acceptance conditions, and block
+    # length estimate) are unaffected by this addition.
+    market_drift = np.where(busy, _MARKET_MU_BUSY, _MARKET_MU_DRY)
+    market_shocks = rng.standard_normal(HISTORY_DAYS) * _MARKET_SIGMA
+    market_returns = market_drift + market_shocks  # (HISTORY_DAYS,)
+
     return FinancialState(
         as_of=AS_OF,
         transactions=tuple(transactions),
@@ -373,6 +386,9 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
         operating_buffer=OPERATING_BUFFER,
         coverage_target=COVERAGE_TARGET,
         forecast_horizon=FORECAST_HORIZON,
+        portfolio_daily_returns=tuple(
+            (d, float(r)) for d, r in zip(dates, market_returns)
+        ),
     )
 
 
