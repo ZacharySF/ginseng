@@ -1,0 +1,33 @@
+# AI-facing operating kit — never committed.
+# HACKATHON.md is the source of truth for this project's decisions, so it is the
+# first entry here: it is a working file for the agent stack, not a deliverable.
+HACKATHON.md
+KIT.md
+ORCHESTRATE.md
+PROMPTS.md
+WORKFLOW.md
+
+# Agent context and rule files, in any directory.
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursor/
+.claude/
+.omp/
+.github/copilot-instructions.md
+
+# Event reference material, including the handbook PDF.
+References/
+
+# Local agent scratch space.
+local/
+*.local.md
+
+# Runtime artifacts — never committed.
+.venv/
+__pycache__/
+*.pyc
+web/node_modules/
+web/.svelte-kit/
+

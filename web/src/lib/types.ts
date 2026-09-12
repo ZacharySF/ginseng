@@ -1,0 +1,133 @@
+// Types for the frozen POST /scenario contract (Ginseng spec section 20-34).
+// Field names are snake_case and must match the engine's JSON exactly —
+// the frontend never renames, derives, or computes a financial number.
+
+export interface Obligation {
+	id: string;
+	label: string;
+	amount: number;
+	due_in_days: number;
+}
+
+export interface ScenarioRequest {
+	seed: number;
+	horizon_days: number;
+	coverage_target: number;
+	operating_buffer: number;
+	paths: number;
+	mean_block_length: number | null;
+	obligations: Obligation[];
+}
+
+export interface Severity {
+	cash_shortfall_probability: number;
+	avg_cash_deficit_when_short: number;
+	dollar_days_below_buffer: number;
+}
+export interface EstimateBand {
+	low: number;
+	high: number;
+}
+
+export interface CoverageCurvePoint {
+	funding: number;
+	coverage: number;
+}
+
+export interface CashPaths {
+	days: number[];
+	p10: number[];
+	p50: number[];
+	p90: number[];
+	known_income: number[];
+	known_obligations: number[];
+}
+
+export interface ShortfallDistribution {
+	bin_edges: number[];
+	counts: number[];
+}
+
+// Funding plans (spec sections 38-45, 60), serialized by
+// `ginseng.policy.to_contract`. Field names match the engine's JSON exactly.
+export interface Plan {
+	id: string;
+	label: string;
+	cash_shortfall_probability: number;
+	avg_cash_deficit_when_short: number;
+	new_debt: number;
+	interest_exposure: number;
+	investment_sold: number;
+	realized_gain_loss: number;
+	deferred_spending: number;
+	feasible: boolean;
+	infeasible_reason: string | null;
+	dominated: boolean;
+	dominated_by: string | null;
+	recommended: boolean;
+	explanation: string;
+}
+
+export interface Recommendation {
+	plan_id: string;
+	explanation: string;
+}
+
+// One row of the spec section 18 persistence-sensitivity table.
+export interface SensitivityRow {
+	block_label: string;
+	mean_block_length: number;
+	required_liquidity_reserve: number;
+	is_estimated: boolean;
+}
+
+export interface ScenarioResponse {
+	as_of: string;
+	seed: number;
+	bootstrap_draw_id: string;
+	mean_block_length: number;
+	immediate_funding: number;
+	marketable_backup_capital: number;
+	restricted_capital: number;
+	coverage_target: number;
+	operating_buffer: number;
+	required_liquidity_reserve: number;
+	funding_gap: number;
+	coverage_at_current_funding: number;
+	severity: Severity;
+	estimate_band: EstimateBand | null;
+	coverage_curve: CoverageCurvePoint[];
+	cash_paths: CashPaths;
+	shortfall_distribution: ShortfallDistribution;
+	plans: Plan[];
+	recommendation: Recommendation | null;
+	sensitivity: SensitivityRow[];
+	sensitivity_verdict: string | null;
+}
+
+export interface ScenarioResponse {
+	as_of: string;
+	seed: number;
+	bootstrap_draw_id: string;
+	mean_block_length: number;
+	immediate_funding: number;
+	marketable_backup_capital: number;
+	restricted_capital: number;
+	coverage_target: number;
+	operating_buffer: number;
+	required_liquidity_reserve: number;
+	funding_gap: number;
+	coverage_at_current_funding: number;
+	severity: Severity;
+	estimate_band: EstimateBand | null;
+	coverage_curve: CoverageCurvePoint[];
+	cash_paths: CashPaths;
+	shortfall_distribution: ShortfallDistribution;
+	plans: Plan[];
+	recommendation: Recommendation | null;
+}
+
+export interface HealthResponse {
+	status: string;
+	seed_default: number;
+}
