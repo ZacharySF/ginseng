@@ -1,9 +1,14 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { authStore } from '$lib/auth.svelte';
+	import { parallax } from '$lib/parallax';
 
 	type Mode = 'sign-in' | 'sign-up';
 
-	let mode = $state<Mode>('sign-in');
+	let mode = $state<Mode>(page.url.searchParams.get('mode') === 'sign-up' ? 'sign-up' : 'sign-in');
+	let firstName = $state('');
+	let lastName = $state('');
 	let email = $state('');
 	let password = $state('');
 	let submitting = $state(false);
@@ -11,7 +16,10 @@
 	let confirmationPending = $state(false);
 
 	const canSubmit = $derived(
-		email.trim().length > 3 && password.length >= 6 && !submitting
+		email.trim().length > 3 &&
+			password.length >= 6 &&
+			(mode === 'sign-in' || (firstName.trim().length > 0 && lastName.trim().length > 0)) &&
+			!submitting
 	);
 
 	async function handleSubmit(event: SubmitEvent) {
@@ -24,7 +32,12 @@
 			if (mode === 'sign-in') {
 				await authStore.signInWithPassword(email.trim(), password);
 			} else {
-				const { needsEmailConfirmation } = await authStore.signUp(email.trim(), password);
+				const { needsEmailConfirmation } = await authStore.signUp(
+					email.trim(),
+					password,
+					firstName.trim(),
+					lastName.trim()
+				);
 				if (needsEmailConfirmation) {
 					confirmationPending = true;
 				}
@@ -49,8 +62,8 @@
 </svelte:head>
 
 <div class="auth-screen">
-	<section class="auth-hero" aria-hidden="true">
-		<svg class="hero-curve" viewBox="0 0 400 260" preserveAspectRatio="none">
+	<section class="auth-hero" {@attach parallax()}>
+		<svg class="hero-curve" data-parallax-strength="10 6" viewBox="0 0 400 260" preserveAspectRatio="none" aria-hidden="true">
 			<rect x="152" y="0" width="80" height="260" class="hero-band" />
 			<line x1="0" y1="64" x2="400" y2="64" class="hero-target-line" />
 			<path
@@ -58,8 +71,10 @@
 				class="hero-curve-line"
 			/>
 		</svg>
-		<div class="hero-copy">
-			<span class="hero-mark"><span></span><span></span><span></span></span>
+		<div class="hero-copy" data-parallax-strength="22 14">
+			<a class="hero-mark" href={resolve('/welcome')} aria-label="Ginseng home">
+				<span></span><span></span><span></span>
+			</a>
 			<p class="hero-kicker">Ginseng · Liquidity workspace</p>
 			<h1>A timing problem, modeled.</h1>
 			<p class="hero-body">
@@ -105,6 +120,18 @@
 				</div>
 			{:else}
 				<form onsubmit={handleSubmit}>
+					{#if mode === 'sign-up'}
+						<div class="name-row">
+							<label>
+								<span>First name</span>
+								<input type="text" autocomplete="given-name" bind:value={firstName} required />
+							</label>
+							<label>
+								<span>Last name</span>
+								<input type="text" autocomplete="family-name" bind:value={lastName} required />
+							</label>
+						</div>
+					{/if}
 					<label>
 						<span>Email</span>
 						<input type="email" autocomplete="email" bind:value={email} required />
@@ -152,11 +179,17 @@
 		background: var(--cobalt-deep);
 	}
 
+	/* Background layer: least movement. Overscanned beyond the panel edge
+	   so parallax translation never reveals a gap at the boundary. */
 	.hero-curve {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
+		inset: -20px;
+		width: calc(100% + 40px);
+		height: calc(100% + 40px);
+		transform: translate3d(0, 0, 0);
+		transition: transform 340ms cubic-bezier(0.23, 1, 0.32, 1);
+		will-change: transform;
+		pointer-events: none;
 	}
 
 	.hero-band { fill: rgb(255 255 255 / 6%); }
@@ -169,12 +202,22 @@
 		opacity: 0.85;
 	}
 
+	/* Foreground layer: most movement — the copy and mark are what the eye
+	   reads first, so they lead the parallax. Transform only; the panel's
+	   own size (set by .auth-screen's grid-template-columns) is untouched. */
 	.hero-copy {
 		position: relative;
 		display: grid;
 		gap: 0.9rem;
 		max-width: 30rem;
 		color: var(--paper);
+		transform: translate3d(0, 0, 0);
+		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+		will-change: transform;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-curve, .hero-copy { transition: none; }
 	}
 
 	.hero-mark {
@@ -188,6 +231,7 @@
 		background: var(--paper);
 	}
 
+	.hero-mark:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 	.hero-mark span { flex: 1; background: var(--cobalt); }
 	.hero-mark span:nth-child(1) { height: 40%; }
 	.hero-mark span:nth-child(2) { height: 72%; }
@@ -260,6 +304,12 @@
 	form {
 		display: grid;
 		gap: 0.9rem;
+	}
+
+	.name-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.7rem;
 	}
 
 	label {
@@ -393,5 +443,6 @@
 	@media (max-width: 26rem) {
 		.auth-panel { padding: 2rem 1rem 1.5rem; }
 		.auth-hero { min-height: 11rem; padding: 1.5rem 1rem; }
+		.name-row { grid-template-columns: 1fr; }
 	}
 </style>

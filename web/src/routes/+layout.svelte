@@ -20,23 +20,27 @@
 	let { children }: Props = $props();
 
 	const LOGIN_PATH = '/login';
+	const WELCOME_PATH = '/welcome';
+	const PUBLIC_PATHS = [LOGIN_PATH, WELCOME_PATH];
 
-	// Every route below `/` needs a signed-in session except `/login` itself;
-	// `unconfigured` (no Supabase env at all, e.g. local dev without
-	// `web/.env`) bypasses the gate so the offline cash-model demo keeps
-	// working without an account.
+	// Every route below `/` needs a signed-in session except the public
+	// marketing/auth pair; `unconfigured` (no Supabase env at all, e.g.
+	// local dev without `web/.env`) bypasses the gate so the offline
+	// cash-model demo keeps working without an account. Signed-out
+	// visitors land on the landing page, not straight on the form — the
+	// landing page's own CTAs link into `/login`.
 	$effect(() => {
-		if (authStore.status === 'signed-out' && page.url.pathname !== LOGIN_PATH) {
-			goto(resolve('/login'), { replaceState: true });
-		} else if (authStore.status === 'signed-in' && page.url.pathname === LOGIN_PATH) {
+		if (authStore.status === 'signed-out' && !PUBLIC_PATHS.includes(page.url.pathname)) {
+			goto(resolve('/welcome'), { replaceState: true });
+		} else if (authStore.status === 'signed-in' && PUBLIC_PATHS.includes(page.url.pathname)) {
 			goto(resolve('/'), { replaceState: true });
 		}
 	});
 
 	const holdForGate = $derived(
 		authStore.status === 'loading' ||
-			(authStore.status === 'signed-out' && page.url.pathname !== LOGIN_PATH) ||
-			(authStore.status === 'signed-in' && page.url.pathname === LOGIN_PATH)
+			(authStore.status === 'signed-out' && !PUBLIC_PATHS.includes(page.url.pathname)) ||
+			(authStore.status === 'signed-in' && PUBLIC_PATHS.includes(page.url.pathname))
 	);
 </script>
 

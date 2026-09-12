@@ -48,7 +48,7 @@
 			<p class="topbar-status"><i aria-hidden="true"></i>Model ready</p>
 			{#if authStore.status === 'signed-in' && authStore.user}
 				<div class="account-chip">
-					<span class="account-email">{authStore.user.email}</span>
+					<span class="account-email">{authStore.displayName ?? authStore.user.email}</span>
 					<button type="button" onclick={() => authStore.signOut()}>Sign out</button>
 				</div>
 			{/if}
