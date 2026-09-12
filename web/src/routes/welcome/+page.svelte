@@ -49,10 +49,7 @@
 	</div>
 
 	<header class="welcome-nav">
-		<a class="nav-brand" href={resolve('/welcome')}>
-			<span class="nav-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
-			<span>Ginseng</span>
-		</a>
+		<a class="nav-brand" href={resolve('/welcome')}>Ginseng</a>
 		<nav class="nav-actions" aria-label="Account">
 			<a href={resolve('/login')}>Sign in</a>
 			<a class="nav-cta" href={resolve('/login?mode=sign-up')}>Create account</a>
@@ -152,9 +149,9 @@
 		position: sticky;
 		z-index: 5;
 		top: 0;
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		justify-content: space-between;
 		min-height: 3.5rem;
 		padding: 0 1.5rem;
 		background: var(--cobalt-deep);
@@ -162,9 +159,10 @@
 	}
 
 	.nav-brand {
+		grid-column: 2;
+		justify-self: center;
 		display: inline-flex;
 		align-items: center;
-		gap: 0.55rem;
 		color: var(--paper);
 		font-family: var(--font-sans);
 		font-size: 1rem;
@@ -173,21 +171,10 @@
 		text-decoration: none;
 	}
 
-	.nav-mark {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.4rem;
-		height: 1.4rem;
-	}
-
-	.nav-mark img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-	}
 
 	.nav-actions {
+		grid-column: 3;
+		justify-self: end;
 		display: flex;
 		align-items: center;
 		gap: 1rem;
@@ -499,10 +486,14 @@
 
 	@media (max-width: 48rem) {
 		.welcome-nav { padding: 0 1rem; }
+
 		.hero { padding: 2.5rem 1.25rem; align-items: start; min-height: auto; padding-top: 3.5rem; padding-bottom: 3.5rem; }
 		.how { padding: 3.5rem 1.25rem; }
 		.how-grid { grid-template-columns: 1fr; }
 		.frozen { padding: 4rem 1.25rem; }
 		.final-cta { padding: 4rem 1.25rem; }
+	}
+	@media (max-width: 22rem) {
+		.nav-actions > a:not(.nav-cta) { display: none; }
 	}
 </style>
