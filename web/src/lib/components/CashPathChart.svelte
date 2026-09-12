@@ -15,7 +15,6 @@
 
 	let { cashPaths, operatingBuffer, obligations }: Props = $props();
 
-	const CANONICAL_SHOCK_ID = 'repair';
 
 	const WIDTH = 720;
 	const HEIGHT = 340;
@@ -53,8 +52,10 @@
 		const bandPath = `M${top.join(' L')} L${bottom.join(' L')} Z`;
 		const medianPoints = days.map((day, i) => `${xAt(day)},${yAt(cashPaths.p50[i])}`).join(' ');
 
-		const shock = obligations.find((o) => o.id === CANONICAL_SHOCK_ID) ?? null;
-		const shockX = shock ? xAt(shock.due_in_days) : null;
+		const shockMarkers = obligations.map((obligation) => ({
+			...obligation,
+			x: xAt(obligation.due_in_days)
+		}));
 
 		const flowTop = MARGIN.top + bandHeight + FLOW_STRIP_GAP;
 		const flowBaseline = flowTop + FLOW_STRIP_HEIGHT / 2;
@@ -78,8 +79,7 @@
 			medianPoints,
 			bufferY: yAt(operatingBuffer),
 			zeroY: yAt(0),
-			shockObligation: shock,
-			shockX,
+			shockMarkers,
 			flowTop,
 			flowBaseline,
 			incomeMarks,
@@ -96,10 +96,9 @@
 	<p class="empty-state">No simulated cash paths for this scenario yet.</p>
 {:else}
 	<figure class="cash-path-chart">
-		<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Simulated future cash paths">
-			<!-- p10-p90 uncertainty band -->
+		<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Simulated future cash-position range">
+			<!-- Per-day p10-p90 cash-position range and median. -->
 			<path d={layout.bandPath} class="band" />
-			<!-- median path -->
 			<polyline points={layout.medianPoints} class="median-line" />
 
 			<!-- operating buffer -->
@@ -126,22 +125,22 @@
 				Zero-cash floor
 			</text>
 
-			<!-- shock marker -->
-			{#if layout.shockObligation && layout.shockX !== null}
+			<!-- Inserted obligation markers -->
+			{#each layout.shockMarkers as shock (shock.id)}
 				<line
-					x1={layout.shockX}
-					x2={layout.shockX}
+					x1={shock.x}
+					x2={shock.x}
 					y1={MARGIN.top}
 					y2={layout.flowBaseline}
 					class="shock-line"
 				/>
 				<g class="shock-marker">
-					<circle cx={layout.shockX} cy={MARGIN.top + 10} r="4" class="shock-dot" />
-					<text x={layout.shockX} y={MARGIN.top + 4} class="shock-label" text-anchor="middle">
-						{layout.shockObligation.label} — {formatCurrency(layout.shockObligation.amount)}
+					<circle cx={shock.x} cy={MARGIN.top + 10} r="4" class="shock-dot" />
+					<text x={shock.x} y={MARGIN.top + 4} class="shock-label" text-anchor="middle">
+						{shock.label} — {formatCurrency(shock.amount)}
 					</text>
 				</g>
-			{/if}
+			{/each}
 
 			<!-- known income / obligation flow strip -->
 			<line
@@ -186,14 +185,14 @@
 			</text>
 		</svg>
 		<figcaption class="legend">
-			<span class="legend-item"><span class="swatch swatch-band"></span>P10–P90 range</span>
-			<span class="legend-item"><span class="swatch swatch-median"></span>Median path</span>
+			<span class="legend-item"><span class="swatch swatch-band"></span>P10–P90 cash-position range</span>
+			<span class="legend-item"><span class="swatch swatch-median"></span>Median cash position</span>
 			<span class="legend-item"><span class="swatch swatch-buffer"></span>Operating buffer</span>
 			<span class="legend-item"><span class="swatch swatch-zero"></span>Zero-cash floor</span>
 			<span class="legend-item"><span class="swatch swatch-income"></span>Known income</span>
 			<span class="legend-item"><span class="swatch swatch-obligation"></span>Known obligations</span>
-			{#if layout.shockObligation}
-				<span class="legend-item"><span class="swatch swatch-shock"></span>Inserted shock</span>
+			{#if layout.shockMarkers.length > 0}
+				<span class="legend-item"><span class="swatch swatch-shock"></span>Inserted obligations</span>
 			{/if}
 		</figcaption>
 	</figure>

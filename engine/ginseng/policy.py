@@ -74,13 +74,15 @@ def pareto_filter(results: Sequence[PlanResult]) -> list[PlanResult]:
 
 @dataclass(frozen=True)
 class FundingPolicy:
-    """Hard requirements plus an ordered priority list (spec 44 example
-    values are the defaults). The policy is visible and editable — every
-    field here is meant to be surfaced and changed by the user."""
+    """Hard numeric limits plus ordered tradeoff priorities.
+
+    Structural funding-operation validity is not a policy toggle: candidate
+    evaluation rejects an unavailable credit draw, an underfunded sale, or a
+    missing account before this policy ranks alternatives.
+    """
 
     max_cash_shortfall_probability: float = 0.05
     max_credit_utilization: float = 0.30
-    never_miss_required_payment: bool = True
     priorities: tuple[str, ...] = (
         "avoid_interest_bearing_debt",
         "minimize_taxable_sales",
@@ -114,11 +116,12 @@ _PRIORITY_INFO: dict[str, dict[str, str]] = {
 
 
 def _meets_hard_requirements(result: PlanResult, policy: FundingPolicy) -> tuple[bool, str | None]:
-    """`never_miss_required_payment` is already structural: a plan is only
-    `feasible` if every draw, sale, and payment it requires can actually
-    be made (spec 39-41 infeasibility reasons), so feasibility itself
-    enforces that hard requirement; this function checks the two
-    numeric caps."""
+    """Check the policy's two numeric risk limits.
+
+    Structural funding-operation feasibility is already enforced by
+    `evaluate_plan`; `recommend` removes infeasible candidates before this
+    function is called.
+    """
     if result.cash_shortfall_probability > policy.max_cash_shortfall_probability:
         return False, (
             f"its modeled cash-shortfall probability of {result.cash_shortfall_probability:.0%} exceeds "

@@ -167,6 +167,7 @@ def extend_draw_bundle(bundle: DrawBundle, target_horizon_days: int) -> DrawBund
         horizon_days=target_horizon_days,
         n_paths=n_paths,
         mean_block_length=bundle.mean_block_length,
+        mean_block_length_was_clipped=bundle.mean_block_length_was_clipped,
         history_length=n_hist,
         index_matrix=full_index_matrix,
         bootstrap_draw_id=draw_id,

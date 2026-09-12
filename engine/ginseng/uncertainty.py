@@ -124,6 +124,7 @@ class SensitivityRow:
     mean_block_length: int
     required_liquidity_reserve: float
     is_estimated: bool
+    was_clipped: bool
 
 
 def _joint_arrays(state: FinancialState) -> tuple[pd.DatetimeIndex, np.ndarray, np.ndarray, np.ndarray]:
@@ -186,6 +187,8 @@ def estimate_band(
     obligations: Sequence[Obligation],
     coverage_target: float,
     operating_buffer: float,
+    point_estimate: float,
+    point_mean_block_length: int,
     horizon_days: int = DEFAULT_HORIZON_DAYS,
     n_paths: int = DEFAULT_N_PATHS,
     n_outer: int = DEFAULT_N_OUTER,
@@ -204,50 +207,36 @@ def estimate_band(
 
     Construction, following bootstrap.md section 6 exactly:
 
-    1. Compute the ordinary point estimate (`draw_bundle` + `cash_paths` +
-       `metrics.required_liquidity_reserve`) — identical to `/scenario`'s
-       number for this `seed`. Its `mean_block_length` doubles as `L0`,
-       the persistence estimate used to resample alternate histories.
-    2. Reuse `draw_bundle` a second time, but pointed at the *history*
-       itself: calling it with `horizon_days=len(history)` and
-       `n_paths=n_outer` makes its `index_matrix` an
-       `(n_outer, history_length)` block-bootstrap resampling of history
-       days — exactly the outer resample spec 29 step 1 asks for, with
-       zero new sampler code.
-    3. For each outer world: rebuild a resampled `FinancialState` from
-       that resample, then call `draw_bundle` a third time with
-       `mean_block_length=None` so it **re-estimates** the block length
-       on the resampled data (spec 29 step 2), then `cash_paths` +
-       `metrics.required_liquidity_per_path`/`required_liquidity_reserve`
-       (spec 29 steps 3-4) for that world's RLR.
+    1. Receive the ordinary point estimate and its data-estimated mean block
+       length from the caller's already-rendered scenario bundle. The band is
+       therefore anchored to the exact hero number, not to a second Monte
+       Carlo draw with the same seed.
+    2. Reuse `draw_bundle` pointed at the *history* itself: calling it with
+       `horizon_days=len(history)` and `n_paths=n_outer` makes its
+       `index_matrix` an `(n_outer, history_length)` block-bootstrap
+       resampling of history days — exactly the outer resample spec 29 step 1
+       asks for, with zero new sampler code.
+    3. For each outer world: rebuild a resampled `FinancialState`, then
+       re-estimate the block length and evaluate that world's RLR.
     4. The band is the `[low_percentile, high_percentile]` percentile of
-       the `n_outer` RLR values (spec 30: "percentile-based... acceptable
-       for HackRice"), widened if necessary so it always contains the
-       point estimate — a headline number must never be drawn outside its
-       own uncertainty band.
+       outer RLR values, widened if necessary to contain the displayed point
+       estimate.
 
     Deterministic in `seed`: every downstream draw uses an integer child
-    seed derived from a single `np.random.default_rng(seed)` stream, so
-    the same `seed` always reproduces the same band.
+    seed derived from a single `np.random.default_rng(seed)` stream.
     """
     dates, income_hist, essential_hist, discretionary_hist = _joint_arrays(state)
     t_obs = len(income_hist)
 
     seed_rng = np.random.default_rng(seed)
-    point_seed, outer_seed = (int(s) for s in seed_rng.integers(1, 2**31 - 1, size=2))
+    outer_seed = int(seed_rng.integers(1, 2**31 - 1))
     inner_seeds = seed_rng.integers(1, 2**31 - 1, size=n_outer)
 
-    point_bundle = draw_bundle(state, horizon_days, n_paths, seed=point_seed)
-    point_matrix = cash_paths(state, point_bundle, obligations)
-    point_required = required_liquidity_per_path(point_matrix, operating_buffer)
-    point = required_liquidity_reserve(point_required, coverage_target)
-
     # Reuse draw_bundle itself to get an (n_outer, t_obs) block-bootstrap
-    # index matrix over *history days* (spec 29 step 1); L0 = the point
-    # estimate's own re-estimated block length preserves the observed
-    # persistence while forming alternate plausible histories.
+    # index matrix over *history days* (spec 29 step 1). The displayed
+    # scenario's data-estimated persistence is the outer sampler's L0.
     outer_bundle = draw_bundle(
-        state, horizon_days=t_obs, n_paths=n_outer, seed=outer_seed, mean_block_length=point_bundle.mean_block_length
+        state, horizon_days=t_obs, n_paths=n_outer, seed=outer_seed, mean_block_length=point_mean_block_length
     )
 
     rlrs = np.empty(n_outer, dtype=float)
@@ -262,15 +251,15 @@ def estimate_band(
         rlrs[b] = required_liquidity_reserve(inner_required, coverage_target)
 
     band_low, band_high = np.quantile(rlrs, [low_percentile, high_percentile])
-    low = float(min(band_low, point))
-    high = float(max(band_high, point))
+    low = float(min(band_low, point_estimate))
+    high = float(max(band_high, point_estimate))
 
     return EstimateBand(
-        point=point,
+        point=point_estimate,
         low=low,
         high=high,
         coverage_target=coverage_target,
-        mean_block_length=point_bundle.mean_block_length,
+        mean_block_length=point_mean_block_length,
         n_outer=n_outer,
         n_paths=n_paths,
         horizon_days=horizon_days,
@@ -312,6 +301,7 @@ def persistence_sensitivity(
                 mean_block_length=block_length,
                 required_liquidity_reserve=reserve,
                 is_estimated=False,
+                was_clipped=False,
             )
         )
 
@@ -319,12 +309,14 @@ def persistence_sensitivity(
     estimated_matrix = cash_paths(state, estimated_bundle, obligations)
     estimated_required = required_liquidity_per_path(estimated_matrix, operating_buffer)
     estimated_reserve = required_liquidity_reserve(estimated_required, coverage_target)
+    estimated_suffix = " (capped)" if estimated_bundle.mean_block_length_was_clipped else ""
     rows.append(
         SensitivityRow(
-            block_label=f"Estimated {estimated_bundle.mean_block_length}d",
+            block_label=f"Estimated {estimated_bundle.mean_block_length}d{estimated_suffix}",
             mean_block_length=estimated_bundle.mean_block_length,
             required_liquidity_reserve=estimated_reserve,
             is_estimated=True,
+            was_clipped=estimated_bundle.mean_block_length_was_clipped,
         )
     )
     return rows

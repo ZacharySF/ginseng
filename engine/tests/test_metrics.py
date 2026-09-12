@@ -21,6 +21,7 @@ from ginseng.simulate import cash_paths, draw_bundle
 from ginseng.state import Obligation
 
 from tests.test_simulate import make_history_state
+from ginseng.uncertainty import estimate_band
 
 
 BUFFER = 1000.0
@@ -176,19 +177,42 @@ def test_severity_reads_the_path_minimum_not_the_ending_balance():
 # --- Section 36: generator acceptance ---
 
 
-def test_generated_persona_meets_the_section_36_acceptance_conditions():
+def test_canonical_persona_meets_the_staged_repair_acceptance_conditions():
     report = acceptance_report(generate_persona())
     assert report["meets_acceptance"] is True
 
     before = report["before"]
-    # Before the shock: no funding gap and cash-shortfall risk under 2%.
+    # Before the repair schedule: no funding gap and cash-shortfall risk under 2%.
     assert before["funding_gap"] == 0.0
     assert before["cash_shortfall_probability"] < 0.02
     assert before["required_liquidity_reserve"] <= report["immediate_funding"]
 
-    # After the canonical $4,500-due-in-3-days repair: a real but coverable gap.
+    # The $4,500 repair is staged: $1,500 on day 3 and $3,000 on day 17.
+    # Its outcome is visibly risky but remains probabilistic rather than
+    # collapsing the coverage curve to an all-or-nothing cliff.
     after = report["after"]
     assert 1000.0 <= after["funding_gap"] <= 3000.0
-    assert after["cash_shortfall_probability"] > 0.0
+    assert 0.10 <= after["cash_shortfall_probability"] <= 0.90
     assert report["marketable_backup_capital"] >= after["funding_gap"]
     assert report["available_credit"] > 0.0
+    assert after["conditions"]["reserve_shift_is_not_the_nominal_repair_total"] is True
+
+
+def test_estimate_band_is_anchored_to_the_displayed_reserve():
+    state = make_history_state()
+    displayed_reserve = 999_999.0
+    band = estimate_band(
+        state,
+        (),
+        coverage_target=0.95,
+        operating_buffer=BUFFER,
+        point_estimate=displayed_reserve,
+        point_mean_block_length=10,
+        horizon_days=14,
+        n_paths=80,
+        n_outer=4,
+        seed=17,
+    )
+    assert band.point == displayed_reserve
+    assert band.low <= displayed_reserve <= band.high
+    assert band.high == displayed_reserve

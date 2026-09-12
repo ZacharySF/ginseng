@@ -73,6 +73,7 @@ class ScenarioResponse(BaseModel):
     seed: int
     bootstrap_draw_id: str
     mean_block_length: int
+    mean_block_length_was_clipped: bool
     immediate_funding: float
     marketable_backup_capital: float
     restricted_capital: float
@@ -138,13 +139,15 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         persona, bundle, obligations, request.coverage_target, request.operating_buffer
     )
 
-    # Spec 29-31: the outer dependent bootstrap widens the point estimate
-    # into a model-estimate range. Same seed, same band.
+    # Spec 29-31: the outer dependent bootstrap widens the displayed point
+    # estimate into a model-estimate range. Same seed, same band.
     band = uncertainty.estimate_band(
         persona,
         obligations,
         coverage_target=request.coverage_target,
         operating_buffer=request.operating_buffer,
+        point_estimate=computed.required_liquidity_reserve,
+        point_mean_block_length=bundle.mean_block_length,
         horizon_days=request.horizon_days,
         n_paths=request.paths,
         n_outer=50,
@@ -180,6 +183,7 @@ def scenario(request: ScenarioRequest) -> ScenarioResponse:
         seed=request.seed,
         bootstrap_draw_id=bundle.bootstrap_draw_id,
         mean_block_length=bundle.mean_block_length,
+        mean_block_length_was_clipped=bundle.mean_block_length_was_clipped,
         immediate_funding=persona.immediate_funding,
         marketable_backup_capital=persona.marketable_backup_capital,
         restricted_capital=persona.restricted_capital,

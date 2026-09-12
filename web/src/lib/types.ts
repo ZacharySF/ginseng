@@ -77,6 +77,7 @@ export interface Recommendation {
 export interface SensitivityRow {
 	block_label: string;
 	mean_block_length: number;
+	was_clipped: boolean;
 	required_liquidity_reserve: number;
 	is_estimated: boolean;
 }
@@ -86,6 +87,7 @@ export interface ScenarioResponse {
 	seed: number;
 	bootstrap_draw_id: string;
 	mean_block_length: number;
+	mean_block_length_was_clipped: boolean;
 	immediate_funding: number;
 	marketable_backup_capital: number;
 	restricted_capital: number;
@@ -105,27 +107,6 @@ export interface ScenarioResponse {
 	sensitivity_verdict: string | null;
 }
 
-export interface ScenarioResponse {
-	as_of: string;
-	seed: number;
-	bootstrap_draw_id: string;
-	mean_block_length: number;
-	immediate_funding: number;
-	marketable_backup_capital: number;
-	restricted_capital: number;
-	coverage_target: number;
-	operating_buffer: number;
-	required_liquidity_reserve: number;
-	funding_gap: number;
-	coverage_at_current_funding: number;
-	severity: Severity;
-	estimate_band: EstimateBand | null;
-	coverage_curve: CoverageCurvePoint[];
-	cash_paths: CashPaths;
-	shortfall_distribution: ShortfallDistribution;
-	plans: Plan[];
-	recommendation: Recommendation | null;
-}
 
 export interface HealthResponse {
 	status: string;

@@ -44,6 +44,7 @@ class DrawBundle:
     horizon_days: int
     n_paths: int
     mean_block_length: int
+    mean_block_length_was_clipped: bool
     history_length: int
     index_matrix: np.ndarray
     bootstrap_draw_id: str
@@ -83,21 +84,29 @@ def _fallback_block_length(z: np.ndarray) -> float:
     return 1.0 / (1.0 - abs(rho1))
 
 
-def estimate_mean_block_length(z: np.ndarray) -> int:
-    """Estimate `L` (spec 17): the Politis-White optimal Stationary Bootstrap
-    block length for the composite net-flow series `Z_t`, clipped to
-    `[7, 28]` for hackathon stability."""
+def _estimate_mean_block_length(z: np.ndarray) -> tuple[int, bool]:
+    """Return the usable mean block length and whether the data estimate
+    exceeded Ginseng's supported [7, 28]-day window."""
     try:
         from arch.bootstrap import optimal_block_length
 
         block_lengths = optimal_block_length(z)
         stationary_column = "stationary" if "stationary" in block_lengths.columns else "b_sb"
         estimate = float(block_lengths[stationary_column].iloc[0])
-    except ImportError:
+    except (ImportError, ValueError, FloatingPointError):
         estimate = _fallback_block_length(z)
     if not np.isfinite(estimate) or estimate <= 0:
         estimate = 14.0
-    return int(np.clip(round(estimate), MIN_MEAN_BLOCK_LENGTH, MAX_MEAN_BLOCK_LENGTH))
+    rounded = round(estimate)
+    resolved = int(np.clip(rounded, MIN_MEAN_BLOCK_LENGTH, MAX_MEAN_BLOCK_LENGTH))
+    return resolved, resolved != rounded
+
+
+def estimate_mean_block_length(z: np.ndarray) -> int:
+    """Estimate `L` (spec 17): the Politis-White optimal Stationary Bootstrap
+    block length for the composite net-flow series `Z_t`, clipped to
+    `[7, 28]` for hackathon stability."""
+    return _estimate_mean_block_length(z)[0]
 
 
 def _stationary_bootstrap_indices(
@@ -144,11 +153,12 @@ def draw_bundle(
             - joint["essential_variable_spending"]
             - joint["discretionary_spending"]
         ).to_numpy()
-        resolved_block_length = estimate_mean_block_length(z)
+        resolved_block_length, mean_block_length_was_clipped = _estimate_mean_block_length(z)
     else:
         resolved_block_length = int(
             np.clip(mean_block_length, MIN_MEAN_BLOCK_LENGTH, MAX_MEAN_BLOCK_LENGTH)
         )
+        mean_block_length_was_clipped = False
 
     rng = np.random.default_rng(seed)
     index_matrix = _stationary_bootstrap_indices(rng, n_hist, n_paths, horizon_days, resolved_block_length)
@@ -157,6 +167,7 @@ def draw_bundle(
         horizon_days=horizon_days,
         n_paths=n_paths,
         mean_block_length=resolved_block_length,
+        mean_block_length_was_clipped=mean_block_length_was_clipped,
         history_length=n_hist,
         index_matrix=index_matrix,
         bootstrap_draw_id=_compute_draw_id(index_matrix),

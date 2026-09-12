@@ -18,6 +18,7 @@ SCENARIO_BODY_FIELDS = {
     "seed",
     "bootstrap_draw_id",
     "mean_block_length",
+    "mean_block_length_was_clipped",
     "immediate_funding",
     "marketable_backup_capital",
     "restricted_capital",
@@ -37,12 +38,20 @@ SCENARIO_BODY_FIELDS = {
     "sensitivity_verdict",
 }
 
-REPAIR = {
-    "id": "repair",
-    "label": "Emergency vehicle repair",
-    "amount": 4500.0,
-    "due_in_days": 3,
-}
+REPAIR_SCHEDULE = [
+    {
+        "id": "repair-deposit",
+        "label": "Emergency vehicle repair deposit",
+        "amount": 1500.0,
+        "due_in_days": 3,
+    },
+    {
+        "id": "repair-balance",
+        "label": "Emergency vehicle repair balance",
+        "amount": 3000.0,
+        "due_in_days": 17,
+    },
+]
 
 FLOAT_FIELDS = (
     "immediate_funding",
@@ -83,13 +92,14 @@ def test_health_returns_exactly_the_frozen_contract():
 
 
 def test_scenario_returns_exactly_the_frozen_field_set_with_valid_types():
-    body = _post(obligations=[REPAIR])
+    body = _post(obligations=REPAIR_SCHEDULE)
     assert set(body) == SCENARIO_BODY_FIELDS
 
     date.fromisoformat(body["as_of"])  # an ISO calendar date
     assert isinstance(body["seed"], int) and body["seed"] == 20260911
     assert re.fullmatch(r"[0-9a-f]{64}", body["bootstrap_draw_id"])  # sha256 draw id
     assert isinstance(body["mean_block_length"], int) and body["mean_block_length"] == 12
+    assert body["mean_block_length_was_clipped"] is False
     for field in FLOAT_FIELDS:
         assert isinstance(body[field], float), field
 
@@ -97,8 +107,8 @@ def test_scenario_returns_exactly_the_frozen_field_set_with_valid_types():
     assert body["funding_gap"] == max(
         0.0, body["required_liquidity_reserve"] - body["immediate_funding"]
     )
-    assert 0.0 <= body["coverage_at_current_funding"] <= 1.0
-
+    assert sum(1 for row in body["sensitivity"] if row["is_estimated"]) == 1
+    assert all(isinstance(row["was_clipped"], bool) for row in body["sensitivity"])
     assert body["estimate_band"] is not None
     assert set(body["estimate_band"]) == {"low", "high"}
     assert body["estimate_band"]["low"] <= body["required_liquidity_reserve"] <= body["estimate_band"]["high"]
@@ -165,7 +175,7 @@ def test_scenario_array_lengths_match_horizon_days_and_histogram_bins():
 
 def test_paired_scenarios_from_one_seed_share_their_draw_id():
     unshocked = _post(obligations=[])
-    shocked = _post(obligations=[REPAIR])
+    shocked = _post(obligations=REPAIR_SCHEDULE)
     # The two evaluations differ only in obligations, so they must ride the
     # same stochastic draws (common random numbers, spec section 20).
     assert shocked["bootstrap_draw_id"] == unshocked["bootstrap_draw_id"]
@@ -182,7 +192,7 @@ def test_identical_scenario_requests_return_identical_json():
         "operating_buffer": 1000.0,
         "paths": 240,
         "mean_block_length": 12,
-        "obligations": [REPAIR],
+        "obligations": REPAIR_SCHEDULE,
     }
     first = client.post("/scenario", json=payload)
     second = client.post("/scenario", json=payload)

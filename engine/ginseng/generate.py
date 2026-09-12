@@ -39,10 +39,13 @@ FORECAST_HORIZON = 30
 OPERATING_BUFFER = 1000.0
 COVERAGE_TARGET = 0.95
 
-CANONICAL_SHOCK_ID = "repair"
-CANONICAL_SHOCK_LABEL = "Emergency vehicle repair"
-CANONICAL_SHOCK_AMOUNT = 4500.0
-CANONICAL_SHOCK_DUE_IN_DAYS = 3
+CANONICAL_REPAIR_TOTAL = 4500.0
+CANONICAL_REPAIR_DEPOSIT_ID = "repair-deposit"
+CANONICAL_REPAIR_DEPOSIT_AMOUNT = 1500.0
+CANONICAL_REPAIR_DEPOSIT_DUE_IN_DAYS = 3
+CANONICAL_REPAIR_BALANCE_ID = "repair-balance"
+CANONICAL_REPAIR_BALANCE_AMOUNT = 3000.0
+CANONICAL_REPAIR_BALANCE_DUE_IN_DAYS = 17
 
 _IRREGULAR_LABELS = ("Travel", "Appliance repair", "One-off purchase", "Vet bill", "Home repair")
 
@@ -373,14 +376,27 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
     )
 
 
-def canonical_shock() -> Obligation:
-    """The canonical demo shock (spec 37): an emergency vehicle repair,
-    approximately $4,500, due in three days."""
-    return Obligation(
-        id=CANONICAL_SHOCK_ID,
-        label=CANONICAL_SHOCK_LABEL,
-        amount=CANONICAL_SHOCK_AMOUNT,
-        due_in_days=CANONICAL_SHOCK_DUE_IN_DAYS,
+def canonical_shocks() -> tuple[Obligation, ...]:
+    """The canonical repair schedule: a $1,500 deposit due in three days
+    and a $3,000 balance due on day 17.
+
+    The total remains $4,500, while the staged payment timing lets the
+    forecast distinguish liquidity paths instead of converting the shock
+    into a mechanically identical reserve shift in every tail path.
+    """
+    return (
+        Obligation(
+            id=CANONICAL_REPAIR_DEPOSIT_ID,
+            label="Emergency vehicle repair deposit",
+            amount=CANONICAL_REPAIR_DEPOSIT_AMOUNT,
+            due_in_days=CANONICAL_REPAIR_DEPOSIT_DUE_IN_DAYS,
+        ),
+        Obligation(
+            id=CANONICAL_REPAIR_BALANCE_ID,
+            label="Emergency vehicle repair balance",
+            amount=CANONICAL_REPAIR_BALANCE_AMOUNT,
+            due_in_days=CANONICAL_REPAIR_BALANCE_DUE_IN_DAYS,
+        ),
     )
 
 
@@ -402,7 +418,7 @@ def acceptance_report(state: FinancialState, seed: int = DEFAULT_SEED, n_paths: 
     bundle = draw_bundle(state, horizon_days=FORECAST_HORIZON, n_paths=n_paths, seed=seed)
     before = compute_scenario_metrics(state, bundle, (), state.coverage_target, state.operating_buffer)
     after = compute_scenario_metrics(
-        state, bundle, (canonical_shock(),), state.coverage_target, state.operating_buffer
+        state, bundle, canonical_shocks(), state.coverage_target, state.operating_buffer
     )
 
     immediate_funding = state.immediate_funding
@@ -415,9 +431,13 @@ def acceptance_report(state: FinancialState, seed: int = DEFAULT_SEED, n_paths: 
         "no_funding_gap": before.funding_gap == 0.0,
         "meaningful_taxable_investments": marketable_backup_capital >= 10000.0,
     }
+    reserve_shift = after.required_liquidity_reserve - before.required_liquidity_reserve
     after_conditions = {
         "funding_gap_in_target_range": 1000.0 <= after.funding_gap <= 3000.0,
-        "cash_shortfall_probability_visibly_nonzero": after.severity["cash_shortfall_probability"] > 0.0,
+        "cash_shortfall_probability_is_probabilistic": 0.10
+        <= after.severity["cash_shortfall_probability"]
+        <= 0.90,
+        "reserve_shift_is_not_the_nominal_repair_total": abs(reserve_shift - CANONICAL_REPAIR_TOTAL) >= 25.0,
         "taxable_investments_cover_gap": marketable_backup_capital >= after.funding_gap,
         "credit_can_cover_some_of_gap": available_credit > 0.0,
     }

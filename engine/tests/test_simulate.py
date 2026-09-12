@@ -160,3 +160,28 @@ def test_cash_paths_are_deterministic_for_a_fixed_state_and_bundle():
     assert np.array_equal(cash_paths(state, bundle), cash_paths(state, bundle))
     shocked = (Obligation("repair", "Emergency vehicle repair", 800.0, 6),)
     assert np.array_equal(cash_paths(state, bundle, shocked), cash_paths(state, bundle, shocked))
+
+
+def test_block_length_estimator_falls_back_when_arch_rejects_series(monkeypatch):
+    import arch.bootstrap
+
+    from ginseng.simulate import estimate_mean_block_length
+
+    def reject_series(_):
+        raise ValueError("series is degenerate")
+
+    monkeypatch.setattr(arch.bootstrap, "optimal_block_length", reject_series)
+    assert estimate_mean_block_length(np.array([120.0, 110.0, 90.0, 80.0])) == 7
+
+
+def test_data_estimated_block_length_records_when_the_upper_bound_applies(monkeypatch):
+    import arch.bootstrap
+    import pandas as pd
+
+    def oversized_estimate(_):
+        return pd.DataFrame({"b_sb": [99.0]})
+
+    monkeypatch.setattr(arch.bootstrap, "optimal_block_length", oversized_estimate)
+    bundle = draw_bundle(make_history_state(), horizon_days=30, n_paths=20, seed=7)
+    assert bundle.mean_block_length == 28
+    assert bundle.mean_block_length_was_clipped is True

@@ -18,19 +18,22 @@
 		<header class="screen-header">
 			<h1 class="screen-title">Future</h1>
 			<p class="screen-subtitle">
-				The distribution of upcoming cash paths under {scenarioStore.request.paths.toLocaleString()}
-				simulated futures.
+				The per-day cash-position range across {scenarioStore.request.paths.toLocaleString()} simulated futures.
 			</p>
 		</header>
 
 		<section class="shock-controls" aria-label="Shock control">
+			<p id="repair-schedule" class="shock-schedule">
+				$1,500 deposit due day 3; $3,000 balance due day 17.
+			</p>
 			<button
 				type="button"
 				class="shock-button"
 				onclick={() => scenarioStore.applyShock()}
 				disabled={scenarioStore.hasShock}
+				aria-describedby="repair-schedule"
 			>
-				Insert $4,500 emergency repair
+				Insert $4,500 repair schedule
 			</button>
 			<button
 				type="button"
@@ -92,6 +95,13 @@
 		align-items: center;
 		gap: var(--space-4);
 		flex-wrap: wrap;
+	}
+
+	.shock-schedule {
+		flex-basis: 100%;
+		margin: 0;
+		color: var(--color-text-dim);
+		font-size: var(--font-size-sm);
 	}
 
 	.shock-button,

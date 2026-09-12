@@ -116,7 +116,7 @@
 						{#each s.sensitivity as row (row.block_label)}
 							<tr class:estimated={row.is_estimated}>
 								<th scope="row">
-									{row.block_label}{#if row.is_estimated} (data-estimated){/if}
+									{row.block_label}{#if row.is_estimated && !row.was_clipped} (data-estimated){/if}
 								</th>
 								<td>{formatCurrency(row.required_liquidity_reserve)}</td>
 							</tr>

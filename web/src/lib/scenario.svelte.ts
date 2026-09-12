@@ -17,12 +17,20 @@ export const COVERAGE_TARGET_OPTIONS = [0.8, 0.9, 0.95] as const;
 // The canonical HackRice shock (spec section 37): a future obligation, not
 // an already-completed debit. Cash today, the portfolio, and the market are
 // unchanged by inserting it — only future obligations change.
-export const CANONICAL_SHOCK: Obligation = {
-	id: 'repair',
-	label: 'Emergency vehicle repair',
-	amount: 4500.0,
-	due_in_days: 3
-};
+export const CANONICAL_SHOCKS: Obligation[] = [
+	{
+		id: 'repair-deposit',
+		label: 'Emergency vehicle repair deposit',
+		amount: 1500.0,
+		due_in_days: 3
+	},
+	{
+		id: 'repair-balance',
+		label: 'Emergency vehicle repair balance',
+		amount: 3000.0,
+		due_in_days: 17
+	}
+];
 
 const DEFAULT_SEED = 20260911;
 const DEFAULT_HORIZON_DAYS = 30;
@@ -59,7 +67,9 @@ class ScenarioStore {
 	#initialized = false;
 
 	readonly hasShock = $derived(
-		this.request.obligations.some((obligation) => obligation.id === CANONICAL_SHOCK.id)
+		CANONICAL_SHOCKS.every((shock) =>
+			this.request.obligations.some((obligation) => obligation.id === shock.id)
+		)
 	);
 
 	readonly isBaseline = $derived(this.request.obligations.length === 0);
@@ -104,7 +114,7 @@ class ScenarioStore {
 		if (this.hasShock) return;
 		this.request = {
 			...this.request,
-			obligations: [...this.request.obligations, CANONICAL_SHOCK]
+			obligations: [...this.request.obligations, ...CANONICAL_SHOCKS]
 		};
 		void this.#refresh();
 	}
