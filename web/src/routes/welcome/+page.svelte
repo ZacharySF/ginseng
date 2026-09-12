@@ -59,9 +59,8 @@
 	<section class="hero" {@attach parallax()}>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<p class="hero-kicker">Liquidity workspace</p>
-			<h1 class="hero-logo">
-				<img src="/brand/ginseng-avatar-reversed.svg" alt="" />
-				<span>Ginseng</span>
+			<h1 class="hero-logo" aria-label="Ginseng">
+				<img src="/brand/ginseng-lockup-horizontal.svg" alt="" />
 			</h1>
 			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
@@ -242,23 +241,14 @@
 	}
 
 	.hero-logo {
-		display: flex;
-		align-items: center;
-		gap: 0.9rem;
 		margin: 0;
-		font-size: clamp(2.6rem, 6vw, 4.8rem);
-		font-weight: 800;
-		letter-spacing: -0.035em;
-		line-height: 0.98;
-		text-wrap: balance;
+		line-height: 0;
 	}
 
 	.hero-logo img {
 		display: block;
-		flex: none;
-		width: 0.9em;
-		height: 0.9em;
-		object-fit: contain;
+		width: clamp(14rem, 32vw, 22rem);
+		height: auto;
 	}
 
 	.hero-tagline {
