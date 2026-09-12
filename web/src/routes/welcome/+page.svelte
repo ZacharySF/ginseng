@@ -49,7 +49,9 @@
 	</div>
 
 	<header class="welcome-nav">
-		<a class="nav-brand" href={resolve('/welcome')}>Ginseng</a>
+		<a class="nav-brand" href={resolve('/welcome')}>
+			<img class="nav-logo" src="/brand/ginseng-avatar-reversed.svg" alt="Ginseng" />
+		</a>
 		<nav class="nav-actions" aria-label="Account">
 			<a href={resolve('/login')}>Sign in</a>
 			<a class="nav-cta" href={resolve('/login?mode=sign-up')}>Create account</a>
@@ -169,6 +171,13 @@
 		font-weight: 800;
 		letter-spacing: -0.04em;
 		text-decoration: none;
+	}
+
+	.nav-logo {
+		display: block;
+		width: 1.6rem;
+		height: 1.6rem;
+		object-fit: contain;
 	}
 
 
