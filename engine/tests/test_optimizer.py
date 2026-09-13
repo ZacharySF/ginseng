@@ -7,6 +7,7 @@ from datetime import date, timedelta
 from math import isfinite
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 import ginseng.optimizer as optimizer
@@ -251,35 +252,82 @@ def test_coverage_one_uses_a_finite_worst_case_objective():
         assert isfinite(value)
 
 
-def test_market_returns_change_the_liquidation_funding_mix():
+@pytest.mark.parametrize("market_return", [None, -0.5, 0.5])
+def test_optimizer_prices_todays_sale_at_execution(market_return):
     _require_cvxpy()
     holding = _taxable_holding(6_000.0, 4_800.0)
-    up_market = _state(holdings=(holding,), market_daily_return=0.01)
-    down_market = _state(holdings=(holding,), market_daily_return=-0.01)
+    state = _state(holdings=(holding,), market_daily_return=market_return)
     obligation = (Obligation("bill", "Bill", 4_000.0, 5),)
 
-    up_plan = optimize_funding(
-        up_market,
-        _bundle(up_market, 10),
+    plan = optimize_funding(
+        state,
+        _bundle(state, 10),
         obligation,
         overdraft_apr=0.365,
         capital_gains_rate=0.01,
         buffer_tolerance_dollar_days=1e9,
     )
-    down_plan = optimize_funding(
-        down_market,
-        _bundle(down_market, 10),
-        obligation,
-        overdraft_apr=0.365,
-        capital_gains_rate=0.01,
-        buffer_tolerance_dollar_days=1e9,
+    assert plan is not None
+    assert plan.liquidation_amount == pytest.approx(4_000.0, abs=1e-3)
+    # Selling $4,000 realizes an $800 gain at the assumed 1% tax rate.
+    assert plan.expected_cost == pytest.approx(8.0, abs=1e-4)
+    assert plan.cvar_cost == pytest.approx(8.0, abs=1e-4)
+    assert plan.cost_is_path_dependent is False
+
+
+@pytest.mark.parametrize("market_return", [None, -0.01, 0.01])
+def test_tax_losses_cannot_make_an_already_funded_plan_profitable(market_return):
+    _require_cvxpy()
+    state = _state(
+        opening_cash=5_000.0,
+        holdings=(_taxable_holding(6_000.0, 7_200.0),),
+        market_daily_return=market_return,
+    )
+    plan = optimize_funding(state, _bundle(state, 10), ())
+
+    assert plan is not None
+    assert plan.expected_cost == pytest.approx(0.0, abs=1e-6)
+    assert plan.cvar_cost == pytest.approx(0.0, abs=1e-6)
+    assert plan.liquidation_amount == pytest.approx(0.0, abs=1e-6)
+
+
+@pytest.mark.parametrize("buffer_tolerance, expected_sale", [(1e9, 4000.0), (2600.0, 4900.0)])
+def test_loss_sale_keeps_only_proceeds_needed_for_cash_and_buffer_limits(
+    buffer_tolerance, expected_sale
+):
+    _require_cvxpy()
+    state = _state(holdings=(_taxable_holding(6_000.0, 7_200.0),))
+    plan = optimize_funding(
+        state, _bundle(state, 10), (Obligation("bill", "Bill", 4_000.0, 5),),
+        operating_buffer=1000.0, buffer_tolerance_dollar_days=buffer_tolerance,
     )
 
-    assert up_plan is not None and down_plan is not None
-    assert up_plan.cost_is_path_dependent is True
-    assert down_plan.cost_is_path_dependent is True
-    assert up_plan.liquidation_amount < down_plan.liquidation_amount
-    assert up_plan.expected_cost > down_plan.expected_cost
+    assert plan is not None
+    assert plan.liquidation_amount == pytest.approx(expected_sale, abs=1e-3)
+    assert plan.expected_cost == pytest.approx(0.0, abs=1e-6)
+    assert plan.cvar_cost == pytest.approx(0.0, abs=1e-6)
+    assert plan.cash_shortfall_probability == 0.0
+    # Before day-3 settlement the buffer is missed by $1,000 for two days.
+    # The tighter limit leaves $600 dollar-days for the six days after the
+    # bill, requiring a further $900 of cash beyond the $4,000 sale.
+    dollar_days = 2000.0 + 6.0 * max(0.0, 5000.0 - plan.liquidation_amount)
+    assert dollar_days <= buffer_tolerance + 1e-6
+
+
+def test_cost_variation_is_detected_from_cash_paths_without_market_history(monkeypatch):
+    _require_cvxpy()
+    state = _state(holdings=(_taxable_holding(1.0, 1.0),))
+    cash = np.array([[0.0] * 5, [0.0, 0.0, -100.0, -100.0, -100.0]])
+    monkeypatch.setattr(optimizer, "cash_paths", lambda *args: cash)
+    plan = optimize_funding(
+        state, _bundle(state, 5, n_paths=2), (),
+        operating_buffer=0.0, buffer_tolerance_dollar_days=1e9, overdraft_apr=0.365,
+    )
+
+    assert plan is not None
+    assert plan.cost_is_path_dependent is True
+    assert plan.expected_cost == pytest.approx(0.1485, abs=1e-5)
+    assert plan.cvar_cost == pytest.approx(0.297, abs=1e-5)
 
 
 def test_infeasible_buffer_constraint_fails_closed():

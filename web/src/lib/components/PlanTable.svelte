@@ -20,7 +20,7 @@
 		{ label: 'New debt', read: (plan) => formatCurrency(plan.new_debt) },
 		{ label: 'Interest', read: (plan) => formatCurrency(plan.interest_exposure) },
 		{ label: 'Sold', read: (plan) => formatCurrency(plan.investment_sold) },
-		{ label: 'Realized', read: (plan) => formatSignedCurrency(plan.realized_gain_loss) },
+		{ label: 'Sale gain/loss', read: (plan) => formatSignedCurrency(plan.realized_gain_loss) },
 		{ label: 'Deferred', read: (plan) => formatCurrency(plan.deferred_spending) }
 	];
 </script>
@@ -64,9 +64,17 @@
 			</article>
 		{/each}
 	</div>
+	<p class="sale-assumptions">Sales use today’s prices. Proceeds become spendable after settlement and transfer. Sale gain/loss compares proceeds with purchase cost; tax savings from losses are excluded.</p>
 {/if}
 
 <style>
+	.sale-assumptions {
+		margin-top: 0.75rem;
+		color: var(--ink-muted);
+		font-size: 0.75rem;
+		line-height: 1.5;
+	}
+
 	.plans-empty,
 	.recommendation-line,
 	.plan-list {

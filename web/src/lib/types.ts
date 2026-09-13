@@ -108,6 +108,7 @@ export interface OptimalPlan {
 	expected_cost: number;
 	cash_shortfall_probability: number;
 	implied_liquidity_price: number | null;
+	// Whether this plan's evaluated costs vary across the simulated futures.
 	cost_is_path_dependent: boolean;
 	solver_status: string;
 	evaluation_horizon_days: number;

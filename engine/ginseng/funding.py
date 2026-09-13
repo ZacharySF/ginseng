@@ -26,7 +26,6 @@ from ginseng.simulate import (
     DrawBundle,
     cash_paths,
     discretionary_resampled_paths,
-    portfolio_value_paths,
 )
 from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot
 
@@ -536,20 +535,11 @@ def evaluate_plan(
     per_path_adjustment = np.broadcast_to(adjustment, (n_paths, horizon_days)).copy()
 
     if spec.liquidation_target > 0:
-        # Path-scaled settlement (spec 8.3): the sale is sized at today's
-        # prices, but proceeds arrive T+1 plus the transfer delay later, so
-        # what each path actually receives is the nominal amount scaled by
-        # that path's portfolio value on the settlement day. Without market
-        # history the nominal amount is used unchanged, preserving the
-        # pre-market-data evaluation.
-        pv_matrix = portfolio_value_paths(state, eval_bundle)
-        settle_col = min(settlement_day - 1, horizon_days - 1)
-        if pv_matrix is not None:
-            scale = pv_matrix[:, settle_col] / max(state.marketable_backup_capital, 1e-9)
-            per_path_proceeds = investment_sold * np.clip(scale, 0.0, None)
-            per_path_adjustment[:, settle_col] += per_path_proceeds
-        else:
-            per_path_adjustment[:, settle_col] += investment_sold
+        # The modeled sale executes today at Holding.current_price.
+        # Settlement and transfer delay cash availability, not execution:
+        # subsequent market returns cannot reprice shares already sold.
+        # Gain/loss is reported separately and creates no cash tax rebate.
+        per_path_adjustment[:, settlement_day - 1] += investment_sold
 
     deferred_spending = 0.0
     if spec.discretionary_reduction_fraction > 0:

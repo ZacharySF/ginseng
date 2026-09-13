@@ -11,6 +11,13 @@ The default Telser tolerance is a *mean* dollar-day limit:
 It allows the same aggregate buffer erosion as fully missing the operating
 buffer on the policy's permitted fraction of forecast days, and is independent
 of the number of bootstrap paths.
+
+Liquidation assumes execution today at the recorded holding prices. Gross
+proceeds become cash only after settlement and transfer. The tax cost is an
+estimate on positive gains from a proportional sale across all taxable lots;
+the configured rate is an assumption, not a final tax liability. Losses never
+create a negative tax cost or a cash rebate. Future market returns do not
+reprice an executed sale. Cash-flow uncertainty can still make costs vary.
 """
 
 from __future__ import annotations
@@ -33,7 +40,6 @@ from ginseng.simulate import (
     DrawBundle,
     cash_paths,
     discretionary_resampled_paths,
-    portfolio_value_paths,
 )
 from ginseng.state import FinancialState, Obligation
 
@@ -88,6 +94,53 @@ def _bounded_solution(value: object, lower: float, upper: float) -> float | None
     if result < lower - tolerance or result > upper + tolerance:
         return None
     return float(np.clip(result, lower, upper))
+
+
+def _trim_redundant_liquidation(
+    balances: np.ndarray,
+    liquidation: float,
+    settlement_column: int,
+    operating_buffer: float,
+    buffer_tolerance: float,
+) -> float:
+    """Remove surplus from a sale with zero tax cost, holding other levers fixed.
+
+    With no assumed tax benefit, multiple sale amounts can have the same
+    objective. Reduce proceeds only where every post-settlement balance
+    remains nonnegative and the mean buffer dollar-day constraint holds.
+    This preserves every path's cost without an invented penalty weight or
+    a second solver run. It does not claim a global minimum-sale solution.
+    """
+    if liquidation <= 0.0:
+        return liquidation
+    settled = balances[:, settlement_column:]
+    removable = min(
+        liquidation, max(0.0, float(np.min(settled)) - _NUMERICAL_TOLERANCE)
+    )
+    if removable <= 0.0:
+        return liquidation
+
+    fixed_shortfall = float(
+        np.maximum(0.0, operating_buffer - balances[:, :settlement_column]).sum()
+    )
+
+    def fits_buffer(reduction: float) -> bool:
+        shortfall = fixed_shortfall + np.maximum(
+            0.0, operating_buffer - settled + reduction
+        ).sum()
+        return bool(shortfall / balances.shape[0] <= buffer_tolerance)
+
+    if fits_buffer(removable):
+        return liquidation - removable
+
+    lower, upper = 0.0, removable
+    for _ in range(40):
+        middle = (lower + upper) / 2.0
+        if fits_buffer(middle):
+            lower = middle
+        else:
+            upper = middle
+    return liquidation - lower
 
 
 def optimize_funding(
@@ -182,7 +235,6 @@ def optimize_funding(
     discretionary_savings = np.cumsum(
         discretionary_resampled_paths(state, evaluation_bundle), axis=1
     )
-    portfolio_values = portfolio_value_paths(state, evaluation_bundle)
     n_paths, horizon_days = baseline_cash.shape
     if (
         baseline_cash.shape != (evaluation_bundle.n_paths, evaluation_bundle.horizon_days)
@@ -193,11 +245,6 @@ def optimize_funding(
         return None
     if not np.all(np.isfinite(baseline_cash)) or not np.all(np.isfinite(discretionary_savings)):
         return None
-    if portfolio_values is not None and (
-        portfolio_values.shape != baseline_cash.shape or not np.all(np.isfinite(portfolio_values))
-    ):
-        return None
-
     credit_effect_daily = np.zeros(horizon_days, dtype=float)
     if available_credit > 0.0:
         credit_effect_daily[0] = 1.0
@@ -206,6 +253,7 @@ def optimize_funding(
 
     settlement_column = settlement_day - 1
     liquidation_effect = np.zeros((n_paths, horizon_days), dtype=float)
+    liquidation_effect[:, settlement_column:] = 1.0
     total_cost_basis = float(sum(holding.cost_basis for holding in state.taxable_portfolio))
     if not isfinite(total_cost_basis):
         return None
@@ -213,19 +261,11 @@ def optimize_funding(
     if not isfinite(cost_basis_fraction):
         return None
 
-    cost_is_path_dependent = portfolio_values is not None
-    if portfolio_values is not None and initial_market_value > 0.0:
-        settlement_scale = portfolio_values[:, settlement_column] / initial_market_value
-        liquidation_effect[:, settlement_column:] = settlement_scale[:, np.newaxis]
-        tax_per_liquidation_dollar: np.ndarray | float = (
-            settlement_scale - cost_basis_fraction
-        ) * capital_gains_rate
-    else:
-        liquidation_effect[:, settlement_column:] = 1.0
-        tax_per_liquidation_dollar = (1.0 - cost_basis_fraction) * capital_gains_rate
-    if not np.all(np.isfinite(liquidation_effect)) or not np.all(
-        np.isfinite(tax_per_liquidation_dollar)
-    ):
+    # A proportional sale disposes the same fraction of every taxable lot
+    # at today's prices. Loss relief depends on the household's wider tax
+    # situation, so it cannot subsidize the objective or fund a cash path.
+    tax_per_liquidation_dollar = max(0.0, 1.0 - cost_basis_fraction) * capital_gains_rate
+    if not _finite_nonnegative(tax_per_liquidation_dollar):
         return None
 
     deferred_cost_per_fraction = float(np.mean(discretionary_savings[:, -1]))
@@ -344,6 +384,14 @@ def optimize_funding(
     if not np.all(np.isfinite(adjusted_balance_value)):
         return None
 
+    if tax_per_liquidation_dollar == 0.0:
+        trimmed = _trim_redundant_liquidation(
+            adjusted_balance_value, liquidation_value, settlement_column,
+            operating_buffer, buffer_tolerance,
+        )
+        adjusted_balance_value -= (liquidation_value - trimmed) * liquidation_effect
+        liquidation_value = trimmed
+
     actual_buffer_shortfall = float(
         np.maximum(0.0, operating_buffer - adjusted_balance_value).sum() / n_paths
     )
@@ -354,10 +402,7 @@ def optimize_funding(
     actual_overdraft_cost = (overdraft_apr / 365.0) * np.maximum(
         0.0, -adjusted_balance_value
     ).sum(axis=1)
-    if isinstance(tax_per_liquidation_dollar, np.ndarray):
-        tax_cost_value = liquidation_value * tax_per_liquidation_dollar
-    else:
-        tax_cost_value = np.full(n_paths, liquidation_value * tax_per_liquidation_dollar)
+    tax_cost_value = liquidation_value * tax_per_liquidation_dollar
     path_cost_value = (
         interest_per_credit_dollar * credit_value
         + deferred_cost_per_fraction * deferral_value
@@ -375,6 +420,12 @@ def optimize_funding(
             return None
 
     expected_cost = float(np.mean(path_cost_value))
+    # Report observed variation in this plan's costs, including cash-flow
+    # risk without market history. Market data alone cannot make this true.
+    cost_is_path_dependent = bool(
+        np.ptp(path_cost_value)
+        > _NUMERICAL_TOLERANCE * max(1.0, float(np.max(np.abs(path_cost_value))))
+    )
     cash_shortfall_probability = float(
         np.mean(np.any(adjusted_balance_value < 0.0, axis=1))
     )
