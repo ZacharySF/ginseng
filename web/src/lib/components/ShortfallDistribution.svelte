@@ -66,8 +66,8 @@
 					<line x1={layout.zeroX} x2={layout.zeroX} y1={MARGIN.top} y2={layout.plotBottom} class="zero-line" />
 					<text x={layout.zeroX + 5} y={MARGIN.top + 11} class="zero-label">Zero cash</text>
 				{/if}
-				{#each layout.ticks as tick (tick.value)}
-					<text x={tick.x} y={HEIGHT - 8} text-anchor="middle" class="axis-label">{formatCurrency(tick.value)}</text>
+				{#each layout.ticks as tick, index (tick.value)}
+					<text x={tick.x} y={HEIGHT - 8} text-anchor={index === 0 ? 'start' : index === layout.ticks.length - 1 ? 'end' : 'middle'} class="axis-label">{formatCurrency(tick.value)}</text>
 				{/each}
 			</svg>
 		</div>
@@ -85,11 +85,14 @@
 	}
 
 	.chart-frame {
+		position: relative;
 		flex: 1;
 		min-height: 9.375rem;
 	}
 
 	svg {
+		position: absolute;
+		inset: 0;
 		display: block;
 		width: 100%;
 		height: 100%;

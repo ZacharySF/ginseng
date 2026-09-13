@@ -12,9 +12,9 @@
 
 	let containerWidth = $state(640);
 	let containerHeight = $state(240);
-	const WIDTH = $derived(Math.max(360, containerWidth));
+	const WIDTH = $derived(Math.max(280, containerWidth));
 	const HEIGHT = $derived(Math.max(190, containerHeight));
-	const MARGIN = { top: 20, right: 24, bottom: 36, left: 64 };
+	const MARGIN = { top: 24, right: 16, bottom: 44, left: 76 };
 
 	const layout = $derived.by(() => {
 		if (points.length === 0) return null;
@@ -64,22 +64,28 @@
 					<line x1={MARGIN.left} x2={layout.plotRight} y1={tick.y} y2={tick.y} class="grid-line" />
 					<text x={MARGIN.left - 8} y={tick.y + 4} text-anchor="end" class="axis-label">{formatCurrency(tick.value)}</text>
 				{/each}
-				{#each layout.xTicks as tick (tick.x)}
+				{#each layout.xTicks as tick, index (tick.x)}
 					<line x1={tick.x} x2={tick.x} y1={MARGIN.top} y2={layout.plotBottom} class="grid-line grid-line--vertical" />
-					<text x={tick.x} y={layout.plotBottom + 19} text-anchor="middle" class="axis-label">{formatCurrency(tick.value)}</text>
+					<text x={tick.x} y={layout.plotBottom + 19} text-anchor={index === layout.xTicks.length - 1 ? 'end' : 'middle'} class="axis-label">{formatCurrency(tick.value)}</text>
 				{/each}
 				<polyline points={layout.line} class="curve-line" />
-				<line x1={layout.currentX} x2={layout.currentX} y1={MARGIN.top} y2={layout.plotBottom} class="active-guide" />
+				<line x1={layout.currentX} x2={layout.currentX} y1={layout.currentY} y2={layout.plotBottom} class="active-guide" />
 				<line x1={MARGIN.left} x2={layout.currentX} y1={layout.currentY} y2={layout.currentY} class="active-guide" />
 				<circle cx={layout.currentX} cy={layout.currentY} r="4.5" class="active-point">
 					<title>Active policy: {formatCurrency(operatingBuffer)} buffer requires {formatCurrency(requiredReserve)} reserve</title>
 				</circle>
-				<text x={layout.currentX + 8} y={layout.currentY - 8} class="active-label">Active policy</text>
 				<text x={MARGIN.left} y={12} class="measure-label">Required reserve</text>
 				<text x={layout.plotRight} y={HEIGHT - 4} text-anchor="end" class="measure-label">Operating buffer</text>
 			</svg>
 		</div>
-		<figcaption>Every point uses this forecast's same cash timeline and active policy inputs.</figcaption>
+		<figcaption class="policy-readout">
+			<span class="policy-key"><span class="policy-marker" aria-hidden="true"></span>Active policy</span>
+			<span class="policy-values">
+				<span><strong class="numeric">{formatCurrency(operatingBuffer)}</strong> buffer</span>
+				<span aria-hidden="true">→</span><span class="sr-only">requires</span>
+				<span><strong class="numeric">{formatCurrency(requiredReserve)}</strong> reserve</span>
+			</span>
+		</figcaption>
 	</figure>
 {/if}
 
@@ -93,11 +99,14 @@
 	}
 
 	.chart-frame {
+		position: relative;
 		flex: 1;
 		min-height: 11.875rem;
 	}
 
 	svg {
+		position: absolute;
+		inset: 0;
 		display: block;
 		width: 100%;
 		height: 100%;
@@ -113,8 +122,7 @@
 	}
 
 	.axis-label,
-	.measure-label,
-	.active-label {
+	.measure-label {
 		font-family: var(--font-mono);
 		font-size: 10px;
 	}
@@ -150,12 +158,54 @@
 		stroke-width: 2;
 	}
 
-	.active-label {
-		fill: #f0c56d;
-		font-weight: 700;
+	.policy-readout {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem 1rem;
+		margin-top: 0.65rem;
+		padding-top: 0.65rem;
+		border-top: 1px solid var(--rule);
+		color: var(--ink-soft);
+		font-size: 0.75rem;
+		line-height: 1.5;
 	}
 
-	figcaption,
+	.policy-key {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		color: var(--cobalt);
+		font-family: var(--font-mono);
+		font-size: 0.63rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.policy-marker {
+		width: 0.6rem;
+		height: 0.6rem;
+		border: 2px solid var(--cobalt);
+		border-radius: 50%;
+		background: var(--paper);
+	}
+
+	.policy-values {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.25rem 0.5rem;
+	}
+
+	.policy-values > span {
+		white-space: nowrap;
+	}
+
+	.policy-values strong {
+		color: var(--ink);
+	}
+
 	.empty-state {
 		margin: 0;
 		padding-top: 0.35rem;
@@ -166,10 +216,9 @@
 	/* Cobalt ledger skin */
 	.grid-line { stroke: var(--rule); }
 	.grid-line--vertical { stroke: var(--paper-deep); }
-	.axis-label, figcaption, .empty-state { color: var(--ink-soft); fill: var(--ink-soft); }
+	.axis-label, .empty-state { color: var(--ink-soft); fill: var(--ink-soft); }
 	.measure-label { fill: var(--ink-soft); }
 	.curve-line { stroke: var(--cobalt); }
 	.active-guide { stroke: var(--cobalt); }
 	.active-point { fill: var(--paper); stroke: var(--cobalt); }
-	.active-label { fill: var(--cobalt); }
 </style>
