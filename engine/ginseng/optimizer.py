@@ -58,6 +58,8 @@ class OptimalPlan:
     implied_liquidity_price: float | None
     cost_is_path_dependent: bool
     solver_status: str
+    evaluation_horizon_days: int
+    evaluation_draw_id: str
 
 
 def _finite_nonnegative(value: float) -> bool:
@@ -398,4 +400,6 @@ def optimize_funding(
         implied_liquidity_price=implied_liquidity_price,
         cost_is_path_dependent=cost_is_path_dependent,
         solver_status=status,
+        evaluation_horizon_days=evaluation_bundle.horizon_days,
+        evaluation_draw_id=evaluation_bundle.bootstrap_draw_id,
     )

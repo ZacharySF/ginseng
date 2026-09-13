@@ -6,8 +6,9 @@ funding class (spec 8) they draw on and how they time the resulting cash
 flows. `evaluate_plan` is a pure function of `(state, bundle, obligations,
 spec)` — every number a plan needs (settlement timing, credit-account
 choice, lot-selection method, ...) is baked into its `PlanSpec` by
-`build_candidates`, so paired plan comparisons only ever change the
-`PlanSpec`, never the stochastic draws (spec 20, common random numbers).
+`build_candidates`. Call `comparison_draw_bundle` before evaluating a set
+of candidates so every plan shares the full evaluation window and draws
+(spec 20, common random numbers).
 """
 
 from __future__ import annotations
@@ -403,6 +404,43 @@ def build_candidates(
 # --------------------------------------------------------------------------
 
 
+def required_plan_horizon(
+    state: FinancialState, bundle: DrawBundle, spec: PlanSpec
+) -> int:
+    """Include this plan's repayment, settlement, and any trailing days."""
+    material_days = [bundle.horizon_days]
+    if spec.credit_draw > 0:
+        account = next(
+            (a for a in state.credit_accounts if a.account_id == spec.credit_account_id), None
+        )
+        if account is not None:
+            material_days.append(max(1, _next_charge_payment_offset(state.as_of, account)))
+    if spec.liquidation_target > 0:
+        material_days.append(max(1, spec.settlement_days + spec.external_transfer_days))
+    latest_material_day = max(material_days)
+    return (
+        latest_material_day
+        if latest_material_day <= bundle.horizon_days
+        else latest_material_day + spec.trailing_days
+    )
+
+
+def comparison_draw_bundle(
+    state: FinancialState, bundle: DrawBundle, specs: Sequence[PlanSpec]
+) -> DrawBundle:
+    """Extend once to the longest candidate horizon, preserving the chart's draws.
+
+    Use the returned bundle for every candidate and the optimizer. Plans
+    with no late payment still face ordinary cash flows throughout this
+    common window; their risk cannot benefit from a shorter evaluation.
+    """
+    horizon = max(
+        (required_plan_horizon(state, bundle, spec) for spec in specs),
+        default=bundle.horizon_days,
+    )
+    return extend_draw_bundle(bundle, horizon)
+
+
 def evaluate_plan(
     state: FinancialState,
     bundle: DrawBundle,
@@ -411,7 +449,9 @@ def evaluate_plan(
 ) -> PlanResult:
     """Evaluate one `PlanSpec` on `bundle` (spec 20: the same bundle every
     candidate plan in a comparison must share) and return every spec-60
-    objective."""
+    objective. For comparisons, first prepare `comparison_draw_bundle`.
+    Standalone evaluation still extends to include the plan's own liabilities.
+    """
     reasons: list[str] = []
 
     credit_account = None
@@ -484,18 +524,7 @@ def evaluate_plan(
 
     # Horizon extension (spec 14): never let a plan's own obligation look
     # free just because it falls outside the requested chart.
-    material_days = [bundle.horizon_days]
-    if spec.credit_draw > 0 and credit_account is not None:
-        material_days.append(credit_due_day)
-    if spec.liquidation_target > 0:
-        material_days.append(settlement_day)
-    latest_material_day = max(material_days)
-    evaluation_horizon = (
-        latest_material_day
-        if latest_material_day <= bundle.horizon_days
-        else latest_material_day + spec.trailing_days
-    )
-    eval_bundle = extend_draw_bundle(bundle, evaluation_horizon)
+    eval_bundle = extend_draw_bundle(bundle, required_plan_horizon(state, bundle, spec))
 
     cash_matrix = cash_paths(state, eval_bundle, obligations)
     n_paths, horizon_days = cash_matrix.shape

@@ -56,6 +56,33 @@ REPAIR_SCHEDULE = [
     },
 ]
 
+
+def test_scenario_funding_results_share_one_complete_evaluation():
+    # Call the endpoint calculation directly so this numerical contract
+    # also runs independently of the HTTP authentication/test-client layer.
+    from ginseng.api import ScenarioRequest, scenario
+
+    body = scenario(
+        ScenarioRequest(paths=120, obligations=REPAIR_SCHEDULE), None
+    ).model_dump()
+
+    assert len(body["plans"]) == 4
+    evaluations = {
+        (plan["evaluation_horizon_days"], plan["evaluation_draw_id"])
+        for plan in body["plans"]
+    }
+    assert len(evaluations) == 1
+    horizon, draw_id = evaluations.pop()
+    assert horizon == 38
+    assert re.fullmatch(r"[0-9a-f]{64}", draw_id)
+    # The public chart remains the requested 30 days, with its own draw id.
+    assert len(body["cash_paths"]["days"]) == 30
+    assert draw_id != body["bootstrap_draw_id"]
+    optimal = body["optimal_plan"]
+    assert optimal is not None
+    assert optimal["evaluation_horizon_days"] == horizon
+    assert optimal["evaluation_draw_id"] == draw_id
+
 FLOAT_FIELDS = (
     "immediate_funding",
     "marketable_backup_capital",

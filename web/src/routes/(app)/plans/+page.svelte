@@ -44,7 +44,15 @@
 				</section>
 				<section>
 					<p class="label">Reading the list</p>
-					<span>Every option uses the same modeled paths. Differences reflect funding tradeoffs, not a different market draw.</span>
+					{#if s.plans.length > 0}
+						<strong>{s.plans[0].evaluation_horizon_days}-day comparison</strong>
+						<span>Every funding plan uses the same modeled paths over these {s.plans[0].evaluation_horizon_days} days, including credit repayment and sale settlement.</span>
+						{#if s.plans[0].evaluation_horizon_days > s.cash_paths.days.length}
+							<span>The cash chart shows {s.cash_paths.days.length} days. Plan comparisons extend through later funding payments and the days immediately after them.</span>
+						{/if}
+					{:else}
+						<span>Funding plans will share one evaluation period, including any later credit repayment or sale settlement.</span>
+					{/if}
 				</section>
 			</aside>
 		</div>

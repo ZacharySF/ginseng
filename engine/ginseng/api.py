@@ -44,7 +44,7 @@ from ginseng.chat import (
     prepare_chat,
     stream_chat_events,
 )
-from ginseng.funding import FundingConfig, build_candidates, evaluate_plan
+from ginseng.funding import FundingConfig, build_candidates, comparison_draw_bundle, evaluate_plan
 from ginseng.generate import DEFAULT_SEED, generate_persona
 from ginseng.metrics import compute_scenario_metrics
 from ginseng.optimizer import optimize_funding
@@ -506,12 +506,13 @@ def scenario(
         )
         if computed.funding_gap > 0:
             specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig())
-            results = [evaluate_plan(persona, bundle, obligations, spec) for spec in specs]
+            evaluation_bundle = comparison_draw_bundle(persona, bundle, specs)
+            results = [evaluate_plan(persona, evaluation_bundle, obligations, spec) for spec in specs]
             recommendation = recommend(results, FundingPolicy())
             plans, recommendation_dict = to_contract(results, recommendation)
             optimal = optimize_funding(
                 persona,
-                bundle,
+                evaluation_bundle,
                 obligations,
                 coverage_target=request.coverage_target,
                 operating_buffer=request.operating_buffer,

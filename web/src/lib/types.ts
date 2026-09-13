@@ -61,6 +61,8 @@ export interface ShortfallDistribution {
 export interface Plan {
 	id: string;
 	label: string;
+	evaluation_horizon_days: number;
+	evaluation_draw_id: string;
 	cash_shortfall_probability: number;
 	avg_cash_deficit_when_short: number;
 	new_debt: number;
@@ -108,6 +110,8 @@ export interface OptimalPlan {
 	implied_liquidity_price: number | null;
 	cost_is_path_dependent: boolean;
 	solver_status: string;
+	evaluation_horizon_days: number;
+	evaluation_draw_id: string;
 }
 
 export interface ScenarioResponse {

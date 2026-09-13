@@ -45,11 +45,17 @@ def _dominates(a: PlanResult, b: PlanResult) -> bool:
     return no_worse and strictly_better
 
 
+def _require_common_evaluation(results: Sequence[PlanResult]) -> None:
+    if len({(r.evaluation_horizon_days, r.evaluation_draw_id) for r in results}) > 1:
+        raise ValueError("Funding plans must share the same evaluation horizon and draw bundle.")
+
+
 def pareto_filter(results: Sequence[PlanResult]) -> list[PlanResult]:
     """Mark each plan dominated when another feasible plan is no worse on
     every objective and strictly better on at least one (spec 43). Only
     feasible plans can dominate; every plan's own feasibility is left
     untouched here (spec 45 removes infeasible plans separately)."""
+    _require_common_evaluation(results)
     feasible_pool = [r for r in results if r.feasible]
     filtered: list[PlanResult] = []
     for candidate in results:
@@ -182,6 +188,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
     if not results:
         return Recommendation(plan_id="", explanation="No candidate plans were generated.")
 
+    _require_common_evaluation(results)
     feasible = [r for r in results if r.feasible]
     if not feasible:
         reason = results[0].infeasibility_reason or "no candidate plan can fund the gap in full"
@@ -252,6 +259,7 @@ def to_contract(
 ) -> tuple[list[dict], dict]:
     """Serialize evaluated plans and the recommendation to the frozen
     Plans Screen JSON shape (spec 60)."""
+    _require_common_evaluation(results)
     frontier = pareto_filter([r for r in results if r.feasible])
     by_id = {r.id: r for r in frontier}
 
@@ -279,6 +287,8 @@ def to_contract(
             {
                 "id": result.id,
                 "label": result.label,
+                "evaluation_horizon_days": result.evaluation_horizon_days,
+                "evaluation_draw_id": result.evaluation_draw_id,
                 "cash_shortfall_probability": result.cash_shortfall_probability,
                 "avg_cash_deficit_when_short": result.avg_cash_deficit_when_short,
                 "new_debt": result.new_debt,
