@@ -2,7 +2,7 @@
 
 import pytest
 
-from ginseng import api
+from ginseng import api, scenario_service
 from ginseng.optimizer import OptimizationFailure
 
 
@@ -13,7 +13,7 @@ from ginseng.optimizer import OptimizationFailure
      "infeasible", "unbounded", "invalid_solution"],
 )
 def test_optimizer_failure_is_explicit_and_keeps_named_plans(monkeypatch, reason):
-    monkeypatch.setattr(api, "optimize_funding", lambda *args, **kwargs: OptimizationFailure(reason))
+    monkeypatch.setattr(scenario_service, "optimize_funding", lambda *args, **kwargs: OptimizationFailure(reason))
     response = api.scenario(api.ScenarioRequest(
         paths=120,
         obligations=[{"id": "repair", "label": "Repair", "amount": 4500.0, "due_in_days": 3}],

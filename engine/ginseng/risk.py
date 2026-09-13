@@ -5,6 +5,21 @@ from __future__ import annotations
 import hashlib
 import numpy as np
 
+# A micro-dollar absorbs solver roundoff without concealing a cent-sized gap.
+MONEY_TOLERANCE = 1e-6
+PROBABILITY_TOLERANCE = 1e-12
+
+
+def balance_risk(balances, buffer, q, weights=None) -> dict:
+    w = probabilities(len(balances), weights)
+    minima = np.min(balances, axis=1)
+    return {
+        "cash_shortfall_probability": float(w[minima < -MONEY_TOLERANCE].sum() / w.sum()),
+        "buffer_breach_probability": float(w[minima < buffer - MONEY_TOLERANCE].sum() / w.sum()),
+        "dollar_days_below_buffer": float(w @ np.maximum(0, buffer - balances).sum(axis=1)),
+        "tail_deficit": cvar(np.maximum(0, buffer - minima), q, w),
+    }
+
 
 def probabilities(n: int, weights: np.ndarray | None = None) -> np.ndarray:
     if n < 1:

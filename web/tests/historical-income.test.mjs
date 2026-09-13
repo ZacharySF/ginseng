@@ -81,3 +81,41 @@ test('requires enough valid coverage and at least one variable-income observatio
 		'income'
 	);
 });
+
+test('separates payment timing from size and aggregates transactions on the same day', () => {
+	const result = deriveHistoricalIncome(
+		[
+			income('first', '2026-01-10', 50_000),
+			income('same-day', '2026-01-10', 50_000),
+			income('second', '2026-01-20', 100_000)
+		], '2026-01-01', '2026-02-28', 'all'
+	);
+	assert.equal(result.status, 'ready');
+	assert.equal(result.monthlyIncomeCents, 100_000);
+	assert.equal(result.uncappedVariability, 1);
+	assert.equal(result.observedPaymentDays, 2);
+	assert.equal(result.paymentDaysPerMonth, 1);
+	assert.equal(result.paymentSizeVariability, 0);
+});
+
+test('one observed payment does not imply certainty about payment size', () => {
+	const result = deriveHistoricalIncome(
+		[income('only', '2026-03-10', 100_000)], '2026-01-01', '2026-03-31', 'all'
+	);
+	assert.equal(result.status, 'ready');
+	assert.equal(result.paymentDaysPerMonth, 0.33);
+	assert.equal(result.paymentSizeVariability, null);
+});
+
+test('payment-size estimates obey the model limit independently of monthly variability', () => {
+	const transactions = Array.from({length: 9}, (_, index) =>
+		income(`small-${index}`, `2026-01-${String(index + 1).padStart(2, '0')}`, 1)
+	);
+	transactions.push(income('large', '2026-02-01', 1_000_000));
+	const result = deriveHistoricalIncome(transactions, '2026-01-01', '2026-02-28', 'all');
+	assert.equal(result.status, 'ready');
+	assert.equal(result.paymentDaysPerMonth, 5);
+	assert.equal(result.paymentSizeVariability, 2);
+	assert.ok(result.uncappedPaymentSizeVariability > 2);
+	assert.ok(result.uncappedVariability < 1);
+});

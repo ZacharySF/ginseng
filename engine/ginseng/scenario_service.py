@@ -21,6 +21,8 @@ from ginseng.funding import (
     evaluate_plan,
     extend_draw_bundle,
     plan_evaluation_horizon,
+    optimizer_comparison_bundle,
+    settlement_forecast_day,
 )
 from ginseng.metrics import compute_scenario_metrics
 from ginseng.optimizer import (
@@ -33,6 +35,9 @@ from ginseng.optimizer import (
 from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.simulate import DrawBundle, PathBundle
 from ginseng.state import FinancialState, Obligation
+from ginseng.withdrawals import WithdrawalAssumptions, account_liquidity
+from ginseng.risk import probabilities, MONEY_TOLERANCE
+from ginseng.provenance import fingerprint, model_card
 
 
 class SeverityMetrics(BaseModel):
@@ -148,6 +153,8 @@ class ScenarioResponse(BaseModel):
     recommendation_status: str = "available"
     excluded_obligations: list[str] = Field(default_factory=list)
     account_liquidity: dict[str, Any] = Field(default_factory=dict)
+    funding_policy: dict[str, Any] = Field(default_factory=dict)
+    funding_evaluation_horizon_days: int | None = None
 
 
 @dataclass(frozen=True)
@@ -163,16 +170,33 @@ def _direct_average_discretionary(bundle: DrawBundle | PathBundle) -> float | No
     return float(np.mean(paths)) if paths.size else 0.0
 
 
-def _optimizer_unavailable_reason(
-    state: FinancialState,
-    *,
-    include_optimizer: bool,
-) -> str | None:
-    if not include_optimizer:
-        return "Funding optimization is not meaningful for this forecast mode."
-    if not state.credit_accounts and not state.taxable_portfolio:
-        return "Add an actual credit account or taxable holding before requesting an optimized funding mix."
-    return None
+def evaluate_funding(state, bundle, obligations, gap, *, coverage_target, operating_buffer,
+                     funding_config=FundingConfig(), funding_policy=FundingPolicy(),
+                     overdraft_apr=0.2999, capital_gains_rate=0.15,
+                     buffer_tolerance_dollar_days=None, tail_deficit_limit=None, weights=None,
+                     include_optimizer=True):
+    """One comparison contract for personal forecasts, demos and their optimizer."""
+    assumptions = WithdrawalAssumptions(long_term_rate=capital_gains_rate)
+    funding_config = replace(funding_config, max_credit_utilization=funding_policy.max_credit_utilization)
+    specs = build_candidates(state, obligations, gap, funding_config, assumptions,
+                             average_daily_discretionary_spending=_direct_average_discretionary(bundle))
+    comparison = optimizer_comparison_bundle(state, bundle, specs, funding_config)
+    allowance = (operating_buffer * comparison.horizon_days * (1 - coverage_target)
+                 if buffer_tolerance_dollar_days is None else buffer_tolerance_dollar_days)
+    policy = replace(funding_policy, capital_gains_rate=capital_gains_rate, overdraft_apr=overdraft_apr,
+                     max_buffer_breach_probability=1 - coverage_target,
+                     buffer_tolerance_dollar_days=allowance, tail_deficit_limit=tail_deficit_limit)
+    results = [evaluate_plan(state, comparison, obligations, spec, weights,
+        operating_buffer=operating_buffer, overdraft_apr=overdraft_apr,
+        evaluation_horizon_days=comparison.horizon_days, decision_horizon_days=bundle.horizon_days) for spec in specs]
+    plans, recommendation = to_contract(results, recommend(results, policy), policy)
+    optimal = (optimize_funding(state, bundle, obligations, coverage_target=coverage_target,
+        operating_buffer=operating_buffer, overdraft_apr=overdraft_apr,
+        capital_gains_rate=capital_gains_rate, buffer_tolerance_dollar_days=allowance,
+        tail_deficit_limit=tail_deficit_limit, funding_config=funding_config, funding_policy=policy,
+        weights=weights, evaluation_horizon_days=comparison.horizon_days,
+        decision_horizon_days=bundle.horizon_days) if include_optimizer else OptimizationFailure("no_funding_levers"))
+    return plans, recommendation, optimal, policy, comparison
 
 
 def evaluate_scenario(
@@ -192,6 +216,8 @@ def evaluate_scenario(
     include_optimizer: bool = True,
     deterministic: bool = False,
     uncertainty_outer_paths: int | None = None,
+    model_source: str = "demo",
+    input_config: dict | None = None,
 ) -> ScenarioEvaluation:
     """Evaluate every shared ScenarioResponse field on one matched bundle.
 
@@ -245,63 +271,35 @@ def evaluate_scenario(
     optimal_plan: dict[str, Any] | None = None
     optimizer_reason: str | None = None
     optimizer_result: OptimalPlan | OptimizationFailure | None = None
-    resolved_funding_policy = replace(
-        funding_policy,
-        capital_gains_rate=capital_gains_rate,
-        overdraft_apr=overdraft_apr,
-    )
-    if computed.funding_gap > 0:
-        specs = build_candidates(
-            state,
-            obligations,
-            computed.funding_gap,
-            funding_config,
-            average_daily_discretionary_spending=_direct_average_discretionary(bundle),
-        )
-        comparison_horizon = max(
-            plan_evaluation_horizon(state, bundle, spec)
-            for spec in specs
-        )
-        comparison_bundle = extend_draw_bundle(bundle, comparison_horizon)
-        results = [
-            evaluate_plan(
-                state,
-                comparison_bundle,
-                obligations,
-                spec,
-                operating_buffer=operating_buffer,
-                overdraft_apr=overdraft_apr,
-                evaluation_horizon_days=comparison_horizon,
-                decision_horizon_days=bundle.horizon_days,
-            )
-            for spec in specs
-        ]
-        chosen = recommend(results, resolved_funding_policy)
-        plans, recommendation = to_contract(results, chosen)
+    resolved_funding_policy = funding_policy
+    comparison_bundle = bundle
+    needs_mean_protection = (buffer_tolerance_dollar_days is not None
+        and computed.severity["dollar_days_below_buffer"] > buffer_tolerance_dollar_days + MONEY_TOLERANCE)
+    if computed.funding_gap > 0 or needs_mean_protection:
+        plans, recommendation, optimizer_result, resolved_funding_policy, comparison_bundle = evaluate_funding(
+            state, bundle, obligations, computed.funding_gap, coverage_target=coverage_target,
+            operating_buffer=operating_buffer, funding_config=funding_config, funding_policy=funding_policy,
+            overdraft_apr=overdraft_apr, capital_gains_rate=capital_gains_rate,
+            buffer_tolerance_dollar_days=buffer_tolerance_dollar_days, include_optimizer=include_optimizer)
+        if isinstance(optimizer_result, OptimizationFailure):
+            optimizer_reason = optimizer_status(optimizer_result, bundle.n_paths).message
+        elif isinstance(optimizer_result, OptimalPlan):
+            optimal_plan = asdict(optimizer_result)
 
-        optimizer_reason = _optimizer_unavailable_reason(
-            state,
-            include_optimizer=include_optimizer,
-        )
-        if optimizer_reason is None:
-            optimizer_result = optimize_funding(
-                state,
-                bundle,
-                obligations,
-                coverage_target=coverage_target,
-                operating_buffer=operating_buffer,
-                overdraft_apr=overdraft_apr,
-                buffer_tolerance_dollar_days=buffer_tolerance_dollar_days,
-                capital_gains_rate=capital_gains_rate,
-                funding_config=funding_config,
-                funding_policy=resolved_funding_policy,
-            )
-            if isinstance(optimizer_result, OptimizationFailure):
-                optimizer_reason = optimizer_status(
-                    optimizer_result, bundle.n_paths
-                ).message
-            elif isinstance(optimizer_result, OptimalPlan):
-                optimal_plan = asdict(optimizer_result)
+    accounts = account_liquidity(state, WithdrawalAssumptions(long_term_rate=capital_gains_rate))
+    available_day = settlement_forecast_day(state.as_of, funding_config.settlement_days,
+        funding_config.external_transfer_days, use_business_days=funding_config.use_business_days)
+    accounts["availability_delay_days"] = max(0, available_day - 1) if funding_config.use_business_days else available_day
+    accounts["assumptions"][4]["value"] = f"Forecast day {available_day}"
+    accounts["assumptions"][4]["source"] = (f"{funding_config.settlement_days} settlement + {funding_config.external_transfer_days} transfer days; "
+        + ("weekends excluded, holidays not modeled. " if funding_config.use_business_days else "calendar-day approximation. ")
+        + "Taxes and penalties are earmarked from proceeds.")
+    config = {"source": model_source, "funding": asdict(funding_config), "policy": asdict(resolved_funding_policy),
+              "coverage_target": coverage_target, "operating_buffer": operating_buffer, "inputs": input_config or {},
+              "withdrawal_assumptions": accounts["assumptions"]}
+    from ginseng.simulate import cash_paths as simulate_cash_paths
+    hashes = fingerprint(state, bundle, obligations, probabilities(bundle.n_paths), None, config,
+                         simulate_cash_paths(state, bundle, obligations))
 
     cash_paths = dict(computed.cash_paths)
     if deterministic:
@@ -340,6 +338,14 @@ def evaluate_scenario(
             wrong_way_risk=computed.wrong_way_risk,
             optimal_plan=optimal_plan,
             optimizer_status=optimizer_status(optimizer_result, bundle.n_paths),
+            account_liquidity=accounts,
+            provenance=hashes,
+            model_card=model_card(state, bundle, config, {}, hashes, source=model_source),
+            immediate_cash_coverage_ratio=(state.immediate_funding / computed.required_liquidity_reserve
+                                          if computed.required_liquidity_reserve > 0 else None),
+            funding_policy=asdict(resolved_funding_policy),
+            funding_evaluation_horizon_days=comparison_bundle.horizon_days,
+            recommendation_status="no_plan_meets_policy" if recommendation and not recommendation["plan_id"] else "available",
         ),
         optimizer_reason=optimizer_reason,
     )

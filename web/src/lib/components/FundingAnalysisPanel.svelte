@@ -32,12 +32,12 @@
 		{#if solved.length}
 			<svg class="analysis-plot" viewBox="0 0 640 275" role="img" aria-label="Average cost versus tail buffer deficit, including named funding plans">
 				<path d="M65 35V215H565" stroke="var(--rule-strong)" fill="none" />
-				{#each anchors as anchor}<rect x={x(anchor.expected_cost)-4} y={y(anchor.tail_deficit)-4} width="8" height="8" fill={anchor.feasible ? 'var(--ink-muted)' : 'var(--negative)'}><title>{anchor.label}: average cost {formatCurrency(anchor.expected_cost)}, tail deficit {formatCurrency(anchor.tail_deficit)}{anchor.feasible ? '' : ' · funding operation unavailable'}</title></rect>{/each}
+				{#each anchors as anchor}<rect x={x(anchor.expected_cost)-4} y={y(anchor.tail_deficit)-4} width="8" height="8" fill={anchor.feasible && anchor.meets_policy !== false ? 'var(--ink-muted)' : 'var(--negative)'}><title>{anchor.label}: average cost {formatCurrency(anchor.expected_cost)}, tail deficit {formatCurrency(anchor.tail_deficit)}{!anchor.feasible ? ' · funding operation unavailable' : anchor.meets_policy === false ? ' · outside policy' : ''}</title></rect>{/each}
 				{#each solved as point,i}<circle cx={x(point.plan!.expected_cost)} cy={y(point.plan!.tail_deficit)} r={i === selectedIndex ? 7 : 4} fill="var(--cobalt)"><title>Limit {formatCurrency(point.limit)}: cost {formatCurrency(point.plan!.expected_cost)}, tail deficit {formatCurrency(point.plan!.tail_deficit)}</title></circle>{/each}
 				<text x="65" y="20">Tail buffer deficit · up to {formatCurrency(maxDeficit)}</text>
 				<text x="65" y="239">$0</text><text x="565" y="239" text-anchor="end">{formatCurrency(maxCost)}</text><text x="315" y="264" text-anchor="middle">Average modeled cost →</text>
 			</svg>
-			<p class="analysis-note">Blue circles: solved limits. Squares: named plans (red means an unavailable funding operation). These are sampled tradeoffs; values between points are not computed.</p>
+			<p class="analysis-note">Blue circles: solved limits. Squares: named plans (red means unavailable or outside policy). These are sampled tradeoffs; values between points are not computed.</p>
 			<label>Explore the {solved.length} solved limits<input type="range" min="0" max={solved.length-1} step="1" bind:value={selectedIndex} aria-valuetext={selected ? `Tail deficit limit ${formatCurrency(selected.limit)}` : undefined} /></label>
 			{#if selected?.plan}
 				{@const p = selected.plan}
@@ -56,13 +56,14 @@
 		{#if report.budget_exhausted}<p class="analysis-alert">The analysis reached its time budget. Completed comparisons are shown; missing results are labeled.</p>{/if}
 		{#if report.anchors.length}
 			<div class="analysis-table"><table><caption>Named plans measured using the same losses</caption><thead><tr><th>Plan</th><th>Average cost</th><th>Tail cost</th><th>Tail buffer deficit</th></tr></thead><tbody>
-				{#each report.anchors as anchor}<tr><td>{anchor.label}{#if !anchor.feasible}<br />Funding operation unavailable{/if}</td><td>{formatCurrency(anchor.expected_cost)}</td><td>{formatCurrency(anchor.cvar_cost)}</td><td>{formatCurrency(anchor.tail_deficit)}</td></tr>{/each}
+				{#each report.anchors as anchor}<tr><td>{anchor.label}{#if anchor.feasible && anchor.meets_policy === false} · outside policy{/if}{#if !anchor.feasible}<br />Funding operation unavailable{/if}</td><td>{formatCurrency(anchor.expected_cost)}</td><td>{formatCurrency(anchor.cvar_cost)}</td><td>{formatCurrency(anchor.tail_deficit)}</td></tr>{/each}
 			</tbody></table></div>
 		{/if}
 		{#if report.holdout}
 			<h3>Original optimized mix on fresh futures</h3>
 			{#if report.holdout.status === 'ready'}
 				<p>{report.holdout.label}</p>
+                {#if report.holdout.meets_policy !== undefined}<p><strong>{report.holdout.meets_policy ? 'Policy held in this fresh sample.' : 'Policy did not hold in this fresh sample.'}</strong> {report.holdout.policy_reason ?? ''}</p>{/if}
 				<div class="analysis-grid"><div><small>Average cost</small><strong>{formatCurrency(report.holdout.expected_cost)}</strong></div><div><small>Tail cost</small><strong>{formatCurrency(report.holdout.cvar_cost)}</strong></div><div><small>Cash shortfall</small><strong>{formatPercent(report.holdout.cash_shortfall_probability)}</strong></div></div>
 				<p>Mean buffer limit: {report.holdout.within_mean_buffer_limit ? 'held in this fresh sample' : 'exceeded in this fresh sample'}.{report.holdout.within_tail_deficit_limit === null ? '' : ` Tail deficit limit: ${report.holdout.within_tail_deficit_limit ? 'held' : 'exceeded'}.`}</p>
 			{:else}<p>{report.holdout.message}</p>{/if}
@@ -72,7 +73,7 @@
 			{#each report.shadow_checks as check}
 				<h3>{check.resource === 'credit_capacity' ? 'Value of extra credit capacity' : 'Value of extra average buffer dollar-days'}</h3>
 				<p>Solver's local value: {marginal(check.solver_dual)} per additional unit.</p>
-				<div class="analysis-table"><table><thead><tr><th>Extra capacity</th><th>Cost saved per unit</th></tr></thead><tbody>{#each check.checks as row}<tr><td>{row.bump}</td><td>{row.value_per_unit === null ? row.status.replaceAll('_',' ') : marginal(row.value_per_unit)}</td></tr>{/each}</tbody></table></div>
+				<div class="analysis-table"><table><thead><tr><th>Extra usable capacity</th><th>Cost saved per unit</th></tr></thead><tbody>{#each check.checks as row}<tr><td>{row.bump}</td><td>{row.value_per_unit === null ? row.status.replaceAll('_',' ') : marginal(row.value_per_unit)}</td></tr>{/each}</tbody></table></div>
 				{#if check.range}<p>Measured range: {marginal(check.range.low)}–{marginal(check.range.high)}. {check.stable ? 'Similar across the three tested increments.' : 'The marginal value varies or some checks are unavailable.'}</p>{/if}
 			{/each}
 			<p>These values apply near the current plan. Multiplying them by the entire credit limit would not measure the cost of that limit.</p>

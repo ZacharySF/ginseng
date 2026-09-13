@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator, Awaitable
 from dataclasses import asdict, replace
 from functools import lru_cache
 import os
-from threading import BoundedSemaphore
+from ginseng.resources import SCENARIO_GATE
 import time
 from ginseng import uncertainty
 from typing import Annotated, Any, Literal
@@ -57,12 +57,13 @@ from ginseng.scenario_service import (
     SeverityMetrics,
     ShortfallDistribution,
     evaluate_scenario,
+    evaluate_funding,
     optimizer_status as _optimizer_status,
 )
 from ginseng.funding import FundingConfig, build_candidates, optimizer_comparison_bundle, evaluate_plan
 from ginseng.generate import DEFAULT_SEED, generate_persona
 from ginseng.metrics import compute_scenario_metrics, required_liquidity_per_path
-from ginseng.risk import probabilities, concentration, cvar
+from ginseng.risk import probabilities, concentration, cvar, MONEY_TOLERANCE
 from ginseng.stress import DroughtView, scenario_weights
 from ginseng.provenance import fingerprint, model_card
 from ginseng.calibration import walk_forward
@@ -92,7 +93,7 @@ DEMO_MAX_PATHS = 3_000
 DEMO_MAX_OBLIGATIONS = 200
 DEMO_MAX_OPERATING_BUFFER = 1_000_000.0
 DEMO_MAX_OBLIGATION_AMOUNT = 1_000_000.0
-_SCENARIO_GATE = BoundedSemaphore(value=2)
+_SCENARIO_GATE = SCENARIO_GATE
 _SUPABASE_GATEWAY = get_supabase_gateway()
 
 
@@ -416,8 +417,13 @@ def _scenario_context(request: ScenarioRequest):
 
 
 def _optimizer_parameters(request: ScenarioRequest) -> dict:
-    return {name: getattr(request, name) for name in ("coverage_target", "operating_buffer", "overdraft_apr",
-            "buffer_tolerance_dollar_days", "capital_gains_rate", "tail_deficit_limit")}
+    return {**{name: getattr(request, name) for name in ("coverage_target", "operating_buffer", "overdraft_apr",
+            "buffer_tolerance_dollar_days", "capital_gains_rate", "tail_deficit_limit")},
+            "funding_policy": FundingPolicy(max_buffer_breach_probability=1-request.coverage_target,
+                max_cash_shortfall_probability=1-request.coverage_target,
+                capital_gains_rate=request.capital_gains_rate,
+                buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
+                tail_deficit_limit=request.tail_deficit_limit)}
 
 
 def _summary(computed) -> dict:
@@ -449,14 +455,15 @@ def scenario(
         weak_stress = stress["status"] == "active" and (support["ens_tail"] < 20 or support["max_weight"] > 0.1)
         stress["recommendation_supported"] = stress["status"] != "unsupported" and not weak_stress
         stress["support_policy"] = "Stress recommendations require tail ENS >= 20 and maximum scenario weight <= 10%; these are policy assumptions."
-        config = {**_optimizer_parameters(request), "funding": asdict(FundingConfig()), "policy": asdict(FundingPolicy()),
+        optimizer_parameters = _optimizer_parameters(request)
+        config = {**{key: value for key, value in optimizer_parameters.items() if key != "funding_policy"},
+                  "funding": asdict(FundingConfig()), "policy": asdict(optimizer_parameters["funding_policy"]),
                   "horizon_days": request.horizon_days, "mean_block_length": bundle.mean_block_length,
                   "quantile_method": "inverse empirical CDF", "tail_ties": "proportional fractional mass"}
         withdrawal_assumptions = WithdrawalAssumptions(long_term_rate=request.capital_gains_rate)
         accounts = account_liquidity(persona, withdrawal_assumptions)
         config["withdrawals"] = {"version": accounts["assumptions_version"], **asdict(withdrawal_assumptions),
                                  "roth_earnings_and_conversions": "excluded", "tax_reserve_timing": "set aside at availability"}
-        hashes = fingerprint(persona, bundle, obligations, weights, view, config, matrix)
         band = uncertainty.estimate_band(
             persona,
             obligations,
@@ -480,25 +487,23 @@ def scenario(
         ) if view is None else []
         current_tail_deficit = cvar(np.maximum(0, request.operating_buffer - (persona.immediate_funding + matrix).min(axis=1)), request.coverage_target, weights)
         needs_tail_protection = request.tail_deficit_limit is not None and current_tail_deficit > request.tail_deficit_limit
-        if computed.funding_gap > 0 or needs_tail_protection:
-            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig(), withdrawal_assumptions)
-            evaluation_bundle = optimizer_comparison_bundle(persona, bundle, specs)
-            results = [evaluate_plan(persona, evaluation_bundle, obligations, spec, weights) for spec in specs]
-            recommendation = recommend(results, FundingPolicy())
-            plans, recommendation_dict = to_contract(results, recommendation)
-            optimal = optimize_funding(
-                persona,
-                evaluation_bundle,
-                obligations,
-                weights=weights,
-                **_optimizer_parameters(request),
-            )
+        needs_mean_protection = (request.buffer_tolerance_dollar_days is not None
+            and computed.severity["dollar_days_below_buffer"] > request.buffer_tolerance_dollar_days + MONEY_TOLERANCE)
+        if computed.funding_gap > 0 or needs_tail_protection or needs_mean_protection:
+            plans, recommendation_dict, optimal, active_policy, evaluation_bundle = evaluate_funding(
+                persona, bundle, obligations, computed.funding_gap,
+                weights=weights, **_optimizer_parameters(request))
             optimal_plan = asdict(optimal) if isinstance(optimal, OptimalPlan) else None
         else:
             plans = []
             recommendation_dict = None
             optimal_plan = None
             optimal = None
+        if plans:
+            config["policy"] = asdict(active_policy)
+            config["funding"]["max_credit_utilization"] = active_policy.max_credit_utilization
+        config["evaluation_horizon_days"] = evaluation_bundle.horizon_days if plans else bundle.horizon_days
+        hashes = fingerprint(persona, bundle, obligations, weights, view, config, matrix)
         recommendation_status = "available"
         if not stress["recommendation_supported"]:
             recommendation_status = "stress_support_insufficient"
@@ -543,6 +548,8 @@ def scenario(
             recommendation_status=recommendation_status,
             excluded_obligations=[item.id for item in obligations if item.due_in_days > request.horizon_days],
             account_liquidity=accounts,
+            funding_policy=asdict(active_policy) if plans else {},
+            funding_evaluation_horizon_days=evaluation_bundle.horizon_days if plans else bundle.horizon_days,
         )
     finally:
         _SCENARIO_GATE.release()
@@ -572,10 +579,13 @@ def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdenti
         if stress["status"] == "unsupported":
             return {"status": "unavailable", "reason": "The requested stress has no supporting scenarios."}
         computed = compute_scenario_metrics(persona, bundle, obligations, request.coverage_target, request.operating_buffer, weights)
-        specs = build_candidates(persona, obligations, computed.funding_gap,
+        parameters = _optimizer_parameters(request)
+        funding_config = FundingConfig(max_credit_utilization=parameters["funding_policy"].max_credit_utilization)
+        specs = build_candidates(persona, obligations, computed.funding_gap, funding_config,
                                  withdrawal_assumptions=WithdrawalAssumptions(long_term_rate=request.capital_gains_rate))
-        evaluation = optimizer_comparison_bundle(persona, bundle, specs)
-        return funding_analysis(persona, evaluation, obligations, specs, weights, view, _optimizer_parameters(request))
+        evaluation = optimizer_comparison_bundle(persona, bundle, specs, funding_config)
+        return funding_analysis(persona, evaluation, obligations, specs, weights, view,
+                                {**parameters, "funding_config": funding_config, "decision_horizon_days": bundle.horizon_days})
     finally:
         _SCENARIO_GATE.release()
 

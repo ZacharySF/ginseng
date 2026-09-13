@@ -17,10 +17,12 @@
 	}: Props = $props();
 
 	const stochasticMetrics = [
+		{ label: 'Buffer breach', read: (plan: Plan) => plan.buffer_breach_probability == null ? 'Unavailable' : formatPercent(plan.buffer_breach_probability) },
 		{ label: 'Shortfall', read: (plan: Plan) => formatPercent(plan.cash_shortfall_probability) },
 		{ label: 'Avg. deficit', read: (plan: Plan) => formatCurrency(plan.avg_cash_deficit_when_short) }
 	];
 	const sharedMetrics = [
+		{ label: 'Tax + penalty reserve', read: (plan: Plan) => formatCurrency((plan.withdrawal_tax_reserve ?? 0) + (plan.withdrawal_penalty_reserve ?? 0)) },
 		{ label: 'New debt', read: (plan: Plan) => formatCurrency(plan.new_debt) },
 		{ label: 'Interest', read: (plan: Plan) => formatCurrency(plan.interest_exposure) },
 		{ label: 'Assets sold', read: (plan: Plan) => formatCurrency(plan.investment_sold) },
@@ -41,7 +43,7 @@
 		<section class="recommendation-line" aria-label="Model recommendation">
 			<div>
 				<p>Model recommendation</p>
-				<strong>{recommendedPlan?.label ?? recommendation.plan_id}</strong>
+				<strong>{recommendedPlan?.label ?? (recommendation.plan_id || 'No named plan meets policy')}</strong>
 			</div>
 			<span>{recommendation.explanation}</span>
 		</section>
@@ -59,6 +61,7 @@
 					<div class="plan-states">
 						{#if plan.recommended}<span class="plan-state selected">Selected</span>{/if}
 						{#if !plan.feasible}<span class="plan-state limited">Unavailable</span>{/if}
+                        {#if plan.feasible && plan.meets_policy === false}<span class="plan-state limited">Outside policy</span>{/if}
 						{#if plan.dominated}<span class="plan-state dominated-state">Dominated</span>{/if}
 					</div>
 				</header>
@@ -66,6 +69,7 @@
 				{#if !plan.feasible && plan.infeasible_reason}
 					<p class="constraint"><strong>Limit:</strong> {plan.infeasible_reason}</p>
 				{/if}
+                {#if plan.feasible && plan.policy_reason}<p class="constraint"><strong>Policy:</strong> {plan.policy_reason}</p>{/if}
 				{#if plan.dominated && plan.dominated_by}
 					<p class="dominance-note">Dominated by {plan.dominated_by}; it has no better modeled tradeoff under the same inputs.</p>
 				{/if}
@@ -235,7 +239,7 @@
 
 	.constraint {
 		padding: 0.5rem 0.6rem;
-		background: rgb(255 255 255 / 48%);
+		background: var(--paper-soft);
 		border-left: 2px solid var(--negative);
 	}
 

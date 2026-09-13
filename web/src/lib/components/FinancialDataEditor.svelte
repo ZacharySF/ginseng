@@ -269,8 +269,12 @@
 		}
 		draft.inputs.assumptions.monthly_variable_income_cents =
 			historicalIncomeEstimate.monthlyIncomeCents;
-		draft.inputs.assumptions.income_variability_pct =
-			historicalIncomeEstimate.variability;
+		draft.inputs.assumptions.income_payments_per_month =
+			historicalIncomeEstimate.paymentDaysPerMonth;
+		if (historicalIncomeEstimate.paymentSizeVariability !== null) {
+			draft.inputs.assumptions.income_variability_pct =
+				historicalIncomeEstimate.paymentSizeVariability;
+		}
 		formIssues = [];
 		saveMessage = `Applied ${historicalIncomeEstimate.months} complete months of variable-income history to the assumptions draft. Review and save to use it.`;
 	}
@@ -363,7 +367,8 @@
 			statement_close_day: 1,
 			payment_due_day: 1,
 			grace_period_eligible: false,
-			minimum_payment_cents: 0
+			minimum_payment_cents: 0,
+            cash_advance_limit_cents: 0, cash_advance_apr: 0, cash_advance_fee_pct: 0
 		});
 		formIssues = [];
 	}
@@ -591,6 +596,7 @@
 				issues.push(`${label} must be a nonnegative exact USD amount within the supported range.`);
 			}
 		});
+		if (!Number.isFinite(assumptions.income_payments_per_month) || assumptions.income_payments_per_month <= 0 || assumptions.income_payments_per_month > 30) issues.push('Expected payment days must be greater than zero and at most 30 per month.');
 		if (assumptions.income_variability_pct < 0 || assumptions.income_variability_pct > 2 || !Number.isFinite(assumptions.income_variability_pct)) issues.push('Income variability must be between 0% and 200%.');
 		if (assumptions.spending_variability_pct < 0 || assumptions.spending_variability_pct > 2 || !Number.isFinite(assumptions.spending_variability_pct)) issues.push('Spending variability must be between 0% and 200%.');
 		if (!Number.isSafeInteger(assumptions.persistence_days) || assumptions.persistence_days < 1 || assumptions.persistence_days > 30) issues.push('Persistence must be an integer from 1 to 30 days.');
@@ -618,6 +624,8 @@
 			if (!Number.isSafeInteger(account.current_balance_cents) || account.current_balance_cents < 0 || account.current_balance_cents > MAX_ABS_BALANCE_CENTS) {
 				issues.push(`Credit account ${index + 1} needs a nonnegative current balance within the supported range.`);
 			}
+			if (!Number.isSafeInteger(account.cash_advance_limit_cents) || account.cash_advance_limit_cents < 0 || account.cash_advance_limit_cents > MAX_ABS_BALANCE_CENTS) issues.push(`Credit account ${index + 1} needs a valid available cash-advance limit.`);
+            if (!Number.isFinite(account.cash_advance_apr) || account.cash_advance_apr < 0 || account.cash_advance_apr > 1 || !Number.isFinite(account.cash_advance_fee_pct) || account.cash_advance_fee_pct < 0 || account.cash_advance_fee_pct > .5) issues.push(`Credit account ${index + 1} needs valid cash-advance APR and fee percentages.`);
 			if (!Number.isFinite(account.purchase_apr) || account.purchase_apr < 0 || account.purchase_apr > 1) issues.push(`Credit account ${index + 1} needs an APR from 0% to 100%.`);
 			if (!Number.isSafeInteger(account.statement_close_day) || account.statement_close_day < 1 || account.statement_close_day > 28) issues.push(`Credit account ${index + 1} needs a statement close day from 1 to 28.`);
 			if (!Number.isSafeInteger(account.payment_due_day) || account.payment_due_day < 1 || account.payment_due_day > 28) issues.push(`Credit account ${index + 1} needs a payment due day from 1 to 28.`);
@@ -626,6 +634,7 @@
 			}
 		});
 
+		if (!Number.isSafeInteger(inputs.roth_contribution_basis_cents) || inputs.roth_contribution_basis_cents < 0 || inputs.roth_contribution_basis_cents > MAX_ABS_BALANCE_CENTS) issues.push('Roth contributions must be nonnegative cents within the supported range.');
 		if (inputs.holdings.length > MAX_HOLDINGS) issues.push('Investments support up to 500 holdings.');
 		const holdingIds = new Set<string>();
 		const lotIds = new Set<string>();
@@ -637,7 +646,7 @@
 			if (holding.symbol.trim().length === 0 || holding.symbol.length > MAX_HOLDING_SYMBOL_LENGTH || holding.symbol !== holding.symbol.trim()) {
 				issues.push(`Holding ${holdingIndex + 1} needs a trimmed symbol of up to ${MAX_HOLDING_SYMBOL_LENGTH} characters.`);
 			}
-			if (holding.account !== 'taxable' && holding.account !== 'retirement') issues.push(`Holding ${holdingIndex + 1} needs an account type.`);
+			if (!['taxable', 'traditional', 'roth', 'retirement'].includes(holding.account)) issues.push(`Holding ${holdingIndex + 1} needs an account type.`);
 			if (!Number.isSafeInteger(holding.current_price_cents) || holding.current_price_cents <= 0 || holding.current_price_cents > MAX_BILL_CENTS) {
 				issues.push(`Holding ${holdingIndex + 1} needs a positive current price within the supported range.`);
 			}
@@ -1051,16 +1060,18 @@
 									{:else}
 										<div class="income-estimate">
 											<div><span>Monthly average</span><strong class="numeric">{readableCents(historicalIncomeEstimate.monthlyIncomeCents)}</strong></div>
-											<div><span>Monthly variability</span><strong>{displayPercent(historicalIncomeEstimate.variability)}%</strong></div>
+											<div><span>Monthly variability</span><strong>{displayPercent(historicalIncomeEstimate.uncappedVariability)}%</strong></div>
+											<div><span>Expected payment days / month</span><strong>{historicalIncomeEstimate.paymentDaysPerMonth}</strong></div>
+											<div><span>Payment size variability</span><strong>{historicalIncomeEstimate.paymentSizeVariability === null ? 'Too few payments' : `${displayPercent(historicalIncomeEstimate.paymentSizeVariability)}%`}</strong></div>
 											<div><span>Observed window</span><strong>{historicalIncomeEstimate.months} months</strong></div>
-											<p><time datetime={historicalIncomeEstimate.periodStart}>{historicalIncomeEstimate.periodStart}</time> through <time datetime={historicalIncomeEstimate.periodEnd}>{historicalIncomeEstimate.periodEnd}</time>. {#if historicalIncomeEstimate.uncappedVariability > 2}The stored variability is capped at the model limit of 200%.{/if}</p>
+											<p><time datetime={historicalIncomeEstimate.periodStart}>{historicalIncomeEstimate.periodStart}</time> through <time datetime={historicalIncomeEstimate.periodEnd}>{historicalIncomeEstimate.periodEnd}</time>. {historicalIncomeEstimate.observedPaymentDays} observed payment days. Monthly variability is descriptive; the model uses payment frequency and payment size separately. Frequency is rounded to 0.01 and limited to 30 days/month. {#if historicalIncomeEstimate.paymentSizeVariability === null}One payment day cannot establish size variability; your current size assumption is retained.{:else if historicalIncomeEstimate.uncappedPaymentSizeVariability !== null && historicalIncomeEstimate.uncappedPaymentSizeVariability > 2}Payment size variability is capped at the model limit of 200%.{/if}</p>
 											<button type="button" class="button button--primary" onclick={applyHistoricalIncomeEstimate} disabled={editingLocked}>Apply to assumptions</button>
 										</div>
 									{/if}
 								</div>
 							</section>
-							<section class="input-group" aria-labelledby="monthly-inputs-title"><header><p class="eyebrow">Monthly cash flow</p><h2 id="monthly-inputs-title">Variable income and spending</h2><p>Known recurring events stay on Events. Monthly assumptions are rates spread across forecast days at an average 30.44 days per month, not scheduled deposits or bills.</p></header><div class="field-grid field-grid--three"><label class="field"><span>Variable income (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_variable_income_cents} required /><small>Nonnegative</small></label><label class="field"><span>Essential variable spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_essential_spending_cents} required /><small>Nonnegative</small></label><label class="field"><span>Discretionary spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_discretionary_spending_cents} required /><small>Nonnegative</small></label></div></section>
-							<section class="input-group" aria-labelledby="variability-title"><header><p class="eyebrow">Variability and persistence</p><h2 id="variability-title">How cash-flow changes cluster</h2><p>Correlations link underlying daily shocks, not the resulting dollar amounts or returns. Variability is a percentage from 0% to 200%; persistence controls how long favorable or unfavorable shocks last.</p></header><div class="field-grid field-grid--four"><label class="field"><span>Income variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.income_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'income_variability_pct', event)} /></label><label class="field"><span>Spending variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.spending_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'spending_variability_pct', event)} /></label><label class="field"><span>Persistence (days)</span><input type="number" min="1" max="30" step="1" value={draft.inputs.assumptions.persistence_days} required oninput={(event) => draft && updateInteger(draft.inputs.assumptions, 'persistence_days', event)} /></label><label class="field"><span>Income / spending shock correlation</span><input type="number" min="-0.95" max="0.95" step="0.01" value={draft.inputs.assumptions.income_spending_correlation} required oninput={(event) => draft && updateNumber(draft.inputs.assumptions, 'income_spending_correlation', event)} /></label></div></section>
+							<section class="input-group" aria-labelledby="monthly-inputs-title"><header><p class="eyebrow">Monthly cash flow</p><h2 id="monthly-inputs-title">Variable income and spending</h2><p>Known recurring events stay on Events. Monthly amounts set expected totals using an average 30.44 days per month. Variable income arrives on payment days; spending varies by day.</p></header><div class="field-grid field-grid--three"><label class="field"><span>Variable income (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_variable_income_cents} required /><small>Nonnegative</small></label><label class="field"><span>Essential variable spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_essential_spending_cents} required /><small>Nonnegative</small></label><label class="field"><span>Discretionary spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_discretionary_spending_cents} required /><small>Nonnegative</small></label></div></section>
+							<label class="field"><span>Expected variable-income payment days per month</span><input type="number" min="0.01" max="30" step="0.01" bind:value={draft.inputs.assumptions.income_payments_per_month} required /><small>Prospective assumption, optionally derived from your history above. Payments arrive randomly on this many days on average; other days receive $0. Monthly income is an expectation. Enter known invoice dates in Events.</small></label><section class="input-group" aria-labelledby="variability-title"><header><p class="eyebrow">Variability and persistence</p><h2 id="variability-title">How cash-flow changes cluster</h2><p>Correlations link underlying daily shocks, not the resulting dollar amounts or returns. Variability is a percentage from 0% to 200%; persistence controls how long favorable or unfavorable shocks last.</p></header><div class="field-grid field-grid--four"><label class="field"><span>Payment size variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.income_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'income_variability_pct', event)} /></label><label class="field"><span>Spending variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.spending_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'spending_variability_pct', event)} /></label><label class="field"><span>Persistence (days)</span><input type="number" min="1" max="30" step="1" value={draft.inputs.assumptions.persistence_days} required oninput={(event) => draft && updateInteger(draft.inputs.assumptions, 'persistence_days', event)} /></label><label class="field"><span>Income / spending shock correlation</span><input type="number" min="-0.95" max="0.95" step="0.01" value={draft.inputs.assumptions.income_spending_correlation} required oninput={(event) => draft && updateNumber(draft.inputs.assumptions, 'income_spending_correlation', event)} /></label></div></section>
 							<section class="input-group input-group--market" aria-labelledby="market-title"><header><p class="eyebrow">Market link</p><h2 id="market-title">Optional market assumptions</h2><p>Enable only when a market-sensitive income or spending relationship is meaningful for your plan. These prospective paths preserve your annual return and volatility inputs over a 365-day horizon; they are not observed returns. Holdings and actual returns stay under Investments.</p></header><label class="check-card"><input type="checkbox" bind:checked={draft.inputs.assumptions.market_assumptions_enabled} /><span><strong>Include market assumptions in the model</strong><small>Disabled values are retained but not used.</small></span></label><div class="field-grid field-grid--three"><label class="field"><span>Expected annual return (%)</span><input type="number" min="-99" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.expected_annual_return_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'expected_annual_return_pct', event)} /></label><label class="field"><span>Annual return volatility (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.annual_return_volatility_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'annual_return_volatility_pct', event)} /></label><label class="field"><span>Income / market shock correlation</span><input type="number" min="-0.95" max="0.95" step="0.01" value={draft.inputs.assumptions.income_market_correlation} required oninput={(event) => draft && updateNumber(draft.inputs.assumptions, 'income_market_correlation', event)} /></label></div></section>
 						</section>
 					{:else if section === 'credit'}
@@ -1083,6 +1094,9 @@
 											<label class="field"><span>Name</span><input maxlength="100" bind:value={account.name} required /></label>
 											<label class="field"><span>Credit limit (USD)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={account.credit_limit_cents} required /></label>
 											<label class="field"><span>Current balance (USD)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={account.current_balance_cents} required /></label>
+											<label class="field"><span>Available cash-advance limit (USD)</span><CurrencyInput bind:value={account.cash_advance_limit_cents} required /><small>Only cash available today can fund the bank balance. Zero disables new borrowing. Purchase credit is not bank cash.</small></label>
+											<label class="field"><span>Cash-advance APR (%)</span><input type="number" min="0" max="100" step="0.1" value={displayPercent(account.cash_advance_apr)} oninput={(event) => updatePercent(account, 'cash_advance_apr', event)} required /></label>
+											<label class="field"><span>Cash-advance fee (%)</span><input type="number" min="0" max="50" step="0.1" value={displayPercent(account.cash_advance_fee_pct)} oninput={(event) => updatePercent(account, 'cash_advance_fee_pct', event)} required /><small>Deducted from proceeds today; no grace period. Principal and interest are repaid on the saved statement due date.</small></label>
 											<label class="field"><span>Purchase APR (%)</span><input type="number" min="0" max="100" step="0.01" value={displayPercent(account.purchase_apr)} required oninput={(event) => updatePercent(account, 'purchase_apr', event)} /></label>
 											<label class="field"><span>Statement closes (day)</span><input type="number" min="1" max="28" step="1" value={account.statement_close_day} required oninput={(event) => updateInteger(account, 'statement_close_day', event)} /></label>
 											<label class="field"><span>Payment due (day)</span><input type="number" min="1" max="28" step="1" value={account.payment_due_day} required oninput={(event) => updateInteger(account, 'payment_due_day', event)} /></label>
@@ -1095,6 +1109,7 @@
 						</section>
 					{:else if section === 'investments'}
 						<section id="investments" class="form-section" aria-labelledby="investments-title">
+                            <label class="field"><span>Remaining Roth regular contributions across all Roth IRAs (USD)</span><CurrencyInput bind:value={draft.inputs.roth_contribution_basis_cents} required /><small>Use documented contributions not yet withdrawn, not investment purchase basis. Zero excludes Roth access. Earnings and conversions remain excluded.</small></label>
 							<header class="section-heading">
 								<div><p class="eyebrow">Marketable holdings and historical returns</p><h1 id="investments-title">Investments and tax lots</h1><p>Current prices and tax lots support actual funding trade-offs. Retirement and taxable holdings stay distinct.</p></div>
 								<button type="button" class="button button--quiet" onclick={addHolding} disabled={draft.inputs.holdings.length >= MAX_HOLDINGS}>Add holding</button>
@@ -1111,7 +1126,7 @@
 										</header>
 										<div class="field-grid field-grid--three">
 											<label class="field"><span>Symbol</span><input maxlength={MAX_HOLDING_SYMBOL_LENGTH} placeholder="e.g. VTI" bind:value={holding.symbol} required /></label>
-											<label class="field"><span>Account</span><select bind:value={holding.account}><option value="taxable">Taxable</option><option value="retirement">Retirement</option></select></label>
+											<label class="field"><span>Account</span><select bind:value={holding.account}><option value="taxable">Taxable</option><option value="traditional">Traditional IRA (fully pretax)</option><option value="roth">Roth IRA</option><option value="retirement">Unclassified retirement (unavailable)</option></select></label>
 											<label class="field"><span>Current price (USD/share)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={holding.current_price_cents} required /></label>
 										</div>
 										<div class="lot-heading">
@@ -1272,7 +1287,7 @@
 									<label class="field"><span>Coverage target (%)</span><input type="number" min="0" max="100" step="0.1" value={displayPercent(draft.inputs.policy.coverage_target)} required oninput={(event) => draft && updatePercent(draft.inputs.policy, 'coverage_target', event)} /><small>Greater than 0%</small></label>
 									<label class="field"><span>Settlement days</span><input type="number" min="0" max="30" step="1" value={draft.inputs.policy.settlement_days} required oninput={(event) => draft && updateInteger(draft.inputs.policy, 'settlement_days', event)} /></label>
 									<label class="field"><span>External transfer days</span><input type="number" min="0" max="30" step="1" value={draft.inputs.policy.external_transfer_days} required oninput={(event) => draft && updateInteger(draft.inputs.policy, 'external_transfer_days', event)} /></label>
-									<label class="field"><span>Buffer tolerance (dollar-days)</span><input type="number" min="0" max={MAX_BUFFER_TOLERANCE_DOLLAR_DAYS} step="any" value={draft.inputs.policy.buffer_tolerance_dollar_days ?? ''} oninput={updateTolerance} /><small>Blank means no tolerance is set.</small></label>
+									<label class="field"><span>Buffer tolerance (dollar-days)</span><input type="number" min="0" max={MAX_BUFFER_TOLERANCE_DOLLAR_DAYS} step="any" value={draft.inputs.policy.buffer_tolerance_dollar_days ?? ''} oninput={updateTolerance} /><small>Blank uses buffer × evaluation days × (1 − coverage target). The buffer coverage requirement also applies.</small></label>
 								</div>
 							</section>
 							<section class="input-group" aria-labelledby="funding-policy-title">
@@ -1380,7 +1395,7 @@
 	.section-stats dd { margin: 0; color: var(--ink); font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
 	.callout, .reconciliation-note, .assumption-band { display: flex; align-items: start; gap: 0.65rem; margin-top: 1rem; padding: 0.75rem 0.85rem; border-left: 3px solid var(--cobalt); background: var(--paper-soft); color: var(--ink-soft); font-size: 0.79rem; line-height: 1.45; }
 	.callout strong, .reconciliation-note strong, .assumption-band strong { flex: none; color: var(--ink); }
-	.callout a { color: var(--cobalt-deep); font-weight: 750; }
+	.callout a { color: var(--link); font-weight: 750; }
 	.reconciliation-note { display: grid; gap: 0.15rem; border-left-color: var(--warning); }
 	.reconciliation-note p { margin: 0; }
 	.reconciliation-note em { color: var(--ink); font-style: normal; font-weight: 750; }

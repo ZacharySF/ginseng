@@ -1,4 +1,7 @@
 <script lang="ts">
+    import StressControls from '$lib/components/StressControls.svelte';
+    import ModelEvidencePanel from '$lib/components/ModelEvidencePanel.svelte';
+
 	import { onMount } from 'svelte';
 	import ReserveWorkbench from '$lib/components/ReserveWorkbench.svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
@@ -35,6 +38,8 @@
 		onPolicyPreview={applyDemoPolicy}
 		saving={scenarioStore.loadState === 'loading'}
 	/>
+<StressControls response={scenarioStore.response} />
+    <ModelEvidencePanel response={scenarioStore.response} />
 {:else if scenarioStore.loadState === 'unreachable' || scenarioStore.loadState === 'error'}
 	<div class="terminal-state" role="alert"><p>Local model unavailable</p><span>{scenarioStore.errorMessage}</span><button type="button" onclick={() => scenarioStore.refresh()}>Retry model</button></div>
 {:else}

@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass, replace
 from typing import Callable, Sequence
 
 from ginseng.funding import PlanResult
+from ginseng.risk import MONEY_TOLERANCE, PROBABILITY_TOLERANCE
 
 # --------------------------------------------------------------------------
 # Pareto filtering (spec 43)
@@ -26,6 +27,9 @@ from ginseng.funding import PlanResult
 # the potential taxable event — is what Pareto treats as a cost.
 _OBJECTIVES: tuple[tuple[str, Callable[[PlanResult], float]], ...] = (
     ("cash_shortfall_probability", lambda r: r.cash_shortfall_probability),
+    ("buffer_breach_probability", lambda r: r.buffer_breach_probability),
+    ("buffer_duration", lambda r: r.dollar_days_below_buffer),
+    ("tail_deficit", lambda r: r.tail_deficit),
     ("avg_cash_deficit_when_short", lambda r: r.avg_cash_deficit_when_short),
     ("new_debt", lambda r: r.new_debt),
     ("interest_exposure", lambda r: r.interest_exposure),
@@ -97,6 +101,9 @@ class FundingPolicy:
     )
     capital_gains_rate: float = 0.15
     overdraft_apr: float = 0.0
+    max_buffer_breach_probability: float | None = None
+    buffer_tolerance_dollar_days: float | None = None
+    tail_deficit_limit: float | None = None
 
 
 @dataclass(frozen=True)
@@ -125,23 +132,43 @@ _PRIORITY_INFO: dict[str, dict[str, str]] = {
 
 
 def _meets_hard_requirements(result: PlanResult, policy: FundingPolicy) -> tuple[bool, str | None]:
-    """Check the policy's two numeric risk limits.
+    """Check the active frequency, deficit, and credit limits.
 
     Structural funding-operation feasibility is already enforced by
     `evaluate_plan`; `recommend` removes infeasible candidates before this
     function is called.
     """
-    if result.cash_shortfall_probability > policy.max_cash_shortfall_probability:
+    if policy.max_buffer_breach_probability is not None and result.buffer_breach_probability > policy.max_buffer_breach_probability + PROBABILITY_TOLERANCE:
+        return False, (
+            f"its buffer-breach probability of {result.buffer_breach_probability:.2%} exceeds "
+            f"your {policy.max_buffer_breach_probability:.2%} limit"
+        )
+    for field, limit, label in (
+        ("dollar_days_below_buffer", policy.buffer_tolerance_dollar_days, "average buffer deficit in dollar-days"),
+        ("tail_deficit", policy.tail_deficit_limit, "tail buffer deficit"),
+    ):
+        if limit is not None and getattr(result, field) > limit + MONEY_TOLERANCE:
+            return False, f"its {label} of {getattr(result, field):,.2f} exceeds your {limit:,.2f} limit"
+    if result.cash_shortfall_probability > policy.max_cash_shortfall_probability + PROBABILITY_TOLERANCE:
         return False, (
             f"its modeled cash-shortfall probability of {result.cash_shortfall_probability:.0%} exceeds "
             f"your {policy.max_cash_shortfall_probability:.0%} limit"
         )
-    if result.credit_utilization > policy.max_credit_utilization:
+    new_credit = getattr(result, "new_debt", getattr(result, "credit_draw", 0.0))
+    if new_credit > MONEY_TOLERANCE and result.credit_utilization > policy.max_credit_utilization + PROBABILITY_TOLERANCE:
         return False, (
             f"its credit utilization of {result.credit_utilization:.0%} exceeds your "
             f"{policy.max_credit_utilization:.0%} limit"
         )
     return True, None
+
+
+def policy_assessment(result, policy: FundingPolicy) -> dict:
+    """One acceptance rule for named plans, optimizer results and holdouts."""
+    if not getattr(result, "feasible", True):
+        return {"meets_policy": False, "policy_reason": result.infeasibility_reason or "Funding operation unavailable."}
+    meets, reason = _meets_hard_requirements(result, policy)
+    return {"meets_policy": meets, "policy_reason": reason}
 
 
 def _binding_constraint_text(
@@ -152,6 +179,9 @@ def _binding_constraint_text(
     was excluded by a hard requirement — the winner was decided purely by
     priority ordering — fall back to whichever of the chosen plan's own
     two constraints sits closest to its limit."""
+    if policy.max_buffer_breach_probability is not None:
+        return (f"keeps the buffer in {1 - chosen.buffer_breach_probability:.2%} of evaluated futures "
+                f"and meets the other funding limits")
     shortfall_rejections = sum(
         1 for r, _ in rejected if r.cash_shortfall_probability > policy.max_cash_shortfall_probability
     )
@@ -190,7 +220,7 @@ def _priority_value(result: PlanResult, priority: str, policy: FundingPolicy) ->
         # Sale principal and positive gains are distinct economic costs. The
         # user's tax rate makes the latter comparable without inventing a tax
         # payment date in the cash path.
-        return result.investment_sold + max(0.0, result.realized_gain_loss) * policy.capital_gains_rate
+        return result.investment_sold + result.withdrawal_tax_reserve + result.withdrawal_penalty_reserve
     if priority == "avoid_interest_bearing_debt":
         return result.interest_exposure + result.overdraft_interest_exposure
     info = _PRIORITY_INFO[priority]
@@ -275,7 +305,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
 
 
 def to_contract(
-    results: Sequence[PlanResult], recommendation: Recommendation
+    results: Sequence[PlanResult], recommendation: Recommendation, policy: FundingPolicy | None = None
 ) -> tuple[list[dict], dict]:
     """Serialize evaluated plans and the recommendation to the frozen
     Plans Screen JSON shape (spec 60)."""
@@ -297,6 +327,7 @@ def to_contract(
         elif marked is not None and marked.dominated:
             dominated = True
             dominated_by = marked.dominated_by
+            explanation = f"Another feasible plan ({dominated_by}) is no worse on every compared measure."
         else:
             explanation = "Tradeoff remains."
             dominated = False
@@ -310,6 +341,11 @@ def to_contract(
                 "evaluation_draw_id": result.evaluation_draw_id,
                 "evaluation_weight_hash": result.evaluation_weight_hash,
                 "cash_shortfall_probability": result.cash_shortfall_probability,
+                "buffer_breach_probability": result.buffer_breach_probability,
+                "dollar_days_below_buffer": result.dollar_days_below_buffer,
+                "tail_deficit": result.tail_deficit,
+                **(policy_assessment(result, policy) if policy is not None else {}),
+                "infeasible_reason": result.infeasibility_reason,
                 "avg_cash_deficit_when_short": result.avg_cash_deficit_when_short,
                 "new_debt": result.new_debt,
                 "interest_exposure": result.interest_exposure + result.overdraft_interest_exposure,

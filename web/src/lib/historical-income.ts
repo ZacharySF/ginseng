@@ -8,6 +8,10 @@ export type HistoricalIncomeEstimate =
 			monthlyIncomeCents: number;
 			variability: number;
 			uncappedVariability: number;
+			paymentDaysPerMonth: number;
+			observedPaymentDays: number;
+			paymentSizeVariability: number | null;
+			uncappedPaymentSizeVariability: number | null;
 			months: number;
 			periodStart: string;
 			periodEnd: string;
@@ -88,13 +92,17 @@ export function deriveHistoricalIncome(
 	const selectedMonths =
 		window === 'all' ? availableMonths : availableMonths.slice(-window);
 	const totals = new Map(selectedMonths.map((index) => [index, 0]));
+	const paymentDays = new Map<string, number>();
 
 	for (const transaction of transactions) {
 		if (transaction.category !== 'income_variable' || transaction.amount_cents <= 0) continue;
 		const date = parseCalendarDate(transaction.date);
 		if (!date) continue;
 		const index = monthIndex(date);
-		if (totals.has(index)) totals.set(index, (totals.get(index) ?? 0) + transaction.amount_cents);
+		if (totals.has(index)) {
+			totals.set(index, (totals.get(index) ?? 0) + transaction.amount_cents);
+			paymentDays.set(transaction.date, (paymentDays.get(transaction.date) ?? 0) + transaction.amount_cents);
+		}
 	}
 
 	const monthlyTotals = selectedMonths.map((index) => totals.get(index) ?? 0);
@@ -112,12 +120,24 @@ export function deriveHistoricalIncome(
 		monthlyTotals.reduce((total, amount) => total + (amount - mean) ** 2, 0) /
 		monthlyTotals.length;
 	const uncappedVariability = Math.sqrt(variance) / mean;
+	// The forecast draws a daily arrival and then a payment size. Monthly total
+	// variability mixes these two effects and must not be reused as size variability.
+	// Combine payments on the same day to match the engine's daily cash flow.
+	const amounts = [...paymentDays.values()];
+	const paymentMean = totalIncomeCents / amounts.length;
+	const uncappedPaymentSizeVariability = amounts.length < 2 ? null : Math.sqrt(
+		amounts.reduce((sum, amount) => sum + (amount - paymentMean) ** 2, 0) / amounts.length
+	) / paymentMean;
 
 	return {
 		status: 'ready',
 		monthlyIncomeCents: Math.round(mean),
 		variability: Math.min(2, uncappedVariability),
 		uncappedVariability,
+		paymentDaysPerMonth: Math.min(30, Math.max(0.01, Math.round(amounts.length / monthlyTotals.length * 100) / 100)),
+		observedPaymentDays: amounts.length,
+		paymentSizeVariability: uncappedPaymentSizeVariability === null ? null : Math.min(2, uncappedPaymentSizeVariability),
+		uncappedPaymentSizeVariability,
 		months: monthlyTotals.length,
 		periodStart: `${monthKey(selectedMonths[0])}-01`,
 		periodEnd: `${monthKey(selectedMonths.at(-1)!)}-${String(

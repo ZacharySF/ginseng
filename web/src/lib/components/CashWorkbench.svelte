@@ -127,9 +127,9 @@
 						<p class="estimate-readout">Model estimate range <strong class="numeric">{formatCurrency(response.estimate_band.low)}–{formatCurrency(response.estimate_band.high)}</strong></p>
 					{/if}
 					{#if response.optimal_plan && response.stress?.status !== 'unsupported'}
-						<p class="estimate-readout">Optimized funding cost · average <strong>{formatCurrency(response.optimal_plan.expected_cost)}</strong> / worst-tail average <strong>{formatCurrency(response.optimal_plan.cvar_cost)}</strong> · <a href={resolve('/plans')}>View funding mix</a></p>
+						<p class="estimate-readout">Optimized funding cost · average <strong>{formatCurrency(response.optimal_plan.expected_cost)}</strong> / worst-tail average <strong>{formatCurrency(response.optimal_plan.cvar_cost)}</strong> · <a href={resolve(fundingHref)}>View funding mix</a></p>
 					{/if}
-					{#if response.stress?.status === 'active'}<p class="estimate-readout">Stress assumption active — not an estimated probability. <a href={resolve('/liquidity')}>Inspect weights</a></p>{/if}
+					{#if response.stress?.status === 'active'}<p class="estimate-readout">Stress assumption active — not an estimated probability. <a href={resolve(reserveHref)}>Inspect weights</a></p>{/if}
 					{#if response.stress?.status === 'unsupported'}<p class="estimate-readout">Stress not applied: this view has no supporting futures. These figures use baseline weights.</p>{/if}
 					{#if response.excluded_obligations?.length}<p class="estimate-readout">{response.excluded_obligations.length} scheduled events fall after this chart window. Their dates have been preserved.</p>{/if}
 				</div>
@@ -188,8 +188,8 @@
 				{#if response.immediate_cash_coverage_ratio != null}<div><span>Cash / required reserve</span><strong>{formatPercent(response.immediate_cash_coverage_ratio)}</strong></div>{/if}
 				<div><span>Marketable capital</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
 				<div><span>Restricted capital</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
-				{#if response.account_liquidity}<div><span>Net investment access</span><strong class="numeric">{formatCurrency(response.account_liquidity.total_net_accessible)}</strong></div>{/if}
-				<p>Only available cash funds the reserve. Other capital requires a funding decision. {#if response.account_liquidity}<a href={resolve('/plans')}>See account assumptions</a>.{/if}</p>
+				{#if response.account_liquidity && Number.isFinite(response.account_liquidity.total_net_accessible)}<div><span>Net investment access</span><strong class="numeric">{formatCurrency(response.account_liquidity.total_net_accessible)}</strong></div>{/if}
+				<p>Only available cash funds the reserve. Other capital requires a funding decision. {#if response.account_liquidity && Number.isFinite(response.account_liquidity.total_net_accessible)}<a href={resolve(fundingHref)}>See account assumptions</a>.{/if}</p>
 			</section>
 
 			<section class:funding-readout--risk={response.funding_gap > 0} class="inspector-block funding-readout">
@@ -331,7 +331,7 @@
 	.inspector-heading a,
 	.funding-readout a,
 	.data-link {
-		color: var(--cobalt-deep);
+		color: var(--link);
 		font-weight: 750;
 		text-decoration: none;
 	}
@@ -607,7 +607,7 @@
 		min-height: 2.75rem;
 		display: flex;
 		align-items: center;
-		color: var(--cobalt-deep);
+		color: var(--link);
 		font-family: var(--font-mono);
 		font-size: 0.64rem;
 		font-weight: 700;

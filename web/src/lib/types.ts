@@ -62,6 +62,11 @@ export interface ShortfallDistribution {
 // Funding plans (spec sections 38-45, 60), serialized by
 // `ginseng.policy.to_contract`. Field names match the engine's JSON exactly.
 export interface Plan {
+    meets_policy?: boolean;
+    policy_reason?: string | null;
+    buffer_breach_probability?: number;
+    dollar_days_below_buffer?: number;
+    tail_deficit?: number;
 	id: string;
 	label: string;
 	evaluation_horizon_days: number;
@@ -107,6 +112,10 @@ export interface WrongWayRisk {
 }
 
 export interface OptimalPlan {
+    meets_policy?: boolean;
+    policy_reason?: string | null;
+    buffer_coverage_target?: number | null;
+    lot_selection?: string;
 	credit_draw: number;
 	liquidation_amount: number;
 	deferral_fraction: number;
@@ -170,6 +179,8 @@ export interface OptimizerStatus {
 }
 
 export interface ScenarioResponse {
+	funding_evaluation_horizon_days?: number;
+	funding_policy?: Record<string, unknown>;
 	as_of: string;
 	seed: number;
 	bootstrap_draw_id: string;

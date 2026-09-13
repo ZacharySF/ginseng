@@ -121,3 +121,24 @@ def test_backtest_reports_missing_history_as_an_actionable_client_error() -> Non
 
     assert response.status_code == 422
     assert "Complete classified history" in response.json()["detail"]
+
+
+def test_backtest_applies_preview_policy_without_mutating_saved_inputs(monkeypatch) -> None:
+    import ginseng.forecast_api as forecast_api
+    from ginseng.personal_forecast import BacktestSummary
+    saved = workspace()
+    repository = ForecastRepositoryStub(saved)
+    observed = []
+    def check(current, horizon):
+        observed.append((current.inputs.policy.coverage_target, current.inputs.policy.operating_buffer_cents))
+        return BacktestSummary(periods=1, observed_coverage=1, mean_absolute_error_cents=0,
+                               windows=[], warning='Small sample')
+    monkeypatch.setattr(forecast_api, 'backtest_personal_history', check)
+    with forecast_client(repository) as client:
+        response = client.post('/finance/backtest', json={'expected_revision':4, 'horizon_days':30,
+            'policy':{'coverage_target':.8, 'operating_buffer_cents':123400}})
+    assert response.status_code == 200
+    assert observed == [(.8, 123400)]
+    assert saved.inputs.policy.coverage_target == .95
+    assert saved.inputs.policy.operating_buffer_cents == 0
+    assert repository.save_calls == 0

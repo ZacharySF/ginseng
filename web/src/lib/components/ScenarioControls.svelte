@@ -239,7 +239,7 @@
 		min-height: 2.75rem;
 		background: transparent;
 		border: 0;
-		color: var(--cobalt-deep);
+		color: var(--link);
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: 700;
@@ -282,7 +282,7 @@
 	button.secondary,
 	.scenario-library li button {
 		background: var(--paper);
-		color: var(--cobalt-deep);
+		color: var(--link);
 	}
 
 	button:hover:not(:disabled) {
@@ -306,7 +306,7 @@
 		padding: 0 0.75rem;
 		border: 1px solid var(--control-border);
 		background: var(--paper);
-		color: var(--cobalt-deep);
+		color: var(--link);
 		cursor: pointer;
 		list-style: none;
 	}

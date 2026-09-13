@@ -25,8 +25,10 @@
 		<ScenarioControls showChanges={false} />
 		<ForecastAlerts alerts={forecast.alerts} warnings={forecast.warnings} />
 		<FundingWorkbench
+            updating={financialStore.forecastStatus === 'loading'}
+            onRetry={() => void financialStore.refresh()}
 			response={current}
-			baseline={financialStore.isPreview ? comparison : null}
+			baseline={comparison}
 			comparisonLabel={comparisonLabel}
 			source="personal"
 			modelMode={forecast.model_mode}

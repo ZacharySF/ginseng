@@ -1,4 +1,8 @@
 <script lang="ts">
+    import FundingLimits from '$lib/components/FundingLimits.svelte';
+    import FundingAnalysisPanel from '$lib/components/FundingAnalysisPanel.svelte';
+    import PortfolioAnalysisPanel from '$lib/components/PortfolioAnalysisPanel.svelte';
+
 	import { onMount } from 'svelte';
 	import FundingWorkbench from '$lib/components/FundingWorkbench.svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
@@ -15,6 +19,9 @@
 
 {#if scenarioStore.response}
 	<FundingWorkbench
+        updating={scenarioStore.loadState === 'loading'}
+        onRetry={() => void scenarioStore.refresh()}
+        onLoadExample={() => scenarioStore.loadRepairExample()}
 		response={scenarioStore.response}
 		baseline={scenarioStore.baselineResponse}
 		comparisonLabel="synthetic baseline"
@@ -23,6 +30,9 @@
 		isPreview={!scenarioStore.isBaseline}
 		eventsHref="/demo/future"
 	/>
+<FundingLimits />
+    <FundingAnalysisPanel />
+    <PortfolioAnalysisPanel />
 {:else if scenarioStore.loadState === 'unreachable' || scenarioStore.loadState === 'error'}
 	<div class="terminal-state" role="alert"><p>Local model unavailable</p><span>{scenarioStore.errorMessage}</span><button type="button" onclick={() => scenarioStore.refresh()}>Retry model</button></div>
 {:else}

@@ -25,13 +25,13 @@
 		},
 		{
 			icon: 'reserve',
-			title: 'Explore a synthetic reserve',
-			body: 'The probabilistic reserve model uses a separate synthetic demo, never your personal balances or bills.'
+			title: 'Estimate your cash reserve',
+			body: 'Choose known events, explicit assumptions, or complete transaction history to estimate the cash your plan requires.'
 		},
 		{
 			icon: 'funding',
-			title: 'Compare synthetic funding',
-			body: 'Credit, liquidation, and hybrid plans run only against the synthetic demo scenario.'
+			title: 'Compare funding choices',
+			body: 'Compare available credit and investment withdrawals with their timing, taxes, and limits included.'
 		}
 	];
 </script>
@@ -40,7 +40,7 @@
 	<title>Ginseng — Liquidity workspace</title>
 	<meta
 		name="description"
-		content="Save personal balances and known bills, then explore separate synthetic reserve and funding scenarios."
+		content="Plan personal cash flow, estimate reserves, and compare funding choices using your saved inputs."
 	/>
 </svelte:head>
 
@@ -67,8 +67,8 @@
 			</h1>
 			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
-				Ginseng keeps saved balances and known bills in a personal ledger. A separate synthetic demo
-				explores probabilistic reserve and funding decisions without using those personal records.
+				Ginseng combines your balances, bills, and income inputs to model when cash may run short
+				and compare ways to cover the gap. Explore the same tools with a separate synthetic demo.
 			</p>
 			<div class="hero-actions">
 				<a class="hero-cta" href={resolve('/login?mode=sign-up')}>Create free account</a>
@@ -111,8 +111,8 @@
 	<section class="frozen">
 		<p class="frozen-statement">Your ledger stays personal.<br />The demo stays synthetic.</p>
 		<p class="frozen-body">
-			Saved balances and known bills remain in your personal workspace. Probabilistic reserve and
-			funding comparisons run only against the separate synthetic demo scenario.
+			Personal forecasts use your saved inputs and the model source you select. The separate demo
+			uses synthetic records. Each forecast shows its source, assumptions, and limitations.
 		</p>
 	</section>
 

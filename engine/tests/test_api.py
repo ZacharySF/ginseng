@@ -43,6 +43,7 @@ SCENARIO_BODY_FIELDS = {
     "provenance", "model_card", "stress", "baseline_summary", "unstressed_summary",
     "immediate_cash_coverage_ratio", "recommendation_status", "excluded_obligations",
     "account_liquidity",
+    "funding_policy", "funding_evaluation_horizon_days",
 }
 
 REPAIR_SCHEDULE = [
@@ -88,6 +89,16 @@ def test_scenario_funding_results_share_one_complete_evaluation():
     assert optimal["evaluation_draw_id"] == draw_id
     assert optimal["evaluation_paths"] == 120
     assert body["optimizer_status"]["code"] == "optimal"
+
+
+def test_explicit_deficit_limit_triggers_funding_without_a_reserve_gap():
+    body = _post(paths=200, mean_block_length=None, buffer_tolerance_dollar_days=0,
+        obligations=[{"id": "small-repair", "label": "Small repair", "amount": 1250, "due_in_days": 7}])
+    assert body["funding_gap"] == 0
+    assert body["severity"]["dollar_days_below_buffer"] > 0
+    assert body["optimizer_status"]["code"] == "optimal"
+    assert body["optimal_plan"]["dollar_days_below_buffer"] <= 1e-6
+    assert body["optimal_plan"]["buffer_tolerance_dollar_days"] == 0
 
 FLOAT_FIELDS = (
     "immediate_funding",

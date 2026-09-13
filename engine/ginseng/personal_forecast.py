@@ -10,7 +10,7 @@ mode bootstraps only classified user transactions.
 from __future__ import annotations
 
 import calendar
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from math import ceil, exp, log1p, sqrt
 from typing import Literal, Sequence
@@ -89,8 +89,8 @@ class BacktestWindow(BaseModel):
 
     start_date: date
     end_date: date
-    actual_change_cents: int
-    predicted_change_cents: int
+    realized_required_cents: int
+    predicted_reserve_cents: int
     covered: bool
 
 
@@ -98,10 +98,11 @@ class BacktestSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     periods: int
-    covered_80_percent: float
+    observed_coverage: float
     mean_absolute_error_cents: int
     windows: list[BacktestWindow]
     warning: str | None
+    calibration: dict | None = None
 
 
 class ForecastRun(BaseModel):
@@ -451,11 +452,13 @@ def _personal_credit_accounts(inputs: FinanceInputs) -> tuple[CreditAccount, ...
             account_id=str(account.id),
             credit_limit=account.credit_limit_cents / 100.0,
             current_balance=account.current_balance_cents / 100.0,
-            purchase_apr=float(account.purchase_apr),
+            purchase_apr=float(account.cash_advance_apr),
             statement_close_day=account.statement_close_day,
             payment_due_day=account.payment_due_day,
-            grace_period_eligible=account.grace_period_eligible,
+            grace_period_eligible=False,
             minimum_payment=account.minimum_payment_cents / 100.0,
+            cash_advance_limit=account.cash_advance_limit_cents / 100.0,
+            cash_advance_fee_pct=float(account.cash_advance_fee_pct),
         )
         for account in inputs.credit_accounts
     )
@@ -548,6 +551,7 @@ def _state_for_workspace(
         portfolio_daily_returns=portfolio_returns,
         history_start=history_start,
         history_end=history_end,
+        roth_contribution_basis=inputs.roth_contribution_basis_cents / 100.0,
     )
 
 
@@ -584,21 +588,7 @@ def _ledger_with_opening_reconciliation(
 
 
 def _with_horizon(state: FinancialState, horizon_days: int) -> FinancialState:
-    return FinancialState(
-        as_of=state.as_of,
-        transactions=state.transactions,
-        fixed_income_schedule=state.fixed_income_schedule,
-        fixed_obligations=state.fixed_obligations,
-        planned_discretionary_events=state.planned_discretionary_events,
-        credit_accounts=state.credit_accounts,
-        holdings=state.holdings,
-        operating_buffer=state.operating_buffer,
-        coverage_target=state.coverage_target,
-        forecast_horizon=horizon_days,
-        portfolio_daily_returns=state.portfolio_daily_returns,
-        history_start=state.history_start,
-        history_end=state.history_end,
-    )
+    return replace(state, forecast_horizon=horizon_days)
 
 
 def _known_daily(state: FinancialState, horizon_days: int) -> tuple[np.ndarray, np.ndarray]:
@@ -701,7 +691,12 @@ def _assumption_bundle(state: FinancialState, inputs: FinanceInputs, seed: int, 
         spending_noise,
         float(assumptions.spending_variability_pct),
     )
-    income = income_base * income_multiplier
+    # A payment-arrival hurdle, independent of conditional payment-size shocks.
+    # Scaling by p preserves expected monthly income while retaining zero-pay days.
+    probability = float(assumptions.income_payments_per_month) / DAYS_PER_MONTH
+    arrival_rng = np.random.default_rng(np.random.SeedSequence([seed, 71841]))
+    arrivals = arrival_rng.random((paths, days)) < probability
+    income = income_base * income_multiplier * arrivals / probability
     essential = essential_base * spending_multiplier
     discretionary = discretionary_base * spending_multiplier
 
@@ -971,6 +966,7 @@ def evaluate_personal_forecast(
             (),
             coverage_target=state.coverage_target,
             operating_buffer=state.operating_buffer,
+            model_source=mode, input_config=workspace.inputs.model_dump(mode="json", exclude={"transactions", "scenarios"}),
             funding_config=_funding_config(workspace.inputs),
             funding_policy=_funding_policy(workspace.inputs),
             overdraft_apr=float(workspace.inputs.policy.overdraft_apr),
@@ -988,6 +984,7 @@ def evaluate_personal_forecast(
             (),
             coverage_target=state.coverage_target,
             operating_buffer=state.operating_buffer,
+            model_source=mode, input_config=workspace.inputs.model_dump(mode="json", exclude={"transactions", "scenarios"}),
             funding_config=_funding_config(workspace.inputs),
             funding_policy=_funding_policy(workspace.inputs),
             overdraft_apr=float(workspace.inputs.policy.overdraft_apr),
@@ -1004,6 +1001,7 @@ def evaluate_personal_forecast(
             (),
             coverage_target=state.coverage_target,
             operating_buffer=state.operating_buffer,
+            model_source=mode, input_config=workspace.inputs.model_dump(mode="json", exclude={"transactions", "scenarios"}),
             funding_config=_funding_config(workspace.inputs),
             funding_policy=_funding_policy(workspace.inputs),
             overdraft_apr=float(workspace.inputs.policy.overdraft_apr),
@@ -1173,86 +1171,27 @@ def _actual_variable_change_cents(
 
 
 def backtest_personal_history(
-    workspace: FinanceWorkspace,
-    horizon_days: int,
-    *,
-    seed: int = DEFAULT_FORECAST_SEED,
-    paths: int = 500,
+    workspace: FinanceWorkspace, horizon_days: int, *, seed: int = DEFAULT_FORECAST_SEED, paths: int = 500,
 ) -> BacktestSummary:
-    """Training-only rolling-origin backtest of classified variable cash flow."""
+    """Validate the reserve target on non-overlapping held-out personal history."""
+    from ginseng.calibration import walk_forward
     if horizon_days not in SUPPORTED_HORIZONS:
         raise ValueError("Backtest horizon must be 14, 30, or 60 days.")
-    history_start, history_end = _backtest_requirements(workspace, horizon_days)
-    first_origin = history_start + timedelta(days=MIN_COMPLETE_HISTORY_DAYS - 1)
-    last_origin = history_end - timedelta(days=horizon_days)
-    if first_origin > last_origin:
-        raise ValueError("There are not enough post-training days for a rolling-origin backtest.")
-
-    span = (last_origin - first_origin).days
-    count = min(8, span + 1)
-    origin_offsets = sorted({round(index * span / max(1, count - 1)) for index in range(count)})
-    windows: list[BacktestWindow] = []
-    records = workspace.inputs.transactions
-    for index, offset in enumerate(origin_offsets):
-        origin = first_origin + timedelta(days=offset)
-        holdout_start = origin + timedelta(days=1)
-        holdout_end = origin + timedelta(days=horizon_days)
-        training = _variable_transactions_until(records, origin)
-        reconciliation = -sum(transaction.cash_effect for transaction in training)
-        training_state = FinancialState(
-            as_of=holdout_start,
-            transactions=training
-            + (
-                Transaction(
-                    txn_date=holdout_start,
-                    transaction_type=TransactionType.TRANSFER,
-                    amount=reconciliation,
-                    label="Opening balance reconciliation",
-                ),
-            ),
-            fixed_income_schedule=(),
-            fixed_obligations=(),
-            planned_discretionary_events=(),
-            credit_accounts=(),
-            holdings=(),
-            operating_buffer=0.0,
-            coverage_target=0.8,
-            forecast_horizon=horizon_days,
-            history_start=history_start,
-            history_end=origin,
-        )
-        bundle = draw_bundle(
-            training_state,
-            horizon_days=horizon_days,
-            n_paths=min(paths, 500),
-            seed=seed + index,
-        )
-        terminal_changes = cash_paths(training_state, bundle)[:, -1]
-        lower, median, upper = np.percentile(terminal_changes, [10, 50, 90])
-        actual_cents = _actual_variable_change_cents(records, holdout_start, holdout_end)
-        predicted_cents = int(round(float(median) * 100.0))
-        actual_dollars = actual_cents / 100.0
-        windows.append(
-            BacktestWindow(
-                start_date=holdout_start,
-                end_date=holdout_end,
-                actual_change_cents=actual_cents,
-                predicted_change_cents=predicted_cents,
-                covered=bool(lower <= actual_dollars <= upper),
-            )
-        )
-
-    absolute_errors = [abs(window.actual_change_cents - window.predicted_change_cents) for window in windows]
-    periods = len(windows)
-    warning = (
-        f"Only {periods} rolling origins were available; treat this accuracy check as a small sample."
-        if periods < 5
-        else None
-    )
-    return BacktestSummary(
-        periods=periods,
-        covered_80_percent=sum(window.covered for window in windows) / periods,
-        mean_absolute_error_cents=int(round(sum(absolute_errors) / periods)),
-        windows=windows,
-        warning=warning,
-    )
+    _backtest_requirements(workspace, horizon_days)
+    state = _with_horizon(_state_for_workspace(workspace,
+        _schedule_for_workspace(workspace, MAX_PERSONAL_EVALUATION_HORIZON), history=True), horizon_days)
+    report = walk_forward(state, horizon_days, min(paths, 500), seed, state.coverage_target,
+                          state.operating_buffer, training_days=MIN_COMPLETE_HISTORY_DAYS,
+                          source="history", max_windows=48)
+    rows = [row for row in report["windows"] if row["in_primary_sample"]]
+    periods = len(rows)
+    windows = [BacktestWindow(start_date=row["start"], end_date=row["end"],
+        realized_required_cents=round(row["realized_required"] * 100),
+        predicted_reserve_cents=round(row["predicted_reserve"] * 100), covered=row["covered"]) for row in rows]
+    warning = (f"Only {periods} non-overlapping windows; non-overlap does not prove independence. "
+               + ("Formal tail tests are underpowered at this coverage target." if report["expected_tail_failures"] < 5
+                  else "Use the reported uncertainty interval and test limitations."))
+    return BacktestSummary(periods=periods,
+        observed_coverage=report["primary"]["observed_coverage"] or 0,
+        mean_absolute_error_cents=round(sum(abs(w.realized_required_cents-w.predicted_reserve_cents) for w in windows) / periods) if periods else 0,
+        windows=windows, warning=warning, calibration=report)
