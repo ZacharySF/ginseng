@@ -65,7 +65,7 @@
 		padding: 0 0.75rem;
 		background: var(--cobalt);
 		border: 1px solid var(--cobalt);
-		color: var(--paper);
+		color: var(--on-accent);
 		font: inherit;
 		font-size: 0.68rem;
 		cursor: pointer;

@@ -5,6 +5,8 @@
 	import CoverageCurve from '$lib/components/CoverageCurve.svelte';
 	import ReserveBufferCurve from '$lib/components/ReserveBufferCurve.svelte';
 	import ShortfallDistribution from '$lib/components/ShortfallDistribution.svelte';
+	import ModelEvidencePanel from '$lib/components/ModelEvidencePanel.svelte';
+	import StressControls from '$lib/components/StressControls.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -48,6 +50,7 @@
 				<section class="reserve-read" aria-labelledby="reserve-title">
 					<div>
 						<p class="label">Required liquidity reserve</p>
+						{#if s.stress?.status === 'unsupported'}<p>Stress not applied: this view has no supporting futures. These figures use baseline weights.</p>{/if}
 						<p id="reserve-title" class="reserve-value numeric">{formatCurrency(s.required_liquidity_reserve)}</p>
 						<span>Above {formatCurrency(s.operating_buffer)} in {formatPercent(s.coverage_target)} of modeled paths.</span>
 					</div>
@@ -62,7 +65,7 @@
 				</section>
 
 				<section class="curve-section" aria-labelledby="coverage-curve-title">
-					<div class="section-heading"><div><p class="label">Coverage curve</p><h2 id="coverage-curve-title">Funding level versus confidence</h2></div><span>The target line crosses the reserve. The vertical band is model uncertainty.</span></div>
+					<div class="section-heading"><div><p class="label">Coverage curve</p><h2 id="coverage-curve-title">Funding level versus modeled coverage</h2></div><span>The target line crosses the reserve. The vertical band is model uncertainty.</span></div>
 					<CoverageCurve
 						points={s.coverage_curve}
 						currentFunding={s.immediate_funding}
@@ -106,7 +109,7 @@
 							</div>
 							<div>
 								<span>Dollar-days below buffer</span>
-								<strong class="numeric">{formatCurrency(s.severity.dollar_days_below_buffer)}</strong>
+								<strong class="numeric">{s.severity.dollar_days_below_buffer.toLocaleString('en-US', { maximumFractionDigits: 0 })} dollar-days</strong>
 							</div>
 						</div>
 						<ShortfallDistribution distribution={s.shortfall_distribution} />
@@ -123,6 +126,8 @@
 						</div>
 					</section>
 				{/if}
+				<StressControls response={s} />
+				<ModelEvidencePanel response={s} />
 			</main>
 
 			<aside class="policy-console" aria-label="Liquidity policy controls">
@@ -142,6 +147,7 @@
 				</section>
 				<section>
 					<p class="label">Policy status</p>
+					{#if s.immediate_cash_coverage_ratio != null}<span>Immediate cash covers {formatPercent(s.immediate_cash_coverage_ratio)} of the required reserve. Investments require a separate sale.</span>{/if}
 					<strong class:gap={s.funding_gap > 0}>{s.funding_gap > 0 ? 'Funding action required' : 'Reserve covered'}</strong>
 					<span>{s.funding_gap > 0 ? 'Compare routes in Funding before committing cash.' : 'Current funding clears the chosen guardrail.'}</span>
 					{#if scenarioStore.loadState === 'loading'}<p class="updating" role="status" aria-live="polite">Recomputing…</p>{/if}
@@ -382,7 +388,7 @@
 	.currency-input input { color: var(--ink); }
 	.currency-input:focus-within { border-color: var(--cobalt); }
 	.segmented button { background: var(--paper); border-color: var(--rule); color: var(--ink-soft); }
-	.segmented button.active { background: var(--cobalt); color: var(--paper); }
+	.segmented button.active { background: var(--cobalt); color: var(--on-accent); }
 	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
-	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
@@ -66,7 +67,7 @@
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
-		<canvas class="hero-field" {@attach dotField()}></canvas>
+		<canvas class="hero-field" aria-hidden="true" {@attach dotField({ stockTrace: true })}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-kicker" href={resolve('/welcome')} aria-label="Ginseng home, liquidity workspace">Liquidity workspace</a>
 			<h1>Ginseng</h1>
@@ -80,6 +81,8 @@
 
 	<section class="auth-panel">
 		<div class="auth-card">
+			<div class="auth-preferences"><ThemeToggle /></div>
+			<h2 class="auth-brand">Ginseng</h2>
 			<div class="auth-mode" role="group" aria-label="Choose sign in or create account">
 				<button
 					type="button"
@@ -198,7 +201,7 @@
 		display: grid;
 		gap: 0.9rem;
 		max-width: 30rem;
-		color: var(--paper);
+		color: var(--on-brand);
 		transform: translate3d(0, 0, 0);
 		transition: transform 650ms cubic-bezier(0.19, 1, 0.22, 1);
 		will-change: transform;
@@ -220,7 +223,7 @@
 		justify-self: start;
 	}
 
-	.hero-kicker:hover { color: var(--paper); }
+	.hero-kicker:hover { color: var(--on-brand); }
 	.hero-kicker:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
 
 	.hero-copy h1 {
@@ -269,6 +272,17 @@
 		border: 1px solid var(--control-border);
 	}
 
+	.auth-brand {
+		margin: 0 0 0.35rem;
+		color: var(--auth-brand);
+		text-align: center;
+		font-size: clamp(2.2rem, 3.5vw, 3rem);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.035em;
+	}
+	.auth-preferences { display: flex; justify-content: flex-end; }
+
 	.auth-mode button {
 		min-height: 2.6rem;
 		background: var(--paper);
@@ -283,7 +297,7 @@
 	}
 
 	.auth-mode button:not(:last-child) { border-right: 1px solid var(--control-border); }
-	.auth-mode button.active { background: var(--cobalt); color: var(--paper); }
+	.auth-mode button.active { background: var(--cobalt); color: var(--on-accent); }
 	.auth-mode button:hover:not(.active) { background: var(--paper-deep); }
 
 	form {
@@ -338,7 +352,7 @@
 		margin-top: 0.15rem;
 		background: var(--cobalt);
 		border: 1px solid var(--cobalt);
-		color: var(--paper);
+		color: var(--on-accent);
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 		font-weight: 700;
@@ -405,7 +419,7 @@
 		cursor: pointer;
 	}
 
-	.text-button:hover { color: var(--cobalt-deep); }
+	.text-button:hover { color: var(--link); }
 
 	@media (max-width: 56rem) {
 		.auth-screen {

@@ -1,9 +1,8 @@
 /* Ginseng is a cash-flow workbench rendered as an editorial ledger:
    cobalt carries navigation and action; paper carries the decision.
-   --cobalt is the exact brand blue (#0100F4) from the official mark;
-   bright/deep/ink hold the same hue and full saturation at the prior
-   ramp's lightness steps, so nothing built against the old values
-   needed a second contrast pass. */
+   --brand-blue preserves the official mark's blue (#0100F4).
+   --cobalt is the adaptive accent; --on-accent and --on-brand keep
+   foreground contrast independent of the page's surface color. */
 
 :root {
 	color-scheme: light;
@@ -32,6 +31,14 @@
 	--negative: #ae2948;
 	--negative-soft: #f7e2e7;
 	--warning: #6240b4;
+	--brand-blue: #0100f4;
+	--on-brand: #f7f7f2;
+	--on-accent: #f7f7f2;
+	--link: #000086;
+	--auth-brand: #111;
+	--canvas: var(--brand-blue);
+	--chart-band: rgb(36 72 255 / 14%);
+	--chart-band-key: rgb(36 72 255 / 38%);
 
 	--font-size-md: 1rem;
 	--font-size-xs: 0.75rem;
@@ -40,6 +47,38 @@
 	--space-4: 1rem;
 	--space-6: 2rem;
 	--space-7: 3rem;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--paper: #000;
+	--paper-soft: #111114;
+	--paper-deep: #1b1b21;
+	--ink: #f0f0f5;
+	--ink-soft: #c2c2d2;
+	--ink-muted: #a3a3b7;
+	--cobalt: #a3a3ff;
+	--cobalt-bright: #b8b8ff;
+	--rule: #383843;
+	--rule-strong: #686879;
+	--control-border: #818197;
+	--positive: #87b5ff;
+	--negative: #ff829b;
+	--negative-soft: #2f111a;
+	--warning: #c0a4ff;
+	--on-accent: #080811;
+	--link: #a3a3ff;
+	--auth-brand: #f0f0f5;
+	--canvas: #000;
+	--chart-band: rgb(163 163 255 / 21%);
+	--chart-band-key: rgb(163 163 255 / 45%);
+}
+
+:root[data-theme='dark'] button:disabled {
+	background: var(--paper-deep);
+	border-color: var(--rule-strong);
+	color: var(--ink-muted);
+	opacity: 1;
 }
 
 *,
@@ -55,7 +94,7 @@ body {
 
 body {
 	margin: 0;
-	background: var(--cobalt);
+	background: var(--canvas);
 	color: var(--ink);
 	font-family: var(--font-sans);
 	font-size: var(--font-size-md);
@@ -93,7 +132,7 @@ a {
 
 ::selection {
 	background: var(--cobalt);
-	color: var(--paper);
+	color: var(--on-accent);
 }
 
 .numeric {

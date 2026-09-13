@@ -8,6 +8,8 @@
 	import '@fontsource-variable/archivo-narrow/wght.css';
 	import '../app.css';
 	import type { Snippet } from 'svelte';
+	import { onMount } from 'svelte';
+	import { initializeTheme } from '$lib/theme.svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
@@ -19,6 +21,7 @@
 	}
 
 	let { children }: Props = $props();
+	onMount(initializeTheme);
 
 	const LOGIN_PATH = '/login';
 	const WELCOME_PATH = '/welcome';
@@ -179,14 +182,14 @@
 		padding: 0.625rem 1rem;
 		border: 1px solid var(--cobalt);
 		background: var(--cobalt);
-		color: var(--paper);
+		color: var(--on-accent);
 		font-weight: 700;
 		cursor: pointer;
 	}
 
 	.profile-failure button.secondary {
 		background: transparent;
-		color: var(--cobalt-deep);
+		color: var(--link);
 	}
 
 	.profile-signout-error {

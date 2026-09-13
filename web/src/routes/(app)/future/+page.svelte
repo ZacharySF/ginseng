@@ -63,5 +63,5 @@
 	.scenario-read strong.attention, .terminal-state p { color: var(--negative); }
 	.scenario-read span, .terminal-state, .terminal-loading { color: var(--ink-muted); }
 	.terminal-state, .terminal-loading { background: var(--paper); }
-	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 </style>

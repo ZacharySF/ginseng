@@ -172,6 +172,12 @@
 							<strong class="numeric">{formatCurrency(response.estimate_band.low)}–{formatCurrency(response.estimate_band.high)}</strong>
 						</p>
 					{/if}
+					{#if response.optimal_plan && response.stress?.status !== 'unsupported'}
+						<p class="estimate-readout">Optimized funding cost · average <strong>{formatCurrency(response.optimal_plan.expected_cost)}</strong> / worst-tail average <strong>{formatCurrency(response.optimal_plan.cvar_cost)}</strong> · <a href={resolve('/plans')}>View funding mix</a></p>
+					{/if}
+					{#if response.stress?.status === 'active'}<p class="estimate-readout">Stress assumption active — not an estimated probability. <a href={resolve('/liquidity')}>Inspect weights</a></p>{/if}
+					{#if response.stress?.status === 'unsupported'}<p class="estimate-readout">Stress not applied: this view has no supporting futures. These figures use baseline weights.</p>{/if}
+					{#if response.excluded_obligations?.length}<p class="estimate-readout">{response.excluded_obligations.length} scheduled events fall after this chart window. Their dates have been preserved.</p>{/if}
 				</div>
 				<div class="chart-side">
 					{#if selected}
@@ -292,9 +298,11 @@
 			<section class="inspector-block capital-readout">
 				<p class="inspector-label">Capital position</p>
 				<div><span>Available cash</span><strong class="numeric">{formatCurrency(response.immediate_funding)}</strong></div>
-				<div><span>Marketable backup</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
-				<div><span>Restricted capital</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
-				<p>Only available cash counts toward the reserve. Selling marketable assets is a separate funding action.</p>
+				{#if response.immediate_cash_coverage_ratio != null}<div><span>Cash / required reserve</span><strong>{formatPercent(response.immediate_cash_coverage_ratio)}</strong></div>{/if}
+				<div><span>Taxable investments</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
+				<div><span>Retirement account value</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
+				{#if response.account_liquidity}<div><span>Net investment access</span><strong class="numeric">{formatCurrency(response.account_liquidity.total_net_accessible)}</strong></div>{/if}
+				<p>Only available cash counts toward the reserve. Investment access requires a withdrawal, an availability delay, and any tax or penalty reserve. <a href={resolve('/plans')}>See account assumptions</a>.</p>
 			</section>
 
 			<section class:funding-readout--risk={response.funding_gap > 0} class="inspector-block funding-readout">
@@ -317,13 +325,13 @@
 	.horizon-switcher button { min-width: 2.7rem; height: 1.85rem; padding: 0 0.55rem; background: var(--paper); border: 0; border-right: 1px solid var(--rule); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; cursor: pointer; }
 	.horizon-switcher button:last-child { border-right: 0; }
 	.horizon-switcher button:hover { background: var(--paper-deep); color: var(--ink); }
-	.horizon-switcher button.active { background: var(--cobalt); color: var(--paper); }
+	.horizon-switcher button.active { background: var(--cobalt); color: var(--on-accent); }
 	.model-state { display: inline-flex; align-items: center; gap: 0.4rem; }
 	.model-state span { width: 0.38rem; height: 0.38rem; background: var(--cobalt-bright); border-radius: 50%; }
 	.toolbar-actions { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; }
-	.toolbar-actions a, .inspector-heading a, .funding-readout a { color: var(--cobalt-deep); text-decoration: none; }
+	.toolbar-actions a, .inspector-heading a, .funding-readout a { color: var(--link); text-decoration: none; }
 	.toolbar-actions a { min-height: 2rem; display: inline-flex; align-items: center; padding: 0 0.55rem; border: 1px solid var(--rule-strong); font-size: 0.72rem; font-weight: 750; }
-	.toolbar-actions a:hover, .inspector-heading a:hover, .funding-readout a:hover { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.toolbar-actions a:hover, .inspector-heading a:hover, .funding-readout a:hover { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 
 	.terminal-grid { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; min-height: calc(100dvh - 6.6rem); }
 	.chart-workspace { min-width: 0; padding: 1.35rem 1.15rem 1rem; border-right: 1px solid var(--rule); }
@@ -353,7 +361,7 @@
 	.grid-line { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 3; }.grid-line--vertical { stroke: var(--paper-deep); }
 	.axis-value, .axis-day { fill: var(--ink-muted); font-family: var(--font-mono); font-size: 11px; }.axis-day { fill: var(--ink-soft); }
 	.zero-line { stroke: var(--negative); stroke-width: 1; stroke-dasharray: 3 4; }.buffer-line { stroke: var(--warning); stroke-width: 1; stroke-dasharray: 6 4; }.buffer-label { fill: var(--warning); font-family: var(--font-mono); font-size: 10px; }
-	.cash-range { fill: rgb(36 72 255 / 14%); stroke: none; }.cash-median { fill: none; stroke: var(--cobalt); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+	.cash-range { fill: var(--chart-band); stroke: none; }.cash-median { fill: none; stroke: var(--cobalt); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
 	.event-line { stroke: var(--negative); stroke-width: 1; stroke-dasharray: 3 4; }.event-dot { fill: var(--negative); }.flow-line { stroke: var(--rule-strong); stroke-width: 1; }.income-bar { stroke: var(--cobalt-bright); stroke-width: 4; }.obligation-bar { stroke: var(--negative); stroke-width: 4; }.cursor-line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.65; }.cursor-day-label { fill: var(--ink); font-family: var(--font-mono); font-size: 10px; font-weight: 700; }.cursor-dot { fill: var(--paper); stroke: var(--ink); stroke-width: 1.75; }
 
 	.terminal-inspector { display: grid; align-content: start; background: var(--paper-soft); }
@@ -362,7 +370,7 @@
 	.inspector-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }.inspector-heading a { font-size: 0.68rem; }
 	.event-watchlist { display: grid; gap: 1px; padding: 0; margin: 0; background: var(--rule); list-style: none; }.event-watchlist li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto; align-items: center; gap: 0.45rem; padding: 0.5rem; background: var(--paper); }.event-watchlist li > span { color: var(--negative); font-family: var(--font-mono); font-size: 0.64rem; }.event-watchlist p { overflow: hidden; color: var(--ink); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }.event-watchlist strong { color: var(--ink); font-size: 0.69rem; }.empty-inspector { color: var(--ink-muted); font-size: 0.72rem; line-height: 1.45; }
 	.capital-readout { background: var(--paper-deep); }.capital-readout > div, .policy-readout > div { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; color: var(--ink-soft); font-size: 0.72rem; }.capital-readout strong, .policy-readout strong { color: var(--ink); font-size: 0.78rem; }.capital-readout > p:last-child { margin: 0; color: var(--ink-muted); font-size: 0.67rem; line-height: 1.4; }
-	.funding-readout { background: var(--cobalt); color: var(--paper); }.funding-readout--risk { background: var(--negative-soft); }.funding-readout > p:nth-child(2) { color: var(--paper); font-size: 1.45rem; font-weight: 800; letter-spacing: -0.05em; }.funding-readout a { color: var(--paper); font-size: 0.72rem; }.funding-readout--risk > p:nth-child(2), .funding-readout--risk .inspector-label, .funding-readout--risk a { color: var(--negative); }
+	.funding-readout { background: var(--cobalt); color: var(--on-accent); }.funding-readout--risk { background: var(--negative-soft); }.funding-readout > p:nth-child(2) { color: var(--on-accent); font-size: 1.45rem; font-weight: 800; letter-spacing: -0.05em; }.funding-readout a { color: var(--on-accent); font-size: 0.72rem; }.funding-readout--risk > p:nth-child(2), .funding-readout--risk .inspector-label, .funding-readout--risk a { color: var(--negative); }
 
 	@media (max-width: 64rem) { .terminal-grid { grid-template-columns: minmax(0, 1fr) 16rem; }.chart-key { max-width: 15rem; }.toolbar-actions a:last-child { display: none; } }
 	@media (max-width: 48rem) { .cash-terminal { min-height: auto; }.terminal-toolbar { flex-wrap: wrap; gap: 0.55rem; padding: 0.6rem 0.75rem; }.toolbar-separator, .model-state { display: none; }.terminal-identity { width: 100%; }.toolbar-actions { margin-left: auto; }.terminal-grid { grid-template-columns: 1fr; }.chart-workspace { padding: 0.9rem 0.65rem; border-right: 0; }.terminal-inspector { grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); }.inspector-block { min-width: 0; }.funding-readout { grid-column: 1 / -1; }.chart-header { display: grid; gap: 0.65rem; }.chart-key { justify-content: start; max-width: none; }.cash-graph svg { min-height: 17rem; }.event-watchlist li { grid-template-columns: 2.2rem minmax(0, 1fr); }.event-watchlist strong { grid-column: 2; }.chart-side { justify-items: start; min-width: 0; }.selected-path-range { text-align: left; } }

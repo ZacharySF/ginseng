@@ -10,19 +10,20 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Awaitable
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from functools import lru_cache
 import os
 from threading import BoundedSemaphore
 import time
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import anyio
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+import numpy as np
 from starlette.requests import ClientDisconnect
 from starlette.responses import StreamingResponse
 from starlette.types import Receive, Scope, Send
@@ -44,13 +45,26 @@ from ginseng.chat import (
     prepare_chat,
     stream_chat_events,
 )
-from ginseng.funding import FundingConfig, build_candidates, evaluate_plan
+from ginseng.funding import FundingConfig, build_candidates, optimizer_comparison_bundle, evaluate_plan
 from ginseng.generate import DEFAULT_SEED, generate_persona
-from ginseng.metrics import compute_scenario_metrics
-from ginseng.optimizer import optimize_funding
+from ginseng.metrics import compute_scenario_metrics, required_liquidity_per_path
+from ginseng.risk import probabilities, concentration, cvar
+from ginseng.stress import DroughtView, scenario_weights
+from ginseng.provenance import fingerprint, model_card
+from ginseng.calibration import walk_forward
+from ginseng.decision import funding_analysis
+from ginseng.portfolio import portfolio_lab
+from ginseng.withdrawals import WithdrawalAssumptions, LONG_TERM_CAPITAL_GAINS_RATE, account_liquidity
+from ginseng.optimizer import (
+    SOLVER_TIME_LIMIT_SECONDS,
+    OptimalPlan,
+    OptimizationFailure,
+    OptimizationFailureReason,
+    optimize_funding,
+)
 from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.providers.nessie import NessieError, NessieProvider
-from ginseng.simulate import draw_bundle
+from ginseng.simulate import draw_bundle, cash_paths
 from ginseng.state import FinancialState, Obligation
 from ginseng.supabase import (
     AuthenticatedIdentity,
@@ -87,7 +101,7 @@ def _allowed_origins() -> list[str]:
 
 
 class ObligationRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False, str_strip_whitespace=True)
 
     id: str = Field(min_length=1, max_length=100)
     label: str = Field(min_length=1, max_length=100)
@@ -95,8 +109,15 @@ class ObligationRequest(BaseModel):
     due_in_days: int = Field(ge=0, le=DEMO_MAX_HORIZON_DAYS)
 
 
+class DroughtViewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    probability: float = Field(ge=0, le=1)
+    window_days: int = Field(default=14, ge=1, le=60)
+    income_fraction: float = Field(default=0.5, ge=0, le=1)
+
+
 class ScenarioRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     seed: int = Field(default=DEFAULT_SEED, ge=0, le=9_007_199_254_740_991)
     horizon_days: int = Field(default=30, ge=1, le=DEMO_MAX_HORIZON_DAYS)
@@ -107,7 +128,16 @@ class ScenarioRequest(BaseModel):
     obligations: list[ObligationRequest] = Field(default_factory=list, max_length=DEMO_MAX_OBLIGATIONS)
     overdraft_apr: float = Field(default=0.2999, ge=0, le=10)
     buffer_tolerance_dollar_days: float | None = Field(default=None, ge=0, allow_inf_nan=False)
-    capital_gains_rate: float = Field(default=0.15, ge=0, le=1)
+    capital_gains_rate: float = Field(default=LONG_TERM_CAPITAL_GAINS_RATE, ge=0, le=1)
+    tail_deficit_limit: float | None = Field(default=None, ge=0, le=1_000_000)
+    drought_view: DroughtViewRequest | None = None
+
+    @model_validator(mode="after")
+    def unique_events(self):
+        ids = [item.id for item in self.obligations]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Scenario event identifiers must be unique.")
+        return self
 
 
 class SeverityMetrics(BaseModel):
@@ -138,6 +168,40 @@ class CashPaths(BaseModel):
 class ShortfallDistribution(BaseModel):
     bin_edges: list[float]
     counts: list[int]
+    probabilities: list[float] = Field(default_factory=list)
+
+
+class OptimizerStatus(BaseModel):
+    code: OptimizationFailureReason | Literal["optimal", "optimal_inaccurate", "not_needed"]
+    message: str
+    paths: int
+    time_limit_seconds: float
+
+
+def _optimizer_status(result: OptimalPlan | OptimizationFailure | None, paths: int) -> OptimizerStatus:
+    if result is None:
+        code = "not_needed"
+        message = "Current cash covers the scenario's required reserve; no additional funding is needed."
+    elif isinstance(result, OptimalPlan):
+        code = result.solver_status
+        message = "Optimized funding mix ready." if code == "optimal" else "An approximate solution passed the numerical checks."
+    else:
+        code = result.reason
+        messages = {
+            "invalid_input": "The scenario contains inputs the optimizer cannot evaluate.",
+            "no_funding_levers": "No available credit, taxable investments, or reducible spending can fund this scenario.",
+            "resource_limit": f"This {paths:,}-path scenario exceeds the optimizer's size limit. Try a shorter forecast window.",
+            "cvxpy_unavailable": "The optimization library is unavailable on this server.",
+            "solver_unavailable": "The optimization solver is unavailable on this server.",
+            "solver_timeout": f"Optimization timed out after {SOLVER_TIME_LIMIT_SECONDS:g} seconds at {paths:,} paths. Try again or shorten the forecast window.",
+            "solver_limit": "The solver reached a time or iteration limit before finding an acceptable solution.",
+            "solver_error": "The solver could not finish this scenario. Try again or adjust the scenario.",
+            "infeasible": "No funding mix meets the selected buffer deficit limits with the available resources.",
+            "unbounded": "The solver could not establish a bounded funding solution.",
+            "invalid_solution": "The solver's result failed the numerical checks and cannot be shown as a funding plan.",
+        }
+        message = messages[code]
+    return OptimizerStatus(code=code, message=message, paths=paths, time_limit_seconds=SOLVER_TIME_LIMIT_SECONDS)
 
 
 class ScenarioResponse(BaseModel):
@@ -166,6 +230,16 @@ class ScenarioResponse(BaseModel):
     sensitivity_verdict: str | None = None
     wrong_way_risk: dict[str, Any] | None = None
     optimal_plan: dict[str, Any] | None = None
+    optimizer_status: OptimizerStatus
+    provenance: dict[str, Any] = Field(default_factory=dict)
+    model_card: dict[str, Any] = Field(default_factory=dict)
+    stress: dict[str, Any] = Field(default_factory=dict)
+    baseline_summary: dict[str, Any] = Field(default_factory=dict)
+    unstressed_summary: dict[str, Any] = Field(default_factory=dict)
+    immediate_cash_coverage_ratio: float | None = None
+    recommendation_status: str = "available"
+    excluded_obligations: list[str] = Field(default_factory=list)
+    account_liquidity: dict[str, Any] = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):
@@ -458,6 +532,30 @@ async def chat(
         identity.user_id,
     )
 
+def _scenario_context(request: ScenarioRequest):
+    persona = replace(_cached_persona(request.seed), operating_buffer=request.operating_buffer,
+                      coverage_target=request.coverage_target, forecast_horizon=request.horizon_days)
+    obligations = tuple(Obligation(id=item.id, label=item.label, amount=item.amount, due_in_days=item.due_in_days)
+                        for item in request.obligations)
+    bundle = draw_bundle(persona, request.horizon_days, request.paths, request.seed, request.mean_block_length)
+    view = DroughtView(**request.drought_view.model_dump()) if request.drought_view else None
+    if view is not None:
+        view = replace(view, window_days=min(view.window_days, request.horizon_days))
+    weights, stress = scenario_weights(persona, bundle, view)
+    return persona, obligations, bundle, view, weights, stress
+
+
+def _optimizer_parameters(request: ScenarioRequest) -> dict:
+    return {name: getattr(request, name) for name in ("coverage_target", "operating_buffer", "overdraft_apr",
+            "buffer_tolerance_dollar_days", "capital_gains_rate", "tail_deficit_limit")}
+
+
+def _summary(computed) -> dict:
+    return {"required_liquidity_reserve": computed.required_liquidity_reserve,
+            "funding_gap": computed.funding_gap, "severity": computed.severity,
+            "coverage_at_current_funding": computed.coverage_at_current_funding}
+
+
 @app.post("/scenario", response_model=ScenarioResponse)
 def scenario(
     request: ScenarioRequest,
@@ -468,21 +566,28 @@ def scenario(
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
     try:
-        persona = _cached_persona(request.seed)
-        obligations = tuple(
-            Obligation(id=item.id, label=item.label, amount=item.amount, due_in_days=item.due_in_days)
-            for item in request.obligations
-        )
-        bundle = draw_bundle(
-            persona,
-            horizon_days=request.horizon_days,
-            n_paths=request.paths,
-            seed=request.seed,
-            mean_block_length=request.mean_block_length,
-        )
+        persona, obligations, bundle, view, weights, stress = _scenario_context(request)
         computed = compute_scenario_metrics(
-            persona, bundle, obligations, request.coverage_target, request.operating_buffer
+            persona, bundle, obligations, request.coverage_target, request.operating_buffer, weights
         )
+        unstressed = compute_scenario_metrics(persona, bundle, obligations, request.coverage_target, request.operating_buffer) if view else computed
+        baseline = compute_scenario_metrics(persona, bundle, (), request.coverage_target, request.operating_buffer, weights) if obligations else computed
+        matrix = cash_paths(persona, bundle, obligations)
+        required = required_liquidity_per_path(matrix, request.operating_buffer)
+        support = concentration(required, request.coverage_target, weights)
+        stress.update(support)
+        # These are an explicit support policy, not significance tests.
+        weak_stress = stress["status"] == "active" and (support["ens_tail"] < 20 or support["max_weight"] > 0.1)
+        stress["recommendation_supported"] = stress["status"] != "unsupported" and not weak_stress
+        stress["support_policy"] = "Stress recommendations require tail ENS >= 20 and maximum scenario weight <= 10%; these are policy assumptions."
+        config = {**_optimizer_parameters(request), "funding": asdict(FundingConfig()), "policy": asdict(FundingPolicy()),
+                  "horizon_days": request.horizon_days, "mean_block_length": bundle.mean_block_length,
+                  "quantile_method": "inverse empirical CDF", "tail_ties": "proportional fractional mass"}
+        withdrawal_assumptions = WithdrawalAssumptions(long_term_rate=request.capital_gains_rate)
+        accounts = account_liquidity(persona, withdrawal_assumptions)
+        config["withdrawals"] = {"version": accounts["assumptions_version"], **asdict(withdrawal_assumptions),
+                                 "roth_earnings_and_conversions": "excluded", "tax_reserve_timing": "set aside at availability"}
+        hashes = fingerprint(persona, bundle, obligations, weights, view, config, matrix)
         band = uncertainty.estimate_band(
             persona,
             obligations,
@@ -494,7 +599,7 @@ def scenario(
             n_paths=request.paths,
             n_outer=50,
             seed=request.seed,
-        )
+        ) if view is None else None
         rows = uncertainty.persistence_sensitivity(
             persona,
             obligations,
@@ -503,27 +608,37 @@ def scenario(
             horizon_days=request.horizon_days,
             n_paths=request.paths,
             seed=request.seed,
-        )
-        if computed.funding_gap > 0:
-            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig())
-            results = [evaluate_plan(persona, bundle, obligations, spec) for spec in specs]
+        ) if view is None else []
+        current_tail_deficit = cvar(np.maximum(0, request.operating_buffer - (persona.immediate_funding + matrix).min(axis=1)), request.coverage_target, weights)
+        needs_tail_protection = request.tail_deficit_limit is not None and current_tail_deficit > request.tail_deficit_limit
+        if computed.funding_gap > 0 or needs_tail_protection:
+            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig(), withdrawal_assumptions)
+            evaluation_bundle = optimizer_comparison_bundle(persona, bundle, specs)
+            results = [evaluate_plan(persona, evaluation_bundle, obligations, spec, weights) for spec in specs]
             recommendation = recommend(results, FundingPolicy())
             plans, recommendation_dict = to_contract(results, recommendation)
             optimal = optimize_funding(
                 persona,
-                bundle,
+                evaluation_bundle,
                 obligations,
-                coverage_target=request.coverage_target,
-                operating_buffer=request.operating_buffer,
-                overdraft_apr=request.overdraft_apr,
-                buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
-                capital_gains_rate=request.capital_gains_rate,
+                weights=weights,
+                **_optimizer_parameters(request),
             )
-            optimal_plan = asdict(optimal) if optimal is not None else None
+            optimal_plan = asdict(optimal) if isinstance(optimal, OptimalPlan) else None
         else:
             plans = []
             recommendation_dict = None
             optimal_plan = None
+            optimal = None
+        recommendation_status = "available"
+        if not stress["recommendation_supported"]:
+            recommendation_status = "stress_support_insufficient"
+            recommendation_dict = {"plan_id": "", "explanation": "No recommendation: the stress assumption is unsupported or its tail is too concentrated under the disclosed support policy."}
+            for plan in plans:
+                plan["recommended"] = False
+                plan["explanation"] = recommendation_dict["explanation"]
+        elif recommendation_dict is not None and not recommendation_dict["plan_id"]:
+            recommendation_status = "no_plan_meets_policy"
         return ScenarioResponse(
             as_of=persona.as_of.isoformat(),
             seed=request.seed,
@@ -539,7 +654,7 @@ def scenario(
             funding_gap=computed.funding_gap,
             coverage_at_current_funding=computed.coverage_at_current_funding,
             severity=SeverityMetrics(**computed.severity),
-            estimate_band={"low": band.low, "high": band.high},
+            estimate_band={"low": band.low, "high": band.high} if band else None,
             coverage_curve=[CoveragePoint(**point) for point in computed.coverage_curve],
             reserve_buffer_curve=[
                 ReserveBufferPoint(**point) for point in computed.reserve_buffer_curve
@@ -549,10 +664,65 @@ def scenario(
             plans=plans,
             recommendation=recommendation_dict,
             sensitivity=[vars(row) for row in rows],
-            sensitivity_verdict=uncertainty.stability_verdict(rows),
+            sensitivity_verdict=uncertainty.stability_verdict(rows) if rows else "Unweighted estimate bands and persistence comparisons are unavailable while a stress view is selected.",
             wrong_way_risk=computed.wrong_way_risk,
             optimal_plan=optimal_plan,
+            optimizer_status=_optimizer_status(optimal, request.paths),
+            provenance=hashes, model_card=model_card(persona, bundle, config, stress, hashes), stress=stress,
+            baseline_summary=_summary(baseline), unstressed_summary=_summary(unstressed),
+            immediate_cash_coverage_ratio=persona.immediate_funding / computed.required_liquidity_reserve if computed.required_liquidity_reserve > 0 else None,
+            recommendation_status=recommendation_status,
+            excluded_obligations=[item.id for item in obligations if item.due_in_days > request.horizon_days],
+            account_liquidity=accounts,
         )
+    finally:
+        _SCENARIO_GATE.release()
+
+
+@lru_cache(maxsize=8)
+def _cached_calibration(seed: int, horizon: int, paths: int, q: float, buffer: float):
+    return walk_forward(_cached_persona(seed), horizon, paths, seed, q, buffer)
+
+
+@app.post("/analysis/calibration")
+def calibration_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
+    if not _SCENARIO_GATE.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
+    try:
+        return _cached_calibration(request.seed, request.horizon_days, request.paths, request.coverage_target, request.operating_buffer)
+    finally:
+        _SCENARIO_GATE.release()
+
+
+@app.post("/analysis/funding")
+def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
+    if not _SCENARIO_GATE.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
+    try:
+        persona, obligations, bundle, view, weights, stress = _scenario_context(request)
+        if stress["status"] == "unsupported":
+            return {"status": "unavailable", "reason": "The requested stress has no supporting scenarios."}
+        computed = compute_scenario_metrics(persona, bundle, obligations, request.coverage_target, request.operating_buffer, weights)
+        specs = build_candidates(persona, obligations, computed.funding_gap,
+                                 withdrawal_assumptions=WithdrawalAssumptions(long_term_rate=request.capital_gains_rate))
+        evaluation = optimizer_comparison_bundle(persona, bundle, specs)
+        return funding_analysis(persona, evaluation, obligations, specs, weights, view, _optimizer_parameters(request))
+    finally:
+        _SCENARIO_GATE.release()
+
+
+@app.post("/analysis/portfolio")
+def portfolio_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
+    if not _SCENARIO_GATE.acquire(blocking=False):
+        raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
+    try:
+        persona, obligations, bundle, view, weights, stress = _scenario_context(request)
+        if stress["status"] == "unsupported":
+            return {"status": "unavailable", "message": "The requested stress has no supporting scenarios."}
+        computed = compute_scenario_metrics(persona, bundle, obligations, request.coverage_target, request.operating_buffer, weights)
+        return portfolio_lab(persona, bundle, obligations, computed.funding_gap, weights, request.capital_gains_rate)
+    except ValueError as error:
+        return {"status": "unavailable", "message": str(error)}
     finally:
         _SCENARIO_GATE.release()
 

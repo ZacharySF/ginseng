@@ -9,7 +9,7 @@ never a weighted numeric score (spec 42, 45).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from typing import Callable, Sequence
 
 from ginseng.funding import PlanResult
@@ -30,6 +30,7 @@ _OBJECTIVES: tuple[tuple[str, Callable[[PlanResult], float]], ...] = (
     ("new_debt", lambda r: r.new_debt),
     ("interest_exposure", lambda r: r.interest_exposure),
     ("investment_sold", lambda r: r.investment_sold),
+    ("withdrawal_charges", lambda r: r.withdrawal_tax_reserve + r.withdrawal_penalty_reserve),
     ("taxable_event_size", lambda r: abs(r.realized_gain_loss)),
     ("deferred_spending", lambda r: r.deferred_spending),
 )
@@ -45,11 +46,17 @@ def _dominates(a: PlanResult, b: PlanResult) -> bool:
     return no_worse and strictly_better
 
 
+def _require_common_evaluation(results: Sequence[PlanResult]) -> None:
+    if len({(r.evaluation_horizon_days, r.evaluation_draw_id, r.evaluation_weight_hash) for r in results}) > 1:
+        raise ValueError("Funding plans must share the same evaluation horizon and draw bundle, and identical probability weights.")
+
+
 def pareto_filter(results: Sequence[PlanResult]) -> list[PlanResult]:
     """Mark each plan dominated when another feasible plan is no worse on
     every objective and strictly better on at least one (spec 43). Only
     feasible plans can dominate; every plan's own feasibility is left
     untouched here (spec 45 removes infeasible plans separately)."""
+    _require_common_evaluation(results)
     feasible_pool = [r for r in results if r.feasible]
     filtered: list[PlanResult] = []
     for candidate in results:
@@ -182,6 +189,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
     if not results:
         return Recommendation(plan_id="", explanation="No candidate plans were generated.")
 
+    _require_common_evaluation(results)
     feasible = [r for r in results if r.feasible]
     if not feasible:
         reason = results[0].infeasibility_reason or "no candidate plan can fund the gap in full"
@@ -203,7 +211,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
         closest = min(feasible, key=lambda r: r.cash_shortfall_probability)
         _, reason = _meets_hard_requirements(closest, policy)
         return Recommendation(
-            plan_id=closest.id,
+            plan_id="",
             explanation=(
                 f"{closest.label} is the closest available option, but no candidate plan satisfies every hard "
                 f"requirement in your funding policy: {reason}."
@@ -252,6 +260,7 @@ def to_contract(
 ) -> tuple[list[dict], dict]:
     """Serialize evaluated plans and the recommendation to the frozen
     Plans Screen JSON shape (spec 60)."""
+    _require_common_evaluation(results)
     frontier = pareto_filter([r for r in results if r.feasible])
     by_id = {r.id: r for r in frontier}
 
@@ -279,11 +288,18 @@ def to_contract(
             {
                 "id": result.id,
                 "label": result.label,
+                "evaluation_horizon_days": result.evaluation_horizon_days,
+                "evaluation_draw_id": result.evaluation_draw_id,
+                "evaluation_weight_hash": result.evaluation_weight_hash,
                 "cash_shortfall_probability": result.cash_shortfall_probability,
                 "avg_cash_deficit_when_short": result.avg_cash_deficit_when_short,
                 "new_debt": result.new_debt,
                 "interest_exposure": result.interest_exposure,
                 "investment_sold": result.investment_sold,
+                "withdrawal_tax_reserve": result.withdrawal_tax_reserve,
+                "withdrawal_penalty_reserve": result.withdrawal_penalty_reserve,
+                "withdrawal_net_cash": result.withdrawal_net_cash,
+                "withdrawal_accounts": [asdict(row) for row in result.withdrawal_accounts],
                 "realized_gain_loss": result.realized_gain_loss,
                 "deferred_spending": result.deferred_spending,
                 "feasible": result.feasible,

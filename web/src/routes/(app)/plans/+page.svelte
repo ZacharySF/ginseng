@@ -3,6 +3,11 @@
 	import { scenarioStore } from '$lib/scenario.svelte';
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import PlanTable from '$lib/components/PlanTable.svelte';
+	import OptimalPlanPanel from '$lib/components/OptimalPlanPanel.svelte';
+	import FundingLimits from '$lib/components/FundingLimits.svelte';
+	import FundingAnalysisPanel from '$lib/components/FundingAnalysisPanel.svelte';
+	import PortfolioAnalysisPanel from '$lib/components/PortfolioAnalysisPanel.svelte';
+	import AccountLiquidityPanel from '$lib/components/AccountLiquidityPanel.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -13,7 +18,9 @@
 	<title>Ginseng — Funding terminal</title>
 </svelte:head>
 
-{#if scenarioStore.response}
+{#if scenarioStore.loadState === 'loading'}
+	<div class="optimizer-loading"><OptimalPlanPanel loading onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} /></div>
+{:else if scenarioStore.response}
 	{@const s = scenarioStore.response}
 	{@const baseline = scenarioStore.baselineResponse}
 	<div class="terminal-view">
@@ -24,10 +31,16 @@
 
 		<div class="funding-layout">
 			<section class="plan-console" aria-label="Funding plan comparison">
+				<OptimalPlanPanel response={s} onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} />
+				{#if s.account_liquidity}<AccountLiquidityPanel data={s.account_liquidity} />{/if}
+				{#if s.plans.length > 0}<h2 class="named-plans-heading">Compare named funding plans</h2>{/if}
 				<PlanTable plans={s.plans} recommendation={s.recommendation} />
+				<FundingAnalysisPanel />
+				<PortfolioAnalysisPanel />
 			</section>
 
 			<aside class="funding-inspector">
+				<FundingLimits />
 				<section>
 					<p class="label">Current constraint</p>
 					<strong class:attention={s.funding_gap > 0} class="inspector-value numeric">{formatCurrency(s.funding_gap)}</strong>
@@ -44,7 +57,15 @@
 				</section>
 				<section>
 					<p class="label">Reading the list</p>
-					<span>Every option uses the same modeled paths. Differences reflect funding tradeoffs, not a different market draw.</span>
+					{#if s.plans.length > 0}
+						<strong>{s.plans[0].evaluation_horizon_days}-day comparison</strong>
+						<span>Every funding plan uses the same modeled paths over these {s.plans[0].evaluation_horizon_days} days, including credit repayment and sale settlement.</span>
+						{#if s.plans[0].evaluation_horizon_days > s.cash_paths.days.length}
+							<span>The cash chart shows {s.cash_paths.days.length} days. Plan comparisons extend through later funding payments and the days immediately after them.</span>
+						{/if}
+					{:else}
+						<span>Funding plans will share one evaluation period, including any later credit repayment or sale settlement.</span>
+					{/if}
 				</section>
 			</aside>
 		</div>
@@ -56,6 +77,8 @@
 {/if}
 
 <style>
+	.optimizer-loading { padding: 1rem; }
+	.named-plans-heading { margin: 0 0 0.75rem; font-size: 1.15rem; color: var(--ink); }
 	.terminal-view {
 		display: flex;
 		flex-direction: column;
@@ -143,5 +166,5 @@
 	.funding-inspector span { color: var(--ink-muted); }
 	.comparison strong { color: var(--ink); }
 	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
-	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 </style>

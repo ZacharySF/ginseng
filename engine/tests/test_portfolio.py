@@ -1,12 +1,13 @@
 """Fourth-column portfolio paths, shared sampling, and wrong-way risk
 (spec 8.3-8.4): the market series must ride the same stationary-bootstrap
-day indices the cash forecast resamples, liquidation proceeds must settle
-path by path, and portfolio returns conditioned on forced-liquidity paths
+day indices the cash forecast resamples, sales at today's price must wait
+for settlement, and portfolio returns conditioned on forced-liquidity paths
 must expose wrong-way risk - or be honestly absent when no market history
 or marketable assets exist."""
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, timedelta
 
 import numpy as np
@@ -274,7 +275,7 @@ def test_canonical_persona_reports_wrong_way_risk_consistent_with_its_paths():
 
 
 # ---------------------------------------------------------------------------
-# Path-scaled settlement proceeds (spec 8.3, 41)
+# Execution price and cash availability are separate (spec 40, 41)
 # ---------------------------------------------------------------------------
 
 
@@ -293,14 +294,37 @@ def test_settlement_proceeds_cover_the_bill_when_no_market_history_exists():
     assert sell.cash_shortfall_probability == 0.0  # flat T+3 proceeds cover it
 
 
-def test_market_moves_scale_settlement_proceeds_path_by_path():
-    # A -50% daily market means the $500 sale is worth 500 * 0.5^3 = $62.50
-    # by the T+1-plus-2-day settlement, so the bill is no longer covered.
-    wait, sell = _settlement_results(market_return=-0.5)
+@pytest.mark.parametrize("market_return", [-0.5, 0.0, 0.5])
+def test_market_moves_after_execution_do_not_reprice_sale_proceeds(market_return):
+    wait, sell = _settlement_results(market_return=market_return)
     assert wait.cash_shortfall_probability == 1.0
-    assert sell.cash_shortfall_probability == 1.0
+    assert sell.cash_shortfall_probability == 0.0
+    assert sell.investment_sold == pytest.approx(500.0)
+    assert sell.realized_gain_loss == pytest.approx(100.0)
 
-    # A flat market keeps proceeds at the nominal amount, matching the
-    # no-market-history evaluation exactly.
-    _, sell_flat = _settlement_results(market_return=0.0)
-    assert sell_flat.cash_shortfall_probability == 0.0
+
+@pytest.mark.parametrize("due_day, expected_deficit", [(1, 400.0), (2, 400.0), (3, 0.0)])
+def test_executed_sale_cannot_pay_a_bill_before_cash_arrives(due_day, expected_deficit):
+    state = make_settlement_state(market_return=0.5)
+    bundle = draw_bundle(state, horizon_days=15, n_paths=10, seed=7, mean_block_length=7)
+    bill = (Obligation("bill", "Bill", 500.0, due_day),)
+    result = evaluate_plan(state, bundle, bill, SELL_SPEC)
+
+    assert result.cash_shortfall_probability == float(expected_deficit > 0)
+    assert result.avg_cash_deficit_when_short == pytest.approx(expected_deficit)
+
+
+def test_realized_loss_is_reported_without_adding_a_tax_refund_to_cash():
+    state = make_settlement_state(market_return=None)
+    state = replace(
+        state,
+        holdings=(Holding("VTI", "taxable", 100.0, (TaxLot("loss-lot", "VTI", 10.0, 120.0, AS_OF),)),),
+    )
+    bundle = draw_bundle(state, horizon_days=15, n_paths=10, seed=7, mean_block_length=7)
+    result = evaluate_plan(state, bundle, (Obligation("bill", "Bill", 610.0, 10),), SELL_SPEC)
+
+    assert result.realized_gain_loss == pytest.approx(-100.0)
+    assert result.investment_sold == pytest.approx(500.0)
+    # $100 opening cash + $500 sale still leaves a $10 deficit, despite the loss.
+    assert result.cash_shortfall_probability == 1.0
+    assert result.avg_cash_deficit_when_short == pytest.approx(10.0)
