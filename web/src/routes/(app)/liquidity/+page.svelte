@@ -388,7 +388,7 @@
 	.currency-input input { color: var(--ink); }
 	.currency-input:focus-within { border-color: var(--cobalt); }
 	.segmented button { background: var(--paper); border-color: var(--rule); color: var(--ink-soft); }
-	.segmented button.active { background: var(--cobalt); color: var(--paper); }
+	.segmented button.active { background: var(--cobalt); color: var(--on-accent); }
 	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
-	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 </style>

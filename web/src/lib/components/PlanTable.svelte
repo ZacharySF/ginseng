@@ -238,5 +238,5 @@
 	.plan-row { background: var(--paper); }
 	.plan-row.recommended { background: var(--paper-soft); box-shadow: inset 3px 0 var(--cobalt); }
 	.plan-row h3, .plan-metrics strong { color: var(--ink); }
-	.plan-state { background: var(--cobalt); color: var(--paper); }
+	.plan-state { background: var(--cobalt); color: var(--on-accent); }
 </style>

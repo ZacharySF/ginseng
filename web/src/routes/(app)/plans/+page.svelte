@@ -166,5 +166,5 @@
 	.funding-inspector span { color: var(--ink-muted); }
 	.comparison strong { color: var(--ink); }
 	.terminal-state, .terminal-loading { background: var(--paper); color: var(--ink-muted); }
-	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.terminal-state button { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 </style>

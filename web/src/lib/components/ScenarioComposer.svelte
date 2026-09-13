@@ -556,13 +556,13 @@
 	.event-form label { color: var(--ink-soft); }
 	.composer-grid, .event-list { background: var(--rule); border-color: var(--rule); }
 	.event-form, .event-list-wrap, .event-list li { background: var(--paper); }
-	.event-day { background: var(--cobalt); color: var(--paper); }
+	.event-day { background: var(--cobalt); color: var(--on-accent); }
 	.event-amount { color: var(--warning); }
-	.icon-button, .text-button { color: var(--cobalt-deep); }
+	.icon-button, .text-button { color: var(--link); }
 	.icon-button:hover, .text-button:hover { background: var(--paper-deep); color: var(--cobalt); }
 	.icon-button--danger:hover, .form-error { color: var(--negative); }
 	.empty-events { background: var(--paper-soft); border-color: var(--rule-strong); }
-	.button-primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+	.button-primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
 	.button-primary:hover:not(:disabled) { background: var(--cobalt-bright); }
 	.button-secondary { background: var(--paper); border-color: var(--rule-strong); color: var(--ink); }
 	.button-secondary:hover:not(:disabled) { background: var(--paper-deep); border-color: var(--cobalt); }

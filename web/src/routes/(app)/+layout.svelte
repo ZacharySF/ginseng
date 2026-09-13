@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { authStore } from '$lib/auth.svelte';
 	import AgentChat from '$lib/components/AgentChat.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
 	import type { ChatContext, DemoChatContext } from '$lib/chat';
 
@@ -106,6 +107,7 @@
 			<span>{isDemoRoute ? 'Simulated data' : 'Personal workspace'}</span>
 		</div>
 		<div class="topbar-actions">
+			<ThemeToggle tone="brand" />
 			<p class:topbar-status--demo={isDemoRoute} class="topbar-status"><i aria-hidden="true"></i>{isDemoRoute ? 'Simulated data' : 'Personal inputs'}</p>
 			{#key `${authStore.user?.id ?? 'signed-out'}-${isDemoRoute ? 'demo' : 'personal'}`}
 				<AgentChat context={chatContext} />
@@ -180,7 +182,7 @@
 		grid-template-columns: 4rem minmax(0, 1fr);
 		grid-template-rows: 3.25rem minmax(0, 1fr);
 		height: 100dvh;
-		background: var(--cobalt);
+		background: var(--brand-blue);
 	}
 
 	.terminal-topbar {
@@ -193,7 +195,7 @@
 		padding: 0 1rem;
 		background: var(--cobalt-deep);
 		border-bottom: 1px solid rgb(255 255 255 / 28%);
-		color: var(--paper);
+		color: var(--on-brand);
 	}
 
 	.terminal-brand {
@@ -201,7 +203,7 @@
 		align-items: center;
 		gap: 0.55rem;
 		flex: none;
-		color: var(--paper);
+		color: var(--on-brand);
 		font-family: var(--font-sans);
 		font-size: 1rem;
 		font-weight: 800;
@@ -262,7 +264,7 @@
 	}
 
 	.topbar-status--demo i {
-		background: var(--paper);
+		background: var(--on-brand);
 		box-shadow: 0 0 0 2px rgb(255 255 255 / 20%);
 	}
 
@@ -290,7 +292,7 @@
 		padding: 0 0.55rem;
 		background: transparent;
 		border: 1px solid rgb(255 255 255 / 32%);
-		color: var(--paper);
+		color: var(--on-brand);
 		font-family: var(--font-mono);
 		font-size: 0.62rem;
 		font-weight: 700;
@@ -319,7 +321,7 @@
 		padding: 0.5rem 0.65rem;
 		background: var(--negative);
 		border: 1px solid var(--paper);
-		color: var(--paper);
+		color: var(--on-brand);
 		font-size: 0.78rem;
 	}
 
@@ -327,7 +329,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		background: var(--cobalt);
+		background: var(--brand-blue);
 		border-right: 1px solid rgb(255 255 255 / 30%);
 	}
 
@@ -360,7 +362,7 @@
 
 	.rail-link:hover {
 		background: rgb(255 255 255 / 15%);
-		color: var(--paper);
+		color: var(--on-brand);
 	}
 
 	.rail-link:active { transform: scale(0.97); }
@@ -412,6 +414,9 @@
 		}
 
 		.topbar-status { display: none; }
+		.topbar-context { display: none; }
+		.topbar-actions { gap: .4rem; }
+		.terminal-topbar { gap: .5rem; flex-wrap: wrap; padding-block: .35rem; }
 
 		.account-chip { padding-left: 0; border-left: 0; }
 		.account-email { display: none; }

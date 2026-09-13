@@ -599,7 +599,7 @@
 	.configuration-state h1, .workspace h1, .workspace h2 { color: var(--ink); letter-spacing: -.045em; text-wrap: balance; }
 	.configuration-state h1 { max-width: 16ch; font-size: clamp(2rem, 5vw, 3.4rem); line-height: .94; }
 	.configuration-state p { max-width: 54ch; color: var(--ink-soft); }
-	.configuration-state a { min-height: 2.75rem; display: inline-flex; align-items: center; padding: 0 .9rem; background: var(--cobalt); color: var(--paper); font-weight: 700; text-decoration: none; }
+	.configuration-state a { min-height: 2.75rem; display: inline-flex; align-items: center; padding: 0 .9rem; background: var(--cobalt); color: var(--on-accent); font-weight: 700; text-decoration: none; }
 	.configuration-state--error h1 { color: var(--negative); }
 	.eyebrow, .snapshot-status dt, .result-meta, .timeline-table caption { color: var(--ink-soft); font-family: var(--font-mono); font-size: .65rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
 	.workspace-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2rem; align-items: end; padding: 0 0 1.4rem; border-bottom: 1px solid var(--rule); }
@@ -642,9 +642,9 @@
 	.button:active, .icon-button:active { transform: scale(.98); }
 	.button:disabled, .icon-button:disabled { cursor: not-allowed; opacity: .55; }
 	.button--add { margin-top: .75rem; }
-	.button--primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
-	.button--primary:hover { background: var(--cobalt-deep); border-color: var(--cobalt-deep); }
-	.button--danger { border-color: var(--negative); background: var(--negative); color: var(--paper); }
+	.button--primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--on-accent); }
+	.button--primary:hover { background: var(--cobalt-deep); border-color: var(--link); }
+	.button--danger { border-color: var(--negative); background: var(--negative); color: var(--on-accent); }
 	.button--quiet { background: transparent; }
 	.empty-ledger { margin: .75rem 0 0; color: var(--ink-soft); font-size: .82rem; }
 	.save-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1px; padding: .9rem 1rem; background: var(--paper-deep); border: 1px solid var(--rule); }
@@ -658,7 +658,7 @@
 	.horizon-picker { display: flex; flex-wrap: wrap; border: 1px solid var(--control-border); }
 	.horizon-picker button { min-height: 2.75rem; padding: 0 .7rem; background: var(--paper); border: 0; border-right: 1px solid var(--control-border); color: var(--ink-soft); font-family: var(--font-mono); font-size: .68rem; font-weight: 700; cursor: pointer; }
 	.horizon-picker button:last-child { border-right: 0; }
-	.horizon-picker button.active { background: var(--cobalt); color: var(--paper); }
+	.horizon-picker button.active { background: var(--cobalt); color: var(--on-accent); }
 	.horizon-picker button:disabled { cursor: not-allowed; opacity: .6; }
 	.projection-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
 	.projection-actions p { color: var(--ink-soft); font-size: .8rem; }

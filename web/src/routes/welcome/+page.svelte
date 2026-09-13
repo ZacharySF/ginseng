@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { resolve } from '$app/paths';
 	import { parallax } from '$lib/parallax';
 	import { dotField } from '$lib/dotField';
@@ -51,6 +52,7 @@
 	<header class="welcome-nav">
 		<a class="nav-brand" href={resolve('/welcome')}>GINSENG</a>
 		<nav class="nav-actions" aria-label="Account">
+			<ThemeToggle tone="brand" />
 			<a href={resolve('/login')}>Sign in</a>
 			<a class="nav-cta" href={resolve('/login?mode=sign-up')}>Create account</a>
 		</nav>
@@ -166,7 +168,7 @@
 		justify-self: center;
 		display: inline-flex;
 		align-items: center;
-		color: var(--paper);
+		color: var(--on-brand);
 		font-family: var(--font-sans);
 		font-size: 1.25rem;
 		font-weight: 800;
@@ -195,7 +197,7 @@
 		text-transform: uppercase;
 	}
 
-	.nav-actions a:hover { color: var(--paper); }
+	.nav-actions a:hover { color: var(--on-brand); }
 
 	.nav-actions a.nav-cta {
 		padding: 0.5rem 0.85rem;
@@ -221,7 +223,7 @@
 		gap: 1.2rem;
 		max-width: 42rem;
 		margin: 0 auto;
-		color: var(--paper);
+		color: var(--on-brand);
 		transform: translate3d(0, 0, 0);
 		transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
 		will-change: transform;
@@ -310,7 +312,7 @@
 	.hero-cta:active, .cta-button:active { transform: scale(0.98); }
 
 	.hero-secondary {
-		color: var(--paper);
+		color: var(--on-brand);
 		font-family: var(--font-mono);
 		font-size: 0.76rem;
 		font-weight: 700;
@@ -377,7 +379,7 @@
 		width: 1.25rem;
 		height: 1.25rem;
 		fill: none;
-		stroke: var(--paper);
+		stroke: var(--on-accent);
 		stroke-width: 1.75;
 		stroke-linecap: round;
 		stroke-linejoin: round;
@@ -438,7 +440,7 @@
 		z-index: 3;
 		margin: 0;
 		max-width: 24ch;
-		color: var(--paper);
+		color: var(--on-brand);
 		font-size: clamp(1.9rem, 4vw, 3rem);
 		font-weight: 800;
 		letter-spacing: -0.03em;
@@ -503,7 +505,11 @@
 	}
 
 	@media (max-width: 48rem) {
-		.welcome-nav { padding: 0 1rem; }
+		.welcome-nav { padding: .4rem .75rem; grid-template-columns: auto minmax(0, 1fr); gap: .5rem; }
+		.nav-brand { grid-column: 1; font-size: 1rem; }
+		.nav-actions { grid-column: 2; gap: .45rem; }
+		.nav-actions a { font-size: .6rem; }
+		.nav-actions a.nav-cta { padding: .5rem; }
 
 		.hero { padding: 2.5rem 1.25rem; align-items: start; min-height: auto; padding-top: 3.5rem; padding-bottom: 3.5rem; }
 		.how { padding: 3.5rem 1.25rem; }

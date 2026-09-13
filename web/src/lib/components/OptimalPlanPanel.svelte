@@ -163,7 +163,7 @@
 	.state strong { font-size: 1.1rem; }
 	.state p { font-size: 0.85rem; color: var(--ink-muted); line-height: 1.5; }
 	.failure strong { color: var(--negative); }
-	button { padding: 0.8rem 1rem; border: 1px solid var(--cobalt); background: var(--cobalt); color: var(--paper); font: 700 0.72rem var(--font-mono); cursor: pointer; }
+	button { padding: 0.8rem 1rem; border: 1px solid var(--cobalt); background: var(--cobalt); color: var(--on-accent); font: 700 0.72rem var(--font-mono); cursor: pointer; }
 	button:focus-visible, summary:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 4px; }
 	@media (max-width: 38rem) {
 		.cost-grid, .mix-grid, .risk-grid, .buffer-limit { grid-template-columns: 1fr; }
