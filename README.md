@@ -20,37 +20,38 @@ Funding comparisons reuse the same paths so a plan doesn't look better just beca
 
 Ginseng doesn't move money or connect to a live bank account. The optional Capital One Nessie integration uses simulated data too. This is a hackathon project, not financial advice.
 
-## Run it locally
+## Run locally with hosted Supabase
 
-You'll need [uv](https://docs.astral.sh/uv/getting-started/installation/), [Bun](https://bun.sh/), and a running Docker-compatible container runtime for local Supabase.
+You'll need [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Bun](https://bun.sh/). The frontend and Python engine run on your machine; authentication and saved workspace data use the online Supabase project. You don't need Docker or `supabase start` for this setup.
 
 From the root of a fresh checkout:
 
 ```sh
 uv sync --locked --extra dev
 bun install --cwd web --frozen-lockfile
-bunx supabase start
-bunx supabase status
 cp .env.example .env.local
 cp web/.env.example web/.env
 ```
 
-Use the local API URL and publishable key from `supabase status` in both files. The engine and browser must point to the same Supabase project.
+Only copy the example files if you don't already have environment files; don't overwrite existing keys. The examples contain local-development defaults, so replace the settings below before starting either server. Both files are ignored by Git and aren't included when you clone the repository.
 
 In `.env.local`:
 
 ```dotenv
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_PUBLISHABLE_KEY=<local publishable key>
+SUPABASE_URL=https://eqzvleafpdldevmrhjtx.supabase.co
+SUPABASE_PUBLISHABLE_KEY=<hosted project publishable key>
+GINSENG_ALLOWED_ORIGINS=http://127.0.0.1:5174,http://localhost:5174
 ```
 
 In `web/.env`:
 
 ```dotenv
-PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-PUBLIC_SUPABASE_PUBLISHABLE_KEY=<same local publishable key>
+PUBLIC_SUPABASE_URL=https://eqzvleafpdldevmrhjtx.supabase.co
+PUBLIC_SUPABASE_PUBLISHABLE_KEY=<same hosted project publishable key>
 PUBLIC_ENGINE_URL=http://127.0.0.1:8000
 ```
+
+Get the publishable key from the hosted project's Supabase dashboard, or copy it from your existing configured `web/.env`. Use the same project URL and key in both files. Never use a service-role key here or commit your environment files.
 
 To use the assistant, also set `GEMINI_API_KEY` in `.env.local`. Leave it blank if you only want the workspace and demo. Keep that key on the server; it does not belong in `web/.env` or a `PUBLIC_` variable.
 
@@ -63,12 +64,26 @@ uv run --env-file .env.local uvicorn ginseng.api:app --app-dir engine --host 127
 Start the web app in another:
 
 ```sh
-bun run --cwd web dev --host 127.0.0.1 --port 5173 --strictPort
+bun run --cwd web dev --host 127.0.0.1 --port 5174 --strictPort
 ```
 
-Open [localhost:5173](http://127.0.0.1:5173), create a local account, and sign in. Supabase applies the migrations in `supabase/migrations/` when the local stack starts. For later migration changes, run `bunx supabase migration up --local`.
+Open [127.0.0.1:5174](http://127.0.0.1:5174) and sign in with an account from the hosted project. Local Supabase accounts are separate and won't work here. Save an account and bill, then reload to check persistence. Restart both servers after changing environment settings.
 
-Use a separate local or staging Supabase project for development. Don't reset a hosted database to try the demo.
+The hosted database needs the schema and RPCs from `supabase/migrations/`, including `get_cash_workspace` and `save_cash_workspace`. Before applying hosted migrations, back up the database and reconcile its migration history: `0001` was originally applied through the dashboard. Don't blindly replay migrations or reset hosted data.
+
+### Optional isolated local database
+
+For database development and tests, use a separate local stack with a running Docker-compatible container runtime:
+
+```sh
+bunx supabase start
+bunx supabase migration up --local
+bunx supabase status
+```
+
+With Podman, first export `DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"` after enabling its API socket. Supabase applies the migrations on first startup; `migration up --local` applies later changes.
+
+Replace both Supabase URLs above with `http://127.0.0.1:54321` and both publishable keys with the local key from `supabase status`. Keep the engine URL and allowed origins unchanged, restart both servers, and create a local account. Local data and identities are separate from the hosted project.
 
 ## Working on the code
 
