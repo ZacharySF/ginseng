@@ -13,7 +13,7 @@ choice, lot-selection method, ...) is baked into its `PlanSpec` by
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from enum import Enum
 from typing import Sequence
@@ -23,6 +23,7 @@ import numpy as np
 from ginseng.metrics import severity_metrics
 from ginseng.simulate import (
     DrawBundle,
+    PathBundle,
     cash_paths,
     discretionary_resampled_paths,
     portfolio_value_paths,
@@ -41,14 +42,13 @@ class PlanKind(str, Enum):
 
 @dataclass(frozen=True)
 class FundingConfig:
-    """Knobs `build_candidates` uses to size the spec-38 candidate plans.
+    """Knobs for candidate construction and settlement timing.
 
-    `settlement_days` + `external_transfer_days` model spec 40 (T+1 plus a
-    configurable brokerage-to-bank transfer delay: 1-3 business days per
-    finance-sources.md section 3, so the 2-day default is a realistic
-    floor, not a guess). `hybrid_*_fraction` values must sum to 1.0; they
-    partition the funding gap across cash, liquidation, credit, and
-    deferral (spec 38 Plan C).
+    Personal forecasts enable business-day settlement and opening-day payment
+    mapping. The synthetic demo retains its established calendar convention.
+    A hybrid contains only actual credit, taxable-sale, and
+    discretionary-deferral levers; it never claims an unowned cash
+    contribution.
     """
 
     settlement_days: int = 1
@@ -56,22 +56,17 @@ class FundingConfig:
     trailing_days: int = 3
     protective_spending_reduction: float = 0.30
     protective_spending_days: int | None = None
-    hybrid_cash_fraction: float = 0.30
-    hybrid_liquidation_fraction: float = 0.30
-    hybrid_credit_fraction: float = 0.25
+    hybrid_liquidation_fraction: float = 0.35
+    hybrid_credit_fraction: float = 0.50
     hybrid_deferral_fraction: float = 0.15
     lot_selection: str = "fifo"
     specific_lot_ids: tuple[str, ...] = ()
+    use_business_days: bool = False
 
 
 @dataclass(frozen=True)
 class PlanSpec:
-    """A fully-parameterized candidate plan, ready for `evaluate_plan`.
-
-    Every field `evaluate_plan` needs is carried here so that function
-    stays a pure, self-contained transform of `(state, bundle, obligations,
-    spec)` with no external configuration object.
-    """
+    """A fully-parameterized candidate plan, ready for ``evaluate_plan``."""
 
     id: str
     label: str
@@ -86,8 +81,8 @@ class PlanSpec:
     specific_lot_ids: tuple[str, ...] = ()
     discretionary_reduction_fraction: float = 0.0
     discretionary_reduction_days: int | None = None
-    unfunded_cash_amount: float = 0.0
     trailing_days: int = 3
+    use_business_days: bool = False
 
 
 @dataclass(frozen=True)
@@ -112,6 +107,7 @@ class PlanResult:
     infeasibility_reason: str | None = None
     dominated: bool = False
     dominated_by: str | None = None
+    overdraft_interest_exposure: float = 0.0
 
 
 # --------------------------------------------------------------------------
@@ -119,29 +115,18 @@ class PlanResult:
 # --------------------------------------------------------------------------
 
 
-def extend_draw_bundle(bundle: DrawBundle, target_horizon_days: int) -> DrawBundle:
-    """Extend `bundle` to cover `target_horizon_days` without disturbing the
-    already-drawn days (spec 14, 20).
-
-    A funding plan may create a payment obligation beyond the requested
-    horizon (a card payment due on day 38, for example). Ginseng must not
-    let that liability look free just because it falls outside the
-    standard chart, so the evaluation horizon extends to cover it:
-    `H_scenario = max(bundle.horizon_days, latest material obligation)`.
-
-    The first `bundle.horizon_days` columns of the returned bundle's
-    `index_matrix` are byte-identical to `bundle.index_matrix` — no plan
-    constructs its own draws, and the shared window stays under common
-    random numbers. The additional columns continue the same stationary
-    bootstrap Markov chain (spec 16) from the last drawn historical-day
-    index per path, using a sub-seed deterministically derived from
-    `bundle.seed`, `bundle.bootstrap_draw_id`, and the two horizon
-    lengths — so calling this twice with the same bundle and target
-    produces the identical extension, and the mechanism never needs
-    `simulate.py`'s private joint-history machinery.
-    """
+def extend_draw_bundle(
+    bundle: DrawBundle | PathBundle, target_horizon_days: int
+) -> DrawBundle | PathBundle:
+    """Extend one shared path bundle without replacing its random world."""
     if target_horizon_days <= bundle.horizon_days:
         return bundle
+    if isinstance(bundle, PathBundle):
+        if target_horizon_days > bundle.available_horizon_days:
+            raise ValueError(
+                "The prospective path bundle does not cover the plan's latest settlement or payment date."
+            )
+        return replace(bundle, horizon_days=target_horizon_days)
 
     extra_days = target_horizon_days - bundle.horizon_days
     n_hist = bundle.history_length
@@ -184,38 +169,108 @@ def extend_draw_bundle(bundle: DrawBundle, target_horizon_days: int) -> DrawBund
 # --------------------------------------------------------------------------
 
 
-def _day_of_month_offset(as_of: date, day_of_month: int) -> int:
-    """Days from `as_of` (0 = `as_of` itself) to the next date whose
-    day-of-month is `day_of_month`. Mirrors `generate.py`'s scheduling
-    convention: `CreditAccount.statement_close_day` / `payment_due_day`
-    are day-of-month integers, not day offsets."""
-    for offset in range(0, 32):
-        if (as_of + timedelta(days=offset)).day == day_of_month:
-            return offset
-    raise ValueError(f"no day-of-month {day_of_month} found within a month of {as_of}")
+def _next_month(year: int, month: int) -> tuple[int, int]:
+    return (year + 1, 1) if month == 12 else (year, month + 1)
 
 
-def _next_charge_payment_offset(as_of: date, account: CreditAccount) -> int:
-    """Forecast-day offset of the payment due date that will include a
-    purchase made today.
+def _next_day_of_month(as_of: date, day_of_month: int) -> date:
+    """Return the first valid configured day on or after ``as_of``."""
+    candidate = date(as_of.year, as_of.month, day_of_month)
+    if candidate >= as_of:
+        return candidate
+    year, month = _next_month(as_of.year, as_of.month)
+    return date(year, month, day_of_month)
 
-    The statement covering today's purchase must close first; the payment
-    for that statement is owed on the *following* occurrence of
-    `payment_due_day` (CFPB: statements must be delivered at least 21 days
-    before the payment is due, so a `payment_due_day` that is numerically
-    earlier in the month than `statement_close_day` refers to the
-    already-closing cycle's payment, not this one)."""
-    close_offset = _day_of_month_offset(as_of, account.statement_close_day)
-    due_offset = _day_of_month_offset(as_of, account.payment_due_day)
-    if due_offset <= close_offset:
-        due_offset += 30
-    return due_offset
+
+def _next_charge_payment_offset(
+    as_of: date,
+    account: CreditAccount,
+    *,
+    one_indexed: bool = False,
+) -> int:
+    """Forecast payment day for a charge made at the opening date.
+
+    Personal forecasts use the corrected one-indexed calendar convention.
+    The original demo convention remains available for its frozen surface.
+    """
+    if not one_indexed:
+        close_offset = next(
+            offset
+            for offset in range(32)
+            if (as_of + timedelta(days=offset)).day == account.statement_close_day
+        )
+        due_offset = next(
+            offset
+            for offset in range(32)
+            if (as_of + timedelta(days=offset)).day == account.payment_due_day
+        )
+        return due_offset + 30 if due_offset <= close_offset else due_offset
+
+    close_date = _next_day_of_month(as_of, account.statement_close_day)
+    due_date = _next_day_of_month(close_date, account.payment_due_day)
+    if due_date <= close_date:
+        year, month = _next_month(due_date.year, due_date.month)
+        due_date = date(year, month, account.payment_due_day)
+    return (due_date - as_of).days + 1
+
+
+def settlement_forecast_day(
+    as_of: date, settlement_days: int, external_transfer_days: int, *, use_business_days: bool = False
+) -> int:
+    """Cash-availability day after settlement and external transfer lags."""
+    total_days = max(0, settlement_days) + max(0, external_transfer_days)
+    if not use_business_days:
+        return max(1, total_days)
+    cursor = as_of
+    remaining = total_days
+    while remaining:
+        cursor += timedelta(days=1)
+        if cursor.weekday() < 5:
+            remaining -= 1
+    return (cursor - as_of).days + 1
 
 
 def _select_primary_credit_account(state: FinancialState) -> CreditAccount | None:
     if not state.credit_accounts:
         return None
     return max(state.credit_accounts, key=lambda account: account.available_credit)
+
+
+def plan_evaluation_horizon(
+    state: FinancialState,
+    bundle: DrawBundle | PathBundle,
+    spec: PlanSpec,
+) -> int:
+    """Return the full comparison horizon required by one candidate plan."""
+    material_days = [bundle.horizon_days]
+    if spec.credit_draw > 0 and spec.credit_account_id is not None:
+        account = next(
+            (item for item in state.credit_accounts if item.account_id == spec.credit_account_id),
+            None,
+        )
+        if account is not None:
+            material_days.append(
+                _next_charge_payment_offset(
+                    state.as_of,
+                    account,
+                    one_indexed=spec.use_business_days,
+                )
+            )
+    if spec.liquidation_target > 0:
+        material_days.append(
+            settlement_forecast_day(
+                state.as_of,
+                spec.settlement_days,
+                spec.external_transfer_days,
+                use_business_days=spec.use_business_days,
+            )
+        )
+    latest_material_day = max(material_days)
+    return (
+        latest_material_day
+        if latest_material_day <= bundle.horizon_days
+        else latest_material_day + spec.trailing_days
+    )
 
 
 # --------------------------------------------------------------------------
@@ -234,12 +289,26 @@ class LiquidationResult:
         return self.proceeds - self.cost_basis_disposed
 
 
+@dataclass(frozen=True)
+class LiquidationBasisSegment:
+    """One exact affine branch of a pro-rata taxable liquidation."""
+
+    lower_proceeds: float
+    upper_proceeds: float
+    cost_basis_intercept: float
+    cost_basis_slope: float
+
+
 def _disposal_order(
     lots: Sequence[TaxLot], lot_selection: str, specific_lot_ids: Sequence[str]
 ) -> list[TaxLot]:
-    """FIFO by acquisition date is the IRS default; a caller may override
-    with specific-lot identification (spec 41). Any lot not named by the
-    override still disposes FIFO."""
+    """Order selectable tax lots under the user's declared disposal policy."""
+    if lot_selection == "hifo":
+        return sorted(
+            lots,
+            key=lambda lot: (lot.cost_basis_per_share, lot.purchase_date),
+            reverse=True,
+        )
     if lot_selection == "specific" and specific_lot_ids:
         by_id = {lot.lot_id: lot for lot in lots}
         ordered = [by_id[lot_id] for lot_id in specific_lot_ids if lot_id in by_id]
@@ -249,6 +318,103 @@ def _disposal_order(
         )
         return ordered + remaining
     return sorted(lots, key=lambda lot: lot.purchase_date)
+
+
+def liquidation_cost_basis(
+    holdings: Sequence[Holding],
+    target_proceeds: float,
+    lot_selection: str = "fifo",
+    specific_lot_ids: Sequence[str] = (),
+) -> float:
+    """Return the exact basis disposed by :func:`_liquidate`'s sale rule."""
+    total_market_value = sum(holding.market_value for holding in holdings)
+    if total_market_value <= 0.0 or target_proceeds <= 0.0:
+        return 0.0
+
+    to_raise = min(target_proceeds, total_market_value)
+    cost_basis_disposed = 0.0
+    for holding in holdings:
+        remaining_allocation = to_raise * (holding.market_value / total_market_value)
+        for lot in _disposal_order(holding.tax_lots, lot_selection, specific_lot_ids):
+            if remaining_allocation <= 1e-9:
+                break
+            lot_value = lot.market_value(holding.current_price)
+            if lot_value <= remaining_allocation:
+                cost_basis_disposed += lot.cost_basis
+                remaining_allocation -= lot_value
+            else:
+                cost_basis_disposed += lot.cost_basis * (remaining_allocation / lot_value)
+                remaining_allocation = 0.0
+    return cost_basis_disposed
+
+
+def liquidation_basis_segments(
+    holdings: Sequence[Holding],
+    lot_selection: str = "fifo",
+    specific_lot_ids: Sequence[str] = (),
+    *,
+    max_segments: int | None = None,
+) -> tuple[LiquidationBasisSegment, ...] | None:
+    """Return every exact affine basis interval for a pro-rata sale.
+
+    Each holding receives the same global sale fraction, while its own lots
+    are consumed in the selected order.  The union of those per-holding lot
+    boundaries therefore makes disposed basis affine on every returned
+    interval.  ``None`` means the caller's explicit resource bound was
+    exceeded before a complete partition could be built.
+    """
+    total_market_value = sum(holding.market_value for holding in holdings)
+    if total_market_value <= 0.0:
+        return ()
+
+    boundaries = {0.0, total_market_value}
+    for holding in holdings:
+        holding_market_value = holding.market_value
+        if holding_market_value <= 0.0:
+            continue
+        cumulative_lot_value = 0.0
+        for lot in _disposal_order(holding.tax_lots, lot_selection, specific_lot_ids):
+            lot_value = lot.market_value(holding.current_price)
+            if lot_value <= 0.0:
+                continue
+            cumulative_lot_value += lot_value
+            breakpoint = min(
+                total_market_value,
+                cumulative_lot_value * total_market_value / holding_market_value,
+            )
+            if 0.0 < breakpoint < total_market_value:
+                boundaries.add(breakpoint)
+                if max_segments is not None and len(boundaries) - 1 > max_segments:
+                    return None
+
+    ordered_boundaries = sorted(boundaries)
+    segments: list[LiquidationBasisSegment] = []
+    for lower_proceeds, upper_proceeds in zip(ordered_boundaries, ordered_boundaries[1:]):
+        width = upper_proceeds - lower_proceeds
+        if width <= 0.0:
+            continue
+        lower_basis = liquidation_cost_basis(
+            holdings,
+            lower_proceeds,
+            lot_selection,
+            specific_lot_ids,
+        )
+        upper_basis = liquidation_cost_basis(
+            holdings,
+            upper_proceeds,
+            lot_selection,
+            specific_lot_ids,
+        )
+        slope = (upper_basis - lower_basis) / width
+        segments.append(
+            LiquidationBasisSegment(
+                lower_proceeds=lower_proceeds,
+                upper_proceeds=upper_proceeds,
+                cost_basis_intercept=lower_basis - slope * lower_proceeds,
+                cost_basis_slope=slope,
+            )
+        )
+    return tuple(segments)
 
 
 def _liquidate(
@@ -268,7 +434,12 @@ def _liquidate(
 
     to_raise = min(target_proceeds, total_market_value)
     proceeds = 0.0
-    cost_basis_disposed = 0.0
+    cost_basis_disposed = liquidation_cost_basis(
+        holdings,
+        to_raise,
+        lot_selection,
+        specific_lot_ids,
+    )
     for holding in holdings:
         allocation = to_raise * (holding.market_value / total_market_value)
         remaining_allocation = allocation
@@ -278,12 +449,9 @@ def _liquidate(
             lot_value = lot.market_value(holding.current_price)
             if lot_value <= remaining_allocation:
                 proceeds += lot_value
-                cost_basis_disposed += lot.cost_basis
                 remaining_allocation -= lot_value
             else:
-                fraction = remaining_allocation / lot_value
                 proceeds += remaining_allocation
-                cost_basis_disposed += lot.cost_basis * fraction
                 remaining_allocation = 0.0
 
     shortfall = max(0.0, target_proceeds - proceeds)
@@ -302,8 +470,8 @@ def _avg_daily_discretionary_spend(state: FinancialState) -> float:
     savings always come from `simulate.discretionary_resampled_paths`."""
     if not state.transactions:
         return 0.0
-    start = min(t.txn_date for t in state.transactions)
-    end = state.as_of
+    start = state.history_start or min(t.txn_date for t in state.transactions)
+    end = state.history_end or state.as_of
     total_days = (end - start).days + 1
     if total_days <= 0:
         return 0.0
@@ -313,9 +481,18 @@ def _avg_daily_discretionary_spend(state: FinancialState) -> float:
     return total_discretionary / total_days
 
 
-def _hybrid_deferral_fraction(state: FinancialState, gap: float, config: FundingConfig) -> float:
+def _hybrid_deferral_fraction(
+    state: FinancialState,
+    gap: float,
+    config: FundingConfig,
+    average_daily_discretionary_spending: float | None = None,
+) -> float:
     target = gap * config.hybrid_deferral_fraction
-    avg_daily = _avg_daily_discretionary_spend(state)
+    avg_daily = (
+        average_daily_discretionary_spending
+        if average_daily_discretionary_spending is not None
+        else _avg_daily_discretionary_spend(state)
+    )
     horizon = state.forecast_horizon
     if avg_daily <= 0.0 or horizon <= 0:
         return 0.0
@@ -332,19 +509,20 @@ def build_candidates(
     obligations: Sequence[Obligation],
     gap: float,
     config: FundingConfig = FundingConfig(),
+    *,
+    average_daily_discretionary_spending: float | None = None,
 ) -> list[PlanSpec]:
-    """Generate the spec-38 candidate plans that all solve the same `gap`
-    dollars of required additional funding (spec 26).
-
-    `obligations` is accepted for interface symmetry with `evaluate_plan`
-    (which needs it to reproduce the baseline cash path); the gap already
-    reflects their aggregate effect on required liquidity, so plan
-    construction does not need to inspect them individually.
-    """
+    """Generate actual funding alternatives for the computed gap."""
     del obligations
     gap = max(0.0, gap)
     account = _select_primary_credit_account(state)
     account_id = account.account_id if account is not None else None
+    timing = {
+        "settlement_days": config.settlement_days,
+        "external_transfer_days": config.external_transfer_days,
+        "trailing_days": config.trailing_days,
+        "use_business_days": config.use_business_days,
+    }
 
     return [
         PlanSpec(
@@ -354,9 +532,7 @@ def build_candidates(
             credit_account_id=account_id,
             credit_draw=gap,
             pay_in_full=True,
-            settlement_days=config.settlement_days,
-            external_transfer_days=config.external_transfer_days,
-            trailing_days=config.trailing_days,
+            **timing,
         ),
         PlanSpec(
             id="liquidate",
@@ -364,11 +540,9 @@ def build_candidates(
             kind=PlanKind.LIQUIDATE,
             credit_account_id=account_id,
             liquidation_target=gap,
-            settlement_days=config.settlement_days,
-            external_transfer_days=config.external_transfer_days,
             lot_selection=config.lot_selection,
             specific_lot_ids=config.specific_lot_ids,
-            trailing_days=config.trailing_days,
+            **timing,
         ),
         PlanSpec(
             id="hybrid",
@@ -378,13 +552,15 @@ def build_candidates(
             credit_draw=gap * config.hybrid_credit_fraction,
             pay_in_full=True,
             liquidation_target=gap * config.hybrid_liquidation_fraction,
-            settlement_days=config.settlement_days,
-            external_transfer_days=config.external_transfer_days,
             lot_selection=config.lot_selection,
             specific_lot_ids=config.specific_lot_ids,
-            discretionary_reduction_fraction=_hybrid_deferral_fraction(state, gap, config),
-            unfunded_cash_amount=gap * config.hybrid_cash_fraction,
-            trailing_days=config.trailing_days,
+            discretionary_reduction_fraction=_hybrid_deferral_fraction(
+                state,
+                gap,
+                config,
+                average_daily_discretionary_spending,
+            ),
+            **timing,
         ),
         PlanSpec(
             id="protective",
@@ -393,7 +569,7 @@ def build_candidates(
             credit_account_id=account_id,
             discretionary_reduction_fraction=config.protective_spending_reduction,
             discretionary_reduction_days=config.protective_spending_days,
-            trailing_days=config.trailing_days,
+            **timing,
         ),
     ]
 
@@ -405,22 +581,28 @@ def build_candidates(
 
 def evaluate_plan(
     state: FinancialState,
-    bundle: DrawBundle,
+    bundle: DrawBundle | PathBundle,
     obligations: Sequence[Obligation],
     spec: PlanSpec,
+    *,
+    operating_buffer: float | None = None,
+    overdraft_apr: float = 0.0,
+    evaluation_horizon_days: int | None = None,
+    decision_horizon_days: int | None = None,
 ) -> PlanResult:
     """Evaluate one `PlanSpec` on `bundle` (spec 20: the same bundle every
     candidate plan in a comparison must share) and return every spec-60
     objective."""
     reasons: list[str] = []
+    decision_horizon = decision_horizon_days or bundle.horizon_days
 
     credit_account = None
     if spec.credit_account_id is not None:
         credit_account = next(
             (a for a in state.credit_accounts if a.account_id == spec.credit_account_id), None
         )
-        if credit_account is None and spec.credit_draw > 0:
-            reasons.append(f"credit account {spec.credit_account_id!r} not found")
+    if spec.credit_draw > 0 and credit_account is None:
+        reasons.append("no actual credit account is available for this draw")
 
     new_debt = 0.0
     interest_exposure = 0.0
@@ -440,8 +622,11 @@ def evaluate_plan(
                     f"${spec.credit_draw:,.2f} credit draw exceeds ${credit_account.available_credit:,.2f} "
                     f"available on {credit_account.account_id}"
                 )
-            due_offset = _next_charge_payment_offset(state.as_of, credit_account)
-            credit_due_day = max(1, due_offset)
+            credit_due_day = _next_charge_payment_offset(
+                state.as_of,
+                credit_account,
+                one_indexed=spec.use_business_days,
+            )
             # CFPB: grace applies only when the card offers one, the
             # cardholder is not already carrying a balance, and the plan
             # intends to pay the new statement balance in full by the due
@@ -452,12 +637,12 @@ def evaluate_plan(
                 and credit_account.current_balance <= 0.0
                 and spec.pay_in_full
             )
-            new_debt = spec.credit_draw
             if grace_applies:
                 credit_payment_due_amount = spec.credit_draw
             else:
                 daily_rate = credit_account.purchase_apr / 365.0
-                interest_exposure = spec.credit_draw * daily_rate * due_offset
+                elapsed_days = credit_due_day - 1 if spec.use_business_days else credit_due_day
+                interest_exposure = spec.credit_draw * daily_rate * elapsed_days
                 owed = spec.credit_draw + interest_exposure
                 credit_payment_due_amount = (
                     owed if spec.pay_in_full else min(credit_account.minimum_payment, owed)
@@ -472,37 +657,38 @@ def evaluate_plan(
         )
         investment_sold = disposal.proceeds
         realized_gain_loss = disposal.realized_gain_loss
-        # T+1 settlement (SEC Rule 15c6-1) plus a configurable external
-        # transfer delay (finance-sources.md section 3): proceeds are not
-        # spendable cash on the trade date.
-        settlement_day = max(1, spec.settlement_days + spec.external_transfer_days)
+        settlement_day = settlement_forecast_day(
+            state.as_of,
+            spec.settlement_days,
+            spec.external_transfer_days,
+            use_business_days=spec.use_business_days,
+        )
         if disposal.shortfall > 1e-6:
             reasons.append(
                 f"only ${disposal.proceeds:,.2f} of marketable backup capital available toward a "
                 f"${spec.liquidation_target:,.2f} liquidation target"
             )
 
-    # Horizon extension (spec 14): never let a plan's own obligation look
-    # free just because it falls outside the requested chart.
-    material_days = [bundle.horizon_days]
-    if spec.credit_draw > 0 and credit_account is not None:
-        material_days.append(credit_due_day)
-    if spec.liquidation_target > 0:
-        material_days.append(settlement_day)
-    latest_material_day = max(material_days)
-    evaluation_horizon = (
-        latest_material_day
-        if latest_material_day <= bundle.horizon_days
-        else latest_material_day + spec.trailing_days
-    )
-    eval_bundle = extend_draw_bundle(bundle, evaluation_horizon)
+    # Every candidate in a comparison can receive the same horizon.  A
+    # standalone evaluation still extends only far enough to price its own
+    # settlement or repayment.
+    plan_horizon = plan_evaluation_horizon(state, bundle, spec)
+    evaluation_horizon = max(plan_horizon, evaluation_horizon_days or plan_horizon)
+    try:
+        eval_bundle = extend_draw_bundle(bundle, evaluation_horizon)
+    except ValueError as error:
+        reasons.append(str(error))
+        eval_bundle = bundle
 
     cash_matrix = cash_paths(state, eval_bundle, obligations)
     n_paths, horizon_days = cash_matrix.shape
     adjustment = np.zeros(horizon_days, dtype=float)
     if spec.credit_draw > 0 and credit_account is not None:
-        adjustment[0] += spec.credit_draw
-        adjustment[credit_due_day - 1] -= credit_payment_due_amount
+        if credit_due_day > horizon_days:
+            reasons.append("the credit repayment date falls beyond the available evaluation paths")
+        else:
+            adjustment[0] += spec.credit_draw
+            adjustment[credit_due_day - 1] -= credit_payment_due_amount
 
     per_path_adjustment = np.broadcast_to(adjustment, (n_paths, horizon_days)).copy()
 
@@ -513,25 +699,38 @@ def evaluate_plan(
         # that path's portfolio value on the settlement day. Without market
         # history the nominal amount is used unchanged, preserving the
         # pre-market-data evaluation.
-        pv_matrix = portfolio_value_paths(state, eval_bundle)
-        settle_col = min(settlement_day - 1, horizon_days - 1)
-        if pv_matrix is not None:
-            scale = pv_matrix[:, settle_col] / max(state.marketable_backup_capital, 1e-9)
-            per_path_proceeds = investment_sold * np.clip(scale, 0.0, None)
-            per_path_adjustment[:, settle_col] += per_path_proceeds
+        if settlement_day > horizon_days:
+            reasons.append("the taxable-sale settlement date falls beyond the available evaluation paths")
         else:
-            per_path_adjustment[:, settle_col] += investment_sold
+            pv_matrix = portfolio_value_paths(state, eval_bundle)
+            settle_col = settlement_day - 1
+            if pv_matrix is not None:
+                scale = pv_matrix[:, settle_col] / max(state.marketable_backup_capital, 1e-9)
+                per_path_proceeds = investment_sold * np.clip(scale, 0.0, None)
+                per_path_adjustment[:, settle_col] += per_path_proceeds
+            else:
+                per_path_adjustment[:, settle_col] += investment_sold
 
     deferred_spending = 0.0
     if spec.discretionary_reduction_fraction > 0:
-        reduction_days = min(spec.discretionary_reduction_days or horizon_days, horizon_days)
+        reduction_days = min(spec.discretionary_reduction_days or decision_horizon, horizon_days)
         discretionary = discretionary_resampled_paths(state, eval_bundle)
         savings = spec.discretionary_reduction_fraction * discretionary[:, :reduction_days]
         per_path_adjustment[:, :reduction_days] += savings
         deferred_spending = float(np.mean(np.sum(savings, axis=1)))
 
     adjusted_cash = cash_matrix + np.cumsum(per_path_adjustment, axis=1)
-    severity = severity_metrics(adjusted_cash, state.immediate_funding, state.operating_buffer)
+    severity = severity_metrics(
+        adjusted_cash,
+        state.immediate_funding,
+        state.operating_buffer if operating_buffer is None else operating_buffer,
+    )
+    available_cash = state.immediate_funding + adjusted_cash
+    overdraft_interest_exposure = (
+        float(np.mean(np.sum(np.maximum(0.0, -available_cash), axis=1)))
+        * max(0.0, overdraft_apr)
+        / 365.0
+    )
 
     return PlanResult(
         id=spec.id,
@@ -545,6 +744,7 @@ def evaluate_plan(
         interest_exposure=interest_exposure,
         investment_sold=investment_sold,
         realized_gain_loss=realized_gain_loss,
+        overdraft_interest_exposure=overdraft_interest_exposure,
         deferred_spending=deferred_spending,
         credit_utilization=credit_utilization,
         feasible=not reasons,

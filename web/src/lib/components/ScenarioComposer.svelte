@@ -38,6 +38,7 @@
 
 	function saveObligation(event: SubmitEvent) {
 		event.preventDefault();
+		if (scenarioStore.loadState === 'loading') return;
 		const amount = Number(amountText);
 		const draft: ObligationDraft = {
 			label,
@@ -53,7 +54,7 @@
 			formError = 'Enter an amount greater than zero.';
 			return;
 		}
-		if (!Number.isInteger(draft.due_in_days) || draft.due_in_days < 1) {
+		if (!Number.isInteger(draft.due_in_days) || draft.due_in_days < 1 || draft.due_in_days > scenarioStore.request.horizon_days) {
 			formError = 'Choose a whole day inside the forecast.';
 			return;
 		}
@@ -85,13 +86,13 @@
 	<div class="scenario-settings">
 		<label class="horizon-control" for="forecast-horizon">
 			<span class="data-label">Forecast window</span>
-			<select id="forecast-horizon" value={scenarioStore.request.horizon_days} onchange={changeHorizon}>
+			<select id="forecast-horizon" value={scenarioStore.request.horizon_days} disabled={scenarioStore.loadState === 'loading'} onchange={changeHorizon}>
 				{#each HORIZON_OPTIONS as option (option)}
 					<option value={option}>{option} days</option>
 				{/each}
 			</select>
 		</label>
-		<p>Added obligations are one-off future costs. Every saved change re-runs the local model.</p>
+			<p>{#if scenarioStore.loadState === 'loading'}<span role="status">Refreshing the example forecast…</span>{:else}Added obligations are one-off future costs. Every saved change re-runs the local model.{/if}</p>
 	</div>
 
 	<div class="composer-grid">
@@ -129,7 +130,7 @@
 			<div class="event-list-heading">
 				<p class="data-label">Scheduled events</p>
 				{#if eventCount > 0}
-					<button class="text-button" type="button" onclick={() => scenarioStore.clearObligations()}>Clear all</button>
+					<button class="text-button" type="button" onclick={() => scenarioStore.clearObligations()} disabled={scenarioStore.loadState === 'loading'}>Clear all</button>
 				{/if}
 			</div>
 
@@ -144,8 +145,8 @@
 							<div class="event-row-bottom">
 								<span class="event-amount numeric">{formatCurrency(obligation.amount)}</span>
 								<div class="event-actions">
-									<button class="icon-button" type="button" onclick={() => editObligation(obligation)} aria-label={`Edit ${obligation.label}`}>Edit</button>
-									<button class="icon-button icon-button--danger" type="button" onclick={() => scenarioStore.removeObligation(obligation.id)} aria-label={`Remove ${obligation.label}`}>Remove</button>
+									<button class="icon-button" type="button" onclick={() => editObligation(obligation)} aria-label={`Edit ${obligation.label}`} disabled={scenarioStore.loadState === 'loading'}>Edit</button>
+									<button class="icon-button icon-button--danger" type="button" onclick={() => scenarioStore.removeObligation(obligation.id)} aria-label={`Remove ${obligation.label}`} disabled={scenarioStore.loadState === 'loading'}>Remove</button>
 								</div>
 							</div>
 						</li>
@@ -542,17 +543,26 @@
 			align-items: start;
 			gap: 0.5rem;
 		}
+
+		select,
+		input,
+		.icon-button,
+		.text-button,
+		.button-primary,
+		.button-secondary {
+			min-height: 2.75rem;
+		}
 	}
 	/* Cobalt ledger skin */
 	.composer { color: var(--ink); }
 	.composer-header, .event-form { border-color: var(--rule); }
 	.composer-header h2, .event-label { color: var(--ink); }
-	.panel-kicker, .data-label, .form-heading p, .event-list-heading p { color: var(--ink-muted); }
+	.panel-kicker, .data-label, .form-heading p, .event-list-heading p { color: var(--ink-soft); }
 	.event-count { border-color: var(--rule-strong); color: var(--ink-soft); }
 	.event-count strong, .text-button { color: var(--cobalt); }
 	.scenario-settings, .composer-footer { background: var(--paper-soft); border-color: var(--rule); }
-	.scenario-settings > p, .composer-footer > div > p:last-child, .empty-events, .empty-events span { color: var(--ink-muted); }
-	select, input, .money-input { background: var(--paper); border-color: var(--rule-strong); color: var(--ink); }
+	.scenario-settings > p, .composer-footer > div > p:last-child, .empty-events, .empty-events span { color: var(--ink-soft); }
+	select, input, .money-input { background: var(--paper); border-color: var(--control-border); color: var(--ink); }
 	select:focus, input:focus, .money-input:focus-within { border-color: var(--cobalt); box-shadow: 0 0 0 1px var(--cobalt); }
 	.event-form label { color: var(--ink-soft); }
 	.composer-grid, .event-list { background: var(--rule); border-color: var(--rule); }

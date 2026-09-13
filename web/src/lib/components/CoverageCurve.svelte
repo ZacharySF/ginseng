@@ -107,6 +107,13 @@
 				class="axis-line"
 			/>
 
+			<line
+				x1={MARGIN.left}
+				x2={MARGIN.left + layout.plotWidth}
+				y1={layout.targetY}
+				y2={layout.targetY}
+				class="target-line"
+			/>
 			<text x={MARGIN.left} y={layout.targetY - 6} class="line-label" text-anchor="start">
 				Coverage target {formatPercent(coverageTarget)}
 			</text>
@@ -192,6 +199,12 @@
 		stroke-width: 2.5;
 	}
 
+	.target-line {
+		stroke: var(--warning);
+		stroke-width: 1.5;
+		stroke-dasharray: 5 4;
+	}
+
 	.current-line {
 		stroke: #d8d8da;
 		stroke-width: 1.5;
@@ -256,7 +269,7 @@
 		background: rgb(200 200 204 / 30%);
 	}
 	/* Cobalt ledger skin */
-	.empty-state, .legend { color: var(--ink-muted); }
+	.empty-state, .legend { color: var(--ink-soft); }
 	.axis-line { stroke: var(--rule-strong); }
 	.curve-line { stroke: var(--cobalt); }
 	.current-line { stroke: var(--ink); }

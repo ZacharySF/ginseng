@@ -53,7 +53,7 @@ select throws_ok($sql$select public.save_cash_workspace(1,'2026-09-11',
 select throws_ok($sql$select public.save_cash_workspace(1,'2026-09-11',
     '[{"id":"20000000-0000-4000-8000-000000000001","name":"Changed","kind":"checking","balance_cents":999}]',
     '[{"id":"30000000-0000-4000-8000-000000000001","label":"Invalid","amount_cents":0,"due_date":"2026-09-12"}]')$sql$,
-    '23514', null, 'Invalid bill rolls back the whole replacement');
+    '22023', null, 'Invalid bill rolls back the whole replacement');
 select is(public.get_cash_workspace()->'accounts'->0->>'balance_cents', '10001',
     'Failed replacement retains prior account data');
 select is(public.get_cash_workspace()->>'revision', '1', 'Failed replacement does not advance revision');

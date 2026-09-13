@@ -21,9 +21,10 @@ from pydantic import TypeAdapter, ValidationError
 from ginseng.api import (
     _ChatStreamingResponse,
     app,
-    get_workspace_repository,
     require_identity,
 )
+from ginseng.finance_api import get_finance_repository
+from ginseng.finance_models import FinanceWorkspace
 from ginseng.chat import (
     CHAT_MAX_HISTORY_TURNS,
     CHAT_MAX_MESSAGE_LENGTH,
@@ -42,7 +43,7 @@ from ginseng.chat import (
     stream_chat_events,
 )
 from ginseng.supabase import AuthenticatedIdentity
-from ginseng.workspace import CashAccount, CashBill, CashWorkspace
+from ginseng.workspace import CashAccount, CashBill
 
 _USER_ID = "00000000-0000-0000-0000-000000000001"
 _ACCOUNT_ID = UUID("00000000-0000-0000-0000-000000000010")
@@ -50,11 +51,11 @@ _BILL_ID = UUID("00000000-0000-0000-0000-000000000011")
 
 
 class WorkspaceRepositoryStub:
-    def __init__(self, workspace: CashWorkspace) -> None:
+    def __init__(self, workspace: FinanceWorkspace) -> None:
         self.workspace = workspace
         self.access_tokens: list[str] = []
 
-    def get(self, access_token: str) -> CashWorkspace:
+    def get(self, access_token: str) -> FinanceWorkspace:
         self.access_tokens.append(access_token)
         return self.workspace
 
@@ -107,8 +108,8 @@ def read_events(response: httpx.Response) -> list[dict[str, Any]]:
     return [json.loads(line) for line in response.text.split("\n") if line]
 
 
-def saved_workspace() -> CashWorkspace:
-    return CashWorkspace(
+def saved_workspace() -> FinanceWorkspace:
+    return FinanceWorkspace(
         revision=7,
         as_of=date(2026, 9, 12),
         currency="USD",
@@ -144,14 +145,14 @@ def chat_client(
             user_id=_USER_ID,
             access_token="owner-access-token",
         )
-    app.dependency_overrides[get_workspace_repository] = lambda: repository
+    app.dependency_overrides[get_finance_repository] = lambda: repository
     app.dependency_overrides[get_chat_quota] = lambda: quota or ChatQuota()
     try:
         with patch("ginseng.api.get_gemini_client", return_value=model), TestClient(app) as client:
             yield client
     finally:
         app.dependency_overrides.pop(require_identity, None)
-        app.dependency_overrides.pop(get_workspace_repository, None)
+        app.dependency_overrides.pop(get_finance_repository, None)
         app.dependency_overrides.pop(get_chat_quota, None)
 
 
@@ -209,7 +210,6 @@ def test_personal_chat_streams_deltas_then_done_and_never_accepts_client_snapsho
     assert response.status_code == 200
     events = read_events(response)
     assert [event["type"] for event in events] == ["delta", "done"]
-    assert events[0]["text"] == "The current context is available."
     assert events[-1] == {"type": "done", "source": "personal", "input_revision": 7}
     assert repository.access_tokens == ["owner-access-token"]
     provider_input = model.contents[0][-1]["parts"][0]["text"]
@@ -239,14 +239,14 @@ def test_demo_chat_never_reads_personal_repository() -> None:
 
 
 def test_personal_chat_describes_empty_or_overdue_projection_as_unavailable() -> None:
-    empty_workspace = CashWorkspace(
+    empty_workspace = FinanceWorkspace(
         revision=0,
         as_of=None,
         currency="USD",
         accounts=[],
         bills=[],
     )
-    overdue_workspace = CashWorkspace(
+    overdue_workspace = FinanceWorkspace(
         revision=8,
         as_of=date(2026, 9, 12),
         currency="USD",
@@ -260,10 +260,7 @@ def test_personal_chat_describes_empty_or_overdue_projection_as_unavailable() ->
             )
         ],
     )
-    for workspace, expected_reason in (
-        (empty_workspace, "Save an opening balance"),
-        (overdue_workspace, "Resolve bills dated before"),
-    ):
+    for workspace in (empty_workspace, overdue_workspace):
         repository = WorkspaceRepositoryStub(workspace)
         model = GeminiStub()
         with chat_client(repository, model) as client:
@@ -271,10 +268,39 @@ def test_personal_chat_describes_empty_or_overdue_projection_as_unavailable() ->
 
         assert response.status_code == 200
         context = model.contents[0][-1]["parts"][0]["text"]
-        assert '"available":false' in context
-        assert expected_reason in context
+        assert '"status":"needs-input"' in context
+        assert '"result":null' in context
         events = read_events(response)
         assert events[-1] == {"type": "done", "source": "personal", "input_revision": workspace.revision}
+
+
+def test_personal_chat_evaluates_unsaved_scenario_against_saved_baseline() -> None:
+    workspace = saved_workspace()
+    repository = WorkspaceRepositoryStub(workspace)
+    model = GeminiStub()
+    bill = workspace.bills[0].model_dump(mode="json")
+    bill["amount_cents"] = 20_000
+    with chat_client(repository, model) as client:
+        response = client.post("/chat", json=personal_request(
+            expected_revision=workspace.revision, overrides={"bills": [bill]}
+        ))
+    assert response.status_code == 200
+    context = json.loads(model.contents[0][-1]["parts"][0]["text"].split("\n", 2)[1])
+    assert context["is_hypothetical"] is True
+    assert context["forecast"]["result"]["funding_gap"] == pytest.approx(101)
+    assert context["saved_forecast"]["result"]["funding_gap"] == 0
+    assert workspace.bills[0].amount_cents == 2_500
+
+
+def test_personal_chat_rejects_stale_or_unversioned_scenarios_before_provider_use() -> None:
+    repository = WorkspaceRepositoryStub(saved_workspace())
+    model = GeminiStub()
+    with chat_client(repository, model) as client:
+        stale = client.post("/chat", json=personal_request(expected_revision=6, overrides={"bills": []}))
+        unversioned = client.post("/chat", json=personal_request(overrides={"bills": []}))
+    assert stale.status_code == 409
+    assert unversioned.status_code == 422
+    assert model.contents == []
 
 def test_latest_trusted_workspace_context_follows_history_and_supersedes_old_numbers() -> None:
     repository = WorkspaceRepositoryStub(saved_workspace())

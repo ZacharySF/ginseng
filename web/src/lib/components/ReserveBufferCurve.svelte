@@ -79,7 +79,7 @@
 				<text x={layout.plotRight} y={HEIGHT - 4} text-anchor="end" class="measure-label">Operating buffer</text>
 			</svg>
 		</div>
-		<figcaption>Every point uses this scenario's same modeled cash paths and coverage target.</figcaption>
+		<figcaption>Every point uses this forecast's same cash timeline and active policy inputs.</figcaption>
 	</figure>
 {/if}
 
@@ -166,7 +166,7 @@
 	/* Cobalt ledger skin */
 	.grid-line { stroke: var(--rule); }
 	.grid-line--vertical { stroke: var(--paper-deep); }
-	.axis-label, figcaption, .empty-state { color: var(--ink-muted); fill: var(--ink-muted); }
+	.axis-label, figcaption, .empty-state { color: var(--ink-soft); fill: var(--ink-soft); }
 	.measure-label { fill: var(--ink-soft); }
 	.curve-line { stroke: var(--cobalt); }
 	.active-guide { stroke: var(--cobalt); }

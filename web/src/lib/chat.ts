@@ -1,4 +1,5 @@
 import { requestEngineStream, describeNetworkError, type EngineResult } from './api';
+import type { ScenarioOverrides } from './finance';
 import {
 	MAX_ABS_BALANCE_CENTS,
 	MAX_BILL_CENTS,
@@ -39,9 +40,9 @@ export interface DemoChatContext {
 }
 
 // Personal financial context is loaded by the server using the caller's JWT.
-// The browser may supply only a horizon, never another owner's records.
+// The browser supplies scenario inputs, never trusted financial results or another owner.
 export type ChatContext =
-	| { source: 'personal'; horizon_days: 14 | 30 | 60 }
+	| { source: 'personal'; horizon_days: 14 | 30 | 60; expected_revision?: number; overrides?: ScenarioOverrides }
 	| { source: 'demo'; scenario: DemoChatContext };
 
 export interface AdditionsProjectionPreview {

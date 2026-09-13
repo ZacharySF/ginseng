@@ -61,19 +61,19 @@
 
 <svelte:head>
 	<title>Ginseng — Sign in</title>
-	<meta name="description" content="Sign in to your Ginseng liquidity workspace." />
+	<meta name="description" content="Sign in to your Ginseng personal ledger." />
 </svelte:head>
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
 		<canvas class="hero-field" {@attach dotField()}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
-			<a class="hero-kicker" href={resolve('/welcome')} aria-label="Ginseng home, liquidity workspace">Liquidity workspace</a>
+			<a class="hero-kicker" href={resolve('/welcome')} aria-label="Ginseng home, personal ledger and synthetic demo">Personal ledger</a>
 			<h1>Ginseng</h1>
-			<p class="hero-tagline">A timing problem, modeled.</p>
+			<p class="hero-tagline">Your ledger, clearly separated.</p>
 			<p class="hero-body">
-				2,000 simulated cash paths show the dollar amount your next 30 days actually require
-				— and what closes the gap when today's cash can't.
+				Save balances and known bills in your personal ledger. Probabilistic reserve and funding
+				comparisons remain in a separate synthetic demo.
 			</p>
 		</div>
 	</section>

@@ -134,6 +134,6 @@
 	.bar.negative { fill: var(--negative); }
 	.zero-line { stroke: var(--warning); }
 	.zero-label { fill: var(--warning); }
-	.axis-label { fill: var(--ink-muted); }
-	figcaption, .empty-state { color: var(--ink-muted); }
+	.axis-label { fill: var(--ink-soft); }
+	figcaption, .empty-state { color: var(--ink-soft); }
 </style>

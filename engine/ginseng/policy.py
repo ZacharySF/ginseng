@@ -88,6 +88,8 @@ class FundingPolicy:
         "minimize_taxable_sales",
         "minimize_deferred_spending",
     )
+    capital_gains_rate: float = 0.15
+    overdraft_apr: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -169,9 +171,23 @@ def _binding_constraint_text(
             f"{policy.max_credit_utilization:.0%} limit"
         )
     return (
-        f"keeps modeled cash-shortfall probability at {chosen.cash_shortfall_probability:.1%}, below your "
+        f"keeps modeled cash-shortfall probability at {chosen.cash_shortfall_probability:.2%}, within your "
         f"{policy.max_cash_shortfall_probability:.0%} limit"
     )
+
+
+
+def _priority_value(result: PlanResult, priority: str, policy: FundingPolicy) -> float:
+    """Return the policy-specific tradeoff value for one feasible plan."""
+    if priority == "minimize_taxable_sales":
+        # Sale principal and positive gains are distinct economic costs. The
+        # user's tax rate makes the latter comparable without inventing a tax
+        # payment date in the cash path.
+        return result.investment_sold + max(0.0, result.realized_gain_loss) * policy.capital_gains_rate
+    if priority == "avoid_interest_bearing_debt":
+        return result.interest_exposure + result.overdraft_interest_exposure
+    info = _PRIORITY_INFO[priority]
+    return float(getattr(result, info["metric"]))
 
 
 def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommendation:
@@ -217,9 +233,12 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
         info = _PRIORITY_INFO.get(priority)
         if info is None or len(ranked) <= 1:
             break
-        metric = info["metric"]
-        best = min(getattr(r, metric) for r in ranked)
-        tied = [r for r in ranked if abs(getattr(r, metric) - best) < _TOLERANCE]
+        best = min(_priority_value(result, priority, policy) for result in ranked)
+        tied = [
+            result
+            for result in ranked
+            if abs(_priority_value(result, priority, policy) - best) < _TOLERANCE
+        ]
         if len(tied) < len(ranked):
             # This priority narrows the field; it becomes the deciding
             # priority unless a later priority narrows further. Keep
@@ -236,7 +255,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
     if deciding_priority is not None:
         lead = f"it is the {_PRIORITY_INFO[deciding_priority]['comparative']} plan that {constraint_text}"
     else:
-        lead = f"it is the only plan under your funding policy that {constraint_text}"
+        lead = f"it {constraint_text}"
     tail = f" without {' or '.join(satisfied_without)}" if satisfied_without else ""
     explanation = f"{chosen.label} is recommended because {lead}{tail}."
     return Recommendation(plan_id=chosen.id, explanation=explanation)
@@ -267,7 +286,6 @@ def to_contract(
             dominated = marked.dominated if marked else False
             dominated_by = marked.dominated_by if marked else None
         elif marked is not None and marked.dominated:
-            explanation = "Dominated by another available plan."
             dominated = True
             dominated_by = marked.dominated_by
         else:
@@ -282,7 +300,7 @@ def to_contract(
                 "cash_shortfall_probability": result.cash_shortfall_probability,
                 "avg_cash_deficit_when_short": result.avg_cash_deficit_when_short,
                 "new_debt": result.new_debt,
-                "interest_exposure": result.interest_exposure,
+                "interest_exposure": result.interest_exposure + result.overdraft_interest_exposure,
                 "investment_sold": result.investment_sold,
                 "realized_gain_loss": result.realized_gain_loss,
                 "deferred_spending": result.deferred_spending,

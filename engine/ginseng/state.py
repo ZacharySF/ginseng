@@ -205,6 +205,14 @@ class FinancialState:
     # twin carries no market history, which disables all portfolio-path
     # features rather than fabricating a flat market.
     portfolio_daily_returns: tuple[tuple[date, float], ...] = ()
+    # Optional first day of complete classified history.  A zero-flow day is
+    # still an observed day; keeping this boundary separately avoids inventing
+    # a transaction merely to anchor a sparse real ledger.
+    history_start: date | None = None
+    # Last day of complete classified history.  Forecast ``as_of`` remains
+    # opening-of-day and can be later, so bootstrap training never leaks
+    # unobserved forecast-period zeroes into the sampled process.
+    history_end: date | None = None
 
     # ---- Funding classes (spec section 8): always derived ----
 

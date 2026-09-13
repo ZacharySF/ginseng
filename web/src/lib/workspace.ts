@@ -40,25 +40,6 @@ export interface WorkspaceDraft {
 
 export type ProjectionHorizonDays = 14 | 30 | 60;
 
-export interface ScheduledProjectionDay {
-	date: string;
-	bills_cents: number;
-	balance_cents: number;
-}
-
-export interface ScheduledProjection {
-	input_revision: number;
-	as_of: string;
-	horizon_days: ProjectionHorizonDays;
-	currency: 'USD';
-	model_version: 'scheduled-cash-v1';
-	opening_balance_cents: number;
-	scheduled_bills_cents: number;
-	ending_balance_cents: number;
-	lowest_balance_cents: number;
-	first_shortfall_date: string | null;
-	days: ScheduledProjectionDay[];
-}
 
 /**
  * Convert a plain USD decimal field to integer cents without float arithmetic.
@@ -77,10 +58,6 @@ export function parseUsdCents(input: string, allowNegative = true): number | nul
 	return Number(match[1] === '-' ? -cents : cents);
 }
 
-export function getWorkspace(): Promise<EngineResult<CashWorkspace>> {
-	return requestEngine<CashWorkspace>('/workspace', { method: 'GET' }, { requiresAuth: true });
-}
-
 export function saveWorkspace(draft: WorkspaceDraft): Promise<EngineResult<CashWorkspace>> {
 	return requestEngine<CashWorkspace>(
 		'/workspace',
@@ -93,19 +70,6 @@ export function saveWorkspace(draft: WorkspaceDraft): Promise<EngineResult<CashW
 	);
 }
 
-export function projectWorkspace(
-	horizonDays: ProjectionHorizonDays
-): Promise<EngineResult<ScheduledProjection>> {
-	return requestEngine<ScheduledProjection>(
-		'/workspace/projection',
-		{
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ horizon_days: horizonDays })
-		},
-		{ requiresAuth: true }
-	);
-}
 
 // Dispatched on `window` after an assistant-proposed addition is approved and
 // the engine returns the new canonical snapshot, so the workspace page can

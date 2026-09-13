@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Awaitable
-from dataclasses import asdict
 from functools import lru_cache
 import os
 from threading import BoundedSemaphore
@@ -18,7 +17,7 @@ import time
 from typing import Annotated, Any
 
 import anyio
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -27,7 +26,6 @@ from starlette.requests import ClientDisconnect
 from starlette.responses import StreamingResponse
 from starlette.types import Receive, Scope, Send
 
-from ginseng import uncertainty
 from ginseng.chat import (
     CHAT_DEADLINE_SECONDS,
     ChatConfigurationError,
@@ -44,31 +42,20 @@ from ginseng.chat import (
     prepare_chat,
     stream_chat_events,
 )
-from ginseng.funding import FundingConfig, build_candidates, evaluate_plan
+from ginseng.dependencies import get_supabase_gateway, require_identity, supabase_http_error
+from ginseng.finance_api import get_finance_repository, router as finance_router
+from ginseng.finance_repository import FinanceRepository
+from ginseng.forecast_api import router as forecast_router
+from ginseng.scenario_service import ScenarioResponse, evaluate_scenario
 from ginseng.generate import DEFAULT_SEED, generate_persona
-from ginseng.metrics import compute_scenario_metrics
-from ginseng.optimizer import optimize_funding
-from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.providers.nessie import NessieError, NessieProvider
 from ginseng.simulate import draw_bundle
 from ginseng.state import FinancialState, Obligation
-from ginseng.supabase import (
-    AuthenticatedIdentity,
-    SupabaseAuthenticationError,
-    SupabaseConfigurationError,
-    SupabaseConflictError,
-    SupabaseError,
-    SupabaseGateway,
-    SupabaseUnavailableError,
-    SupabaseValidationError,
-)
+from ginseng.supabase import AuthenticatedIdentity, SupabaseError
 from ginseng.workspace import (
     CashWorkspace,
     CashWorkspaceRepository,
-    ProjectionRequest,
     SaveWorkspaceRequest,
-    ScheduledProjection,
-    project_saved_workspace,
 )
 
 DEMO_MAX_HORIZON_DAYS = 365
@@ -77,7 +64,7 @@ DEMO_MAX_OBLIGATIONS = 200
 DEMO_MAX_OPERATING_BUFFER = 1_000_000.0
 DEMO_MAX_OBLIGATION_AMOUNT = 1_000_000.0
 _SCENARIO_GATE = BoundedSemaphore(value=2)
-_SUPABASE_GATEWAY = SupabaseGateway()
+_SUPABASE_GATEWAY = get_supabase_gateway()
 
 
 def _allowed_origins() -> list[str]:
@@ -109,63 +96,6 @@ class ScenarioRequest(BaseModel):
     buffer_tolerance_dollar_days: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     capital_gains_rate: float = Field(default=0.15, ge=0, le=1)
 
-
-class SeverityMetrics(BaseModel):
-    cash_shortfall_probability: float
-    avg_cash_deficit_when_short: float
-    dollar_days_below_buffer: float
-
-
-class CoveragePoint(BaseModel):
-    funding: float
-    coverage: float
-
-
-class ReserveBufferPoint(BaseModel):
-    operating_buffer: float
-    required_liquidity_reserve: float
-
-
-class CashPaths(BaseModel):
-    days: list[int]
-    p10: list[float]
-    p50: list[float]
-    p90: list[float]
-    known_income: list[float]
-    known_obligations: list[float]
-
-
-class ShortfallDistribution(BaseModel):
-    bin_edges: list[float]
-    counts: list[int]
-
-
-class ScenarioResponse(BaseModel):
-    as_of: str
-    seed: int
-    bootstrap_draw_id: str
-    mean_block_length: int
-    mean_block_length_was_clipped: bool
-    immediate_funding: float
-    marketable_backup_capital: float
-    restricted_capital: float
-    coverage_target: float
-    operating_buffer: float
-    required_liquidity_reserve: float
-    funding_gap: float
-    coverage_at_current_funding: float
-    severity: SeverityMetrics
-    estimate_band: dict[str, float] | None = None
-    coverage_curve: list[CoveragePoint]
-    reserve_buffer_curve: list[ReserveBufferPoint]
-    cash_paths: CashPaths
-    shortfall_distribution: ShortfallDistribution
-    plans: list[dict[str, Any]] = Field(default_factory=list)
-    recommendation: dict[str, Any] | None = None
-    sensitivity: list[dict[str, Any]] = Field(default_factory=list)
-    sensitivity_verdict: str | None = None
-    wrong_way_risk: dict[str, Any] | None = None
-    optimal_plan: dict[str, Any] | None = None
 
 
 class HealthResponse(BaseModel):
@@ -226,6 +156,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["authorization", "content-type"],
 )
+app.include_router(finance_router)
+app.include_router(forecast_router)
+
 
 
 @app.exception_handler(RequestValidationError)
@@ -235,31 +168,9 @@ async def request_validation_error(_: Request, __: RequestValidationError) -> JS
     return JSONResponse(status_code=422, content={"detail": "Request has invalid fields."})
 
 
-def _supabase_http_error(error: SupabaseError) -> HTTPException:
-    if isinstance(error, SupabaseAuthenticationError):
-        return HTTPException(status_code=401, detail="Your session is invalid. Sign in again.")
-    if isinstance(error, SupabaseConflictError):
-        return HTTPException(status_code=409, detail="Workspace changed. Reload before saving.")
-    if isinstance(error, SupabaseValidationError):
-        return HTTPException(status_code=422, detail="Workspace data is invalid. Review the amounts and dates.")
-    if isinstance(error, (SupabaseConfigurationError, SupabaseUnavailableError)):
-        return HTTPException(status_code=503, detail="Workspace service is unavailable.")
-    return HTTPException(status_code=503, detail="Workspace service is unavailable.")
-
-
-def require_identity(authorization: Annotated[str | None, Header()] = None) -> AuthenticatedIdentity:
-    """Verify the supplied access token with Supabase Auth on every protected call."""
-
-    if authorization is None:
-        raise HTTPException(status_code=401, detail="Sign in to use Ginseng.")
-    scheme, _, access_token = authorization.partition(" ")
-    if scheme.lower() != "bearer" or not access_token or access_token.strip() != access_token:
-        raise HTTPException(status_code=401, detail="Your session is invalid. Sign in again.")
-    try:
-        return _SUPABASE_GATEWAY.authenticate(access_token)
-    except SupabaseError as error:
-        raise _supabase_http_error(error) from error
-
+# Retain the historical private import point while all routers use the shared
+# public dependency mapper from ``ginseng.dependencies``.
+_supabase_http_error = supabase_http_error
 
 def get_workspace_repository() -> CashWorkspaceRepository:
     return CashWorkspaceRepository(_SUPABASE_GATEWAY)
@@ -301,20 +212,7 @@ def save_workspace(
         raise _supabase_http_error(error) from error
 
 
-@app.post("/workspace/projection", response_model=ScheduledProjection)
-def project_workspace(
-    request: ProjectionRequest,
-    identity: Annotated[AuthenticatedIdentity, Depends(require_identity)],
-    repository: Annotated[CashWorkspaceRepository, Depends(get_workspace_repository)],
-) -> ScheduledProjection:
-    try:
-        workspace = repository.get(identity.access_token)
-    except SupabaseError as error:
-        raise _supabase_http_error(error) from error
-    try:
-        return project_saved_workspace(workspace, request.horizon_days)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
+
 
 
 
@@ -349,7 +247,7 @@ async def _prepare_chat_or_disconnect(
     request: Request,
     chat_request: PersonalChatRequest | DemoChatRequest,
     identity: AuthenticatedIdentity,
-    repository: CashWorkspaceRepository,
+    repository: FinanceRepository,
     deadline: float,
 ):
     """Resolve trusted context while monitoring a connection before headers commit."""
@@ -397,7 +295,7 @@ async def chat(
     request: Request,
     chat_request: ChatRequest,
     identity: Annotated[AuthenticatedIdentity, Depends(require_identity)],
-    repository: Annotated[CashWorkspaceRepository, Depends(get_workspace_repository)],
+    repository: Annotated[FinanceRepository, Depends(get_finance_repository)],
     quota: Annotated[ChatQuota, Depends(get_chat_quota)],
 ) -> StreamingResponse:
     """Stream a fresh personal workspace or explicit synthetic demo explanation.
@@ -463,8 +361,7 @@ def scenario(
     request: ScenarioRequest,
     _: Annotated[AuthenticatedIdentity, Depends(require_identity)],
 ) -> ScenarioResponse:
-    """Run the existing synthetic demo engine behind a small no-queue gate."""
-
+    """Run the explicitly synthetic demo through the shared scenario pipeline."""
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
     try:
@@ -480,79 +377,18 @@ def scenario(
             seed=request.seed,
             mean_block_length=request.mean_block_length,
         )
-        computed = compute_scenario_metrics(
-            persona, bundle, obligations, request.coverage_target, request.operating_buffer
-        )
-        band = uncertainty.estimate_band(
+        return evaluate_scenario(
             persona,
+            bundle,
             obligations,
             coverage_target=request.coverage_target,
             operating_buffer=request.operating_buffer,
-            point_estimate=computed.required_liquidity_reserve,
-            point_mean_block_length=bundle.mean_block_length,
-            horizon_days=request.horizon_days,
-            n_paths=request.paths,
-            n_outer=50,
-            seed=request.seed,
-        )
-        rows = uncertainty.persistence_sensitivity(
-            persona,
-            obligations,
-            coverage_target=request.coverage_target,
-            operating_buffer=request.operating_buffer,
-            horizon_days=request.horizon_days,
-            n_paths=request.paths,
-            seed=request.seed,
-        )
-        if computed.funding_gap > 0:
-            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig())
-            results = [evaluate_plan(persona, bundle, obligations, spec) for spec in specs]
-            recommendation = recommend(results, FundingPolicy())
-            plans, recommendation_dict = to_contract(results, recommendation)
-            optimal = optimize_funding(
-                persona,
-                bundle,
-                obligations,
-                coverage_target=request.coverage_target,
-                operating_buffer=request.operating_buffer,
-                overdraft_apr=request.overdraft_apr,
-                buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
-                capital_gains_rate=request.capital_gains_rate,
-            )
-            optimal_plan = asdict(optimal) if optimal is not None else None
-        else:
-            plans = []
-            recommendation_dict = None
-            optimal_plan = None
-        return ScenarioResponse(
-            as_of=persona.as_of.isoformat(),
-            seed=request.seed,
-            bootstrap_draw_id=bundle.bootstrap_draw_id,
-            mean_block_length=bundle.mean_block_length,
-            mean_block_length_was_clipped=bundle.mean_block_length_was_clipped,
-            immediate_funding=persona.immediate_funding,
-            marketable_backup_capital=persona.marketable_backup_capital,
-            restricted_capital=persona.restricted_capital,
-            coverage_target=request.coverage_target,
-            operating_buffer=request.operating_buffer,
-            required_liquidity_reserve=computed.required_liquidity_reserve,
-            funding_gap=computed.funding_gap,
-            coverage_at_current_funding=computed.coverage_at_current_funding,
-            severity=SeverityMetrics(**computed.severity),
-            estimate_band={"low": band.low, "high": band.high},
-            coverage_curve=[CoveragePoint(**point) for point in computed.coverage_curve],
-            reserve_buffer_curve=[
-                ReserveBufferPoint(**point) for point in computed.reserve_buffer_curve
-            ],
-            cash_paths=CashPaths(**computed.cash_paths),
-            shortfall_distribution=ShortfallDistribution(**computed.shortfall_distribution),
-            plans=plans,
-            recommendation=recommendation_dict,
-            sensitivity=[vars(row) for row in rows],
-            sensitivity_verdict=uncertainty.stability_verdict(rows),
-            wrong_way_risk=computed.wrong_way_risk,
-            optimal_plan=optimal_plan,
-        )
+            overdraft_apr=request.overdraft_apr,
+            buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
+            capital_gains_rate=request.capital_gains_rate,
+            include_reserve_uncertainty=True,
+            include_persistence_sensitivity=True,
+        ).response
     finally:
         _SCENARIO_GATE.release()
 

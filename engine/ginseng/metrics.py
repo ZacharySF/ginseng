@@ -17,6 +17,7 @@ import numpy as np
 
 from ginseng.simulate import (
     DrawBundle,
+    PathBundle,
     cash_paths as _compute_cash_paths,
     known_flows,
     portfolio_value_paths,
@@ -178,7 +179,7 @@ class ScenarioMetrics:
 
 def compute_scenario_metrics(
     state: FinancialState,
-    bundle: DrawBundle,
+    bundle: DrawBundle | PathBundle,
     obligations: Sequence[Obligation],
     coverage_target: float,
     operating_buffer: float,
@@ -201,7 +202,12 @@ def compute_scenario_metrics(
         else None
     )
 
-    known_income, known_obligations = known_flows(state, obligations, bundle.horizon_days)
+    known_income, known_obligations = known_flows(
+        state,
+        obligations,
+        bundle.horizon_days,
+        bundle if isinstance(bundle, PathBundle) else None,
+    )
     paths = {
         "days": list(range(1, bundle.horizon_days + 1)),
         **percentile_cash_paths(matrix, immediate_funding),

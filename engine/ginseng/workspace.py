@@ -1,8 +1,8 @@
-"""Saved cash-workspace contracts, RPC adapter, and deterministic schedule math."""
+"""Saved cash-workspace contracts and the owner-scoped RPC adapter."""
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -74,31 +74,6 @@ class SaveWorkspaceRequest(BaseModel):
     bills: list[CashBill] = Field(max_length=200)
 
 
-class ProjectionRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    horizon_days: Literal[14, 30, 60]
-
-
-class ScheduledProjectionDay(BaseModel):
-    date: date
-    bills_cents: StrictInt
-    balance_cents: StrictInt
-
-
-class ScheduledProjection(BaseModel):
-    input_revision: Annotated[StrictInt, Field(ge=1, le=MAX_WORKSPACE_REVISION)]
-    as_of: WorkspaceDate
-    horizon_days: Literal[14, 30, 60]
-    currency: Literal["USD"] = "USD"
-    model_version: Literal["scheduled-cash-v1"] = "scheduled-cash-v1"
-    opening_balance_cents: StrictInt
-    scheduled_bills_cents: StrictInt
-    ending_balance_cents: StrictInt
-    lowest_balance_cents: StrictInt
-    first_shortfall_date: date | None
-    days: list[ScheduledProjectionDay]
-
 
 class CashWorkspaceRepository:
     """Repository that forwards the authenticated caller's JWT to Supabase RPCs."""
@@ -130,52 +105,3 @@ class CashWorkspaceRepository:
             raise SupabaseUnavailableError("Workspace service returned an invalid response.") from error
 
 
-def project_saved_workspace(workspace: CashWorkspace, horizon_days: Literal[14, 30, 60]) -> ScheduledProjection:
-    """Project one-time saved bills from the snapshot's opening-of-day balance."""
-
-    if workspace.as_of is None or not workspace.accounts:
-        raise ValueError("Save an opening balance and at least one cash account before projecting.")
-
-    as_of = workspace.as_of
-    overdue = [bill for bill in workspace.bills if bill.due_date < as_of]
-    if overdue:
-        raise ValueError("Resolve bills dated before the opening balance date before projecting.")
-
-    opening_balance = sum(account.balance_cents for account in workspace.accounts)
-    last_day = as_of + timedelta(days=horizon_days - 1)
-    bills_by_date: dict[date, int] = {}
-    for bill in workspace.bills:
-        if as_of <= bill.due_date <= last_day:
-            bills_by_date[bill.due_date] = bills_by_date.get(bill.due_date, 0) + bill.amount_cents
-
-    balance = opening_balance
-    lowest_balance = opening_balance
-    first_shortfall = as_of if opening_balance < 0 else None
-    days: list[ScheduledProjectionDay] = []
-    for offset in range(horizon_days):
-        current_date = as_of + timedelta(days=offset)
-        bills_cents = bills_by_date.get(current_date, 0)
-        balance -= bills_cents
-        if balance < lowest_balance:
-            lowest_balance = balance
-        if first_shortfall is None and balance < 0:
-            first_shortfall = current_date
-        days.append(
-            ScheduledProjectionDay(
-                date=current_date,
-                bills_cents=bills_cents,
-                balance_cents=balance,
-            )
-        )
-
-    return ScheduledProjection(
-        input_revision=workspace.revision,
-        as_of=as_of,
-        horizon_days=horizon_days,
-        opening_balance_cents=opening_balance,
-        scheduled_bills_cents=sum(bills_by_date.values()),
-        ending_balance_cents=balance,
-        lowest_balance_cents=lowest_balance,
-        first_shortfall_date=first_shortfall,
-        days=days,
-    )

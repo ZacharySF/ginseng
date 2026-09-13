@@ -1,350 +1,448 @@
 <script lang="ts">
-	// Fan chart for the Future screen (spec section 58): p10-p90 band, the
-	// median path, the operating buffer, the zero-cash floor, known income
-	// and known-obligation days, and a labelled marker for the inserted
-	// shock. Every number rendered here is read straight off the typed
-	// props — this component computes pixel geometry only.
 	import { formatCurrency } from '$lib/format';
-	import type { CashPaths, Obligation } from '$lib/types';
+	import type { CashPaths } from '$lib/types';
+
+	interface CashPathChartEvent {
+		id: string;
+		label: string;
+		amount: number;
+		day: number;
+		kind: 'income' | 'outflow';
+		date?: string;
+	}
+
 
 	interface Props {
 		cashPaths: CashPaths;
 		operatingBuffer: number;
-		obligations: Obligation[];
+		events?: CashPathChartEvent[];
+		asOf?: string | null;
+		deterministic?: boolean;
+		comparisonPaths?: CashPaths | null;
+		comparisonLabel?: string;
 	}
 
-	let { cashPaths, operatingBuffer, obligations }: Props = $props();
+	let {
+		cashPaths,
+		operatingBuffer,
+		events = [],
+		asOf = null,
+		deterministic = false,
+		comparisonPaths = null,
+		comparisonLabel = 'Saved inputs'
+	}: Props = $props();
 
 	let containerWidth = $state(720);
-	let containerHeight = $state(340);
-	const WIDTH = $derived(Math.max(360, containerWidth));
-	const HEIGHT = $derived(Math.max(220, containerHeight));
-	const MARGIN = { top: 20, right: 20, bottom: 26, left: 60 };
-	const FLOW_STRIP_HEIGHT = 40;
-	const FLOW_STRIP_GAP = 14;
+	let containerHeight = $state(360);
+	let selectedIndex = $state(0);
+	const WIDTH = $derived(Math.max(320, containerWidth));
+	const HEIGHT = $derived(Math.max(240, containerHeight));
+	const MARGIN = { top: 28, right: 68, bottom: 58, left: 18 };
+	const FLOW_STRIP_HEIGHT = 42;
+	const FLOW_STRIP_GAP = 19;
 
 	const layout = $derived.by(() => {
 		const days = cashPaths.days;
-		if (days.length === 0) {
-			return null;
-		}
+		if (days.length === 0) return null;
 
-		const plotWidth = WIDTH - MARGIN.left - MARGIN.right;
-		const bandHeight = HEIGHT - MARGIN.top - MARGIN.bottom - FLOW_STRIP_HEIGHT - FLOW_STRIP_GAP;
-
+		const plotRight = WIDTH - MARGIN.right;
+		const plotWidth = plotRight - MARGIN.left;
+		const plotBottom = HEIGHT - MARGIN.bottom - FLOW_STRIP_HEIGHT - FLOW_STRIP_GAP;
+		const plotHeight = plotBottom - MARGIN.top;
 		const xMin = days[0];
 		const xMax = days[days.length - 1];
 		const xSpan = Math.max(1, xMax - xMin);
-
-		const domainLow = Math.min(0, ...cashPaths.p10);
-		const domainHigh = Math.max(operatingBuffer, ...cashPaths.p90);
-		const pad = Math.max(1, (domainHigh - domainLow) * 0.1);
-		const yMin = domainLow - pad;
-		const yMax = domainHigh + pad;
+		const p10 = cashPaths.p10.length === days.length ? cashPaths.p10 : cashPaths.p50;
+		const p90 = cashPaths.p90.length === days.length ? cashPaths.p90 : cashPaths.p50;
+		const domainLow = Math.min(0, ...p10, ...(comparisonPaths?.p50 ?? []));
+		const domainHigh = Math.max(operatingBuffer, ...p90, ...(comparisonPaths?.p50 ?? []));
+		const padding = Math.max(1, (domainHigh - domainLow) * 0.1);
+		const yMin = domainLow - padding;
+		const yMax = domainHigh + padding;
 		const ySpan = Math.max(1, yMax - yMin);
-
 		const xAt = (day: number) => MARGIN.left + ((day - xMin) / xSpan) * plotWidth;
-		const yAt = (value: number) => MARGIN.top + bandHeight - ((value - yMin) / ySpan) * bandHeight;
-
-		const top = days.map((day, i) => `${xAt(day)},${yAt(cashPaths.p90[i])}`);
-		const bottom = days
-			.map((day, i) => `${xAt(day)},${yAt(cashPaths.p10[i])}`)
-			.reverse();
-		const bandPath = `M${top.join(' L')} L${bottom.join(' L')} Z`;
-		const medianPoints = days.map((day, i) => `${xAt(day)},${yAt(cashPaths.p50[i])}`).join(' ');
-
-		const shockMarkers = obligations.map((obligation) => ({
-			...obligation,
-			x: xAt(obligation.due_in_days)
-		}));
-
-		const flowTop = MARGIN.top + bandHeight + FLOW_STRIP_GAP;
-		const flowBaseline = flowTop + FLOW_STRIP_HEIGHT / 2;
-		const flowMax = Math.max(1, ...cashPaths.known_income, ...cashPaths.known_obligations);
-		const flowScale = (FLOW_STRIP_HEIGHT / 2 - 4) / flowMax;
-
-		const incomeMarks = days
-			.map((day, i) => ({ day, value: cashPaths.known_income[i] }))
-			.filter((mark) => mark.value > 0)
-			.map((mark) => ({ x: xAt(mark.day), height: mark.value * flowScale, value: mark.value }));
-
-		const obligationMarks = days
-			.map((day, i) => ({ day, value: cashPaths.known_obligations[i] }))
-			.filter((mark) => mark.value > 0)
-			.map((mark) => ({ x: xAt(mark.day), height: mark.value * flowScale, value: mark.value }));
+		const yAt = (value: number) => MARGIN.top + ((yMax - value) / ySpan) * plotHeight;
+		const upper = days.map((day, index) => `${xAt(day)},${yAt(p90[index])}`);
+		const lower = days.map((day, index) => `${xAt(day)},${yAt(p10[index])}`).reverse();
+		const dailyIncome = cashPaths.known_income.map((value, index) =>
+			Math.max(0, value - (index === 0 ? 0 : cashPaths.known_income[index - 1]))
+		);
+		const dailyOutflows = cashPaths.known_obligations.map((value, index) =>
+			Math.max(0, value - (index === 0 ? 0 : cashPaths.known_obligations[index - 1]))
+		);
+		const flowBaseline = HEIGHT - MARGIN.bottom + FLOW_STRIP_HEIGHT / 2;
+		const flowScale = (FLOW_STRIP_HEIGHT / 2 - 4) / Math.max(1, ...dailyIncome, ...dailyOutflows);
+		const tickStep = Math.max(1, Math.ceil(days.length / 5));
+		const xTicks = days.filter((_, index) => index === 0 || index === days.length - 1 || index % tickStep === 0);
+		const yTicks = Array.from({ length: 5 }, (_, index) => {
+			const value = yMin + ((4 - index) / 4) * ySpan;
+			return { value, y: yAt(value) };
+		});
 
 		return {
-			plotWidth,
-			bandHeight,
-			bandPath,
-			medianPoints,
+			days,
+			plotRight,
+			plotBottom,
+			xAt,
+			yAt,
+			bandPath: `M${upper.join(' L')} L${lower.join(' L')} Z`,
+			median: days.map((day, index) => `${xAt(day)},${yAt(cashPaths.p50[index])}`).join(' '),
+			comparison: comparisonPaths?.days.map((day, index) => `${xAt(day)},${yAt(comparisonPaths.p50[index])}`).join(' ') ?? null,
 			bufferY: yAt(operatingBuffer),
 			zeroY: yAt(0),
-			shockMarkers,
-			flowTop,
 			flowBaseline,
-			incomeMarks,
-			obligationMarks,
-			firstDay: xMin,
-			lastDay: xMax,
-			xAtFirst: xAt(xMin),
-			xAtLast: xAt(xMax)
+			flowScale,
+			dailyIncome,
+			dailyOutflows,
+			xTicks,
+			yTicks
 		};
 	});
+
+	const selected = $derived.by(() => {
+		if (!layout) return null;
+		const index = Math.min(Math.max(0, selectedIndex), layout.days.length - 1);
+		const day = layout.days[index];
+		let dateLabel = `Day ${day}`;
+		if (asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)) {
+			const date = new Date(`${asOf}T00:00:00Z`);
+			if (!Number.isNaN(date.valueOf())) {
+				date.setUTCDate(date.getUTCDate() + day - 1);
+				dateLabel = new Intl.DateTimeFormat('en-US', {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
+					timeZone: 'UTC'
+				}).format(date);
+			}
+		}
+		return {
+			index,
+			day,
+			dateLabel,
+			x: layout.xAt(day),
+			median: cashPaths.p50[index],
+			comparison: comparisonPaths?.p50[index] ?? null,
+			low: cashPaths.p10[index] ?? cashPaths.p50[index],
+			high: cashPaths.p90[index] ?? cashPaths.p50[index],
+			income: layout.dailyIncome[index] ?? 0,
+			outflows: layout.dailyOutflows[index] ?? 0
+		};
+	});
+
+	const visibleEvents = $derived(
+		layout ? events.filter((event) => event.day >= layout.days[0] && event.day <= layout.days[layout.days.length - 1]) : []
+	);
+
+	function inspectChartDay(event: PointerEvent) {
+		if (!layout) return;
+		const svg = event.currentTarget as SVGSVGElement;
+		const bounds = svg.getBoundingClientRect();
+		const chartX = ((event.clientX - bounds.left) / bounds.width) * WIDTH;
+		const progress = Math.min(1, Math.max(0, (chartX - MARGIN.left) / (layout.plotRight - MARGIN.left)));
+		selectedIndex = Math.round(progress * (layout.days.length - 1));
+	}
+
+	function inspectChartDayByKey(event: KeyboardEvent) {
+		if (!layout) return;
+		const lastIndex = layout.days.length - 1;
+		if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+			event.preventDefault();
+			selectedIndex = Math.max(0, selectedIndex - 1);
+		} else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+			event.preventDefault();
+			selectedIndex = Math.min(lastIndex, selectedIndex + 1);
+		} else if (event.key === 'Home') {
+			event.preventDefault();
+			selectedIndex = 0;
+		} else if (event.key === 'End') {
+			event.preventDefault();
+			selectedIndex = lastIndex;
+		}
+	}
 </script>
 
 {#if layout === null}
-	<p class="empty-state">No simulated cash paths for this scenario yet.</p>
-{:else}
-	<figure class="cash-path-chart">
+	<p class="empty-state">No forecast path is available yet.</p>
+{:else if selected}
+	<figure class:cash-path-chart--deterministic={deterministic} class="cash-path-chart">
 		<div class="chart-frame" bind:clientWidth={containerWidth} bind:clientHeight={containerHeight}>
-		<svg viewBox="0 0 {WIDTH} {HEIGHT}" role="img" aria-label="Simulated future cash-position range">
-			<!-- Per-day p10-p90 cash-position range and median. -->
-			<path d={layout.bandPath} class="band" />
-			<polyline points={layout.medianPoints} class="median-line" />
-
-			<!-- operating buffer -->
-			<line
-				x1={MARGIN.left}
-				x2={MARGIN.left + layout.plotWidth}
-				y1={layout.bufferY}
-				y2={layout.bufferY}
-				class="buffer-line"
-			/>
-			<text x={MARGIN.left + layout.plotWidth} y={layout.bufferY - 6} class="line-label" text-anchor="end">
-				Operating buffer {formatCurrency(operatingBuffer)}
-			</text>
-
-			<!-- zero-cash floor -->
-			<line
-				x1={MARGIN.left}
-				x2={MARGIN.left + layout.plotWidth}
-				y1={layout.zeroY}
-				y2={layout.zeroY}
-				class="zero-line"
-			/>
-			<text x={MARGIN.left} y={layout.zeroY - 6} class="line-label" text-anchor="start">
-				Zero-cash floor
-			</text>
-
-			<!-- Inserted obligation markers -->
-			{#each layout.shockMarkers as shock (shock.id)}
-				<line
-					x1={shock.x}
-					x2={shock.x}
-					y1={MARGIN.top}
-					y2={layout.flowBaseline}
-					class="shock-line"
-				/>
-				<circle cx={shock.x} cy={MARGIN.top + 10} r="4" class="shock-dot">
-					<title>{shock.label} — {formatCurrency(shock.amount)}</title>
-				</circle>
-			{/each}
-
-			<!-- known income / obligation flow strip -->
-			<line
-				x1={MARGIN.left}
-				x2={MARGIN.left + layout.plotWidth}
-				y1={layout.flowBaseline}
-				y2={layout.flowBaseline}
-				class="flow-baseline"
-			/>
-			{#each layout.incomeMarks as mark (mark.x)}
-				<line
-					x1={mark.x}
-					x2={mark.x}
-					y1={layout.flowBaseline}
-					y2={layout.flowBaseline - mark.height}
-					class="income-mark"
-				>
-					<title>Known income {formatCurrency(mark.value)}</title>
-				</line>
-			{/each}
-			{#each layout.obligationMarks as mark (mark.x)}
-				<line
-					x1={mark.x}
-					x2={mark.x}
-					y1={layout.flowBaseline}
-					y2={layout.flowBaseline + mark.height}
-					class="obligation-mark"
-				>
-					<title>Known obligation {formatCurrency(mark.value)}</title>
-				</line>
-			{/each}
-			<text x={MARGIN.left} y={layout.flowTop + FLOW_STRIP_HEIGHT + 12} class="axis-label" text-anchor="start">
-				Day {layout.firstDay}
-			</text>
-			<text
-				x={MARGIN.left + layout.plotWidth}
-				y={layout.flowTop + FLOW_STRIP_HEIGHT + 12}
-				class="axis-label"
-				text-anchor="end"
+			<svg
+				viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+				role="slider"
+				tabindex="0"
+				aria-label="Forecast cash day inspector"
+				aria-valuemin={layout.days[0]}
+				aria-valuemax={layout.days[layout.days.length - 1]}
+				aria-valuenow={selected.day}
+				aria-valuetext={`${selected.dateLabel}: ${formatCurrency(selected.median)}${selected.comparison !== null ? `, ${comparisonLabel} ${formatCurrency(selected.comparison)}` : ''}${selected.income > 0 ? `, known income ${formatCurrency(selected.income)}` : ''}${selected.outflows > 0 ? `, known outflow ${formatCurrency(selected.outflows)}` : ''}`}
+				onpointermove={inspectChartDay}
+				onpointerdown={inspectChartDay}
+				onkeydown={inspectChartDayByKey}
 			>
-				Day {layout.lastDay}
-			</text>
-		</svg>
+				<title>Projected cash position</title>
+				<desc>Move across the chart, or use arrow keys when focused, to inspect an individual calendar day. The bars below the line are day-by-day known cash flows, calculated from cumulative engine totals.</desc>
+				{#each layout.yTicks as tick (tick.y)}
+					<line x1={MARGIN.left} x2={layout.plotRight} y1={tick.y} y2={tick.y} class="grid-line" />
+					<text x={layout.plotRight + 10} y={tick.y + 4} class="axis-value">{formatCurrency(tick.value)}</text>
+				{/each}
+				{#each layout.xTicks as day (day)}
+					<line x1={layout.xAt(day)} x2={layout.xAt(day)} y1={MARGIN.top} y2={layout.plotBottom} class="grid-line grid-line--vertical" />
+					<text x={layout.xAt(day)} y={HEIGHT - 3} text-anchor={day === layout.days[0] ? 'start' : day === layout.days[layout.days.length - 1] ? 'end' : 'middle'} class="axis-value">Day {day}</text>
+				{/each}
+				<line x1={MARGIN.left} x2={layout.plotRight} y1={layout.zeroY} y2={layout.zeroY} class="zero-line" />
+				<line x1={MARGIN.left} x2={layout.plotRight} y1={layout.bufferY} y2={layout.bufferY} class="buffer-line" />
+				<text x={layout.plotRight - 6} y={layout.bufferY - 7} class="buffer-label" text-anchor="end">Buffer {formatCurrency(operatingBuffer)}</text>
+
+				{#if !deterministic}<path d={layout.bandPath} class="cash-range" />{/if}
+				<polyline points={layout.median} class="cash-median" />
+				{#if layout.comparison}<polyline points={layout.comparison} class="comparison-line" />{/if}
+
+				{#each visibleEvents as event (event.id)}
+					<line x1={layout.xAt(event.day)} x2={layout.xAt(event.day)} y1={MARGIN.top} y2={layout.flowBaseline + 27} class:event-income={event.kind === 'income'} class="event-line" />
+					<circle cx={layout.xAt(event.day)} cy={MARGIN.top + 11} r="3.75" class:event-income={event.kind === 'income'} class="event-dot">
+						<title>{event.label} — {event.kind === 'income' ? 'income' : 'outflow'} {formatCurrency(event.amount)}{event.date ? ` on ${event.date}` : ''}</title>
+					</circle>
+				{/each}
+
+				<line x1={MARGIN.left} x2={layout.plotRight} y1={layout.flowBaseline} y2={layout.flowBaseline} class="flow-line" />
+				{#each layout.days as day, index (day)}
+					{#if layout.dailyIncome[index] > 0}
+						<line x1={layout.xAt(day)} x2={layout.xAt(day)} y1={layout.flowBaseline} y2={layout.flowBaseline - layout.dailyIncome[index] * layout.flowScale} class="income-bar"><title>Known income {formatCurrency(layout.dailyIncome[index])}</title></line>
+					{/if}
+					{#if layout.dailyOutflows[index] > 0}
+						<line x1={layout.xAt(day)} x2={layout.xAt(day)} y1={layout.flowBaseline} y2={layout.flowBaseline + layout.dailyOutflows[index] * layout.flowScale} class="outflow-bar"><title>Known outflow {formatCurrency(layout.dailyOutflows[index])}</title></line>
+					{/if}
+				{/each}
+				<line x1={selected.x} x2={selected.x} y1={MARGIN.top} y2={layout.flowBaseline + 28} class="cursor-line" />
+				<circle cx={selected.x} cy={layout.yAt(selected.median)} r="4.5" class="cursor-dot" />
+			</svg>
 		</div>
-		<figcaption class="legend">
-			<span class="legend-item"><span class="swatch swatch-band"></span>P10–P90 cash-position range</span>
-			<span class="legend-item"><span class="swatch swatch-median"></span>Median cash position</span>
-			<span class="legend-item"><span class="swatch swatch-buffer"></span>Operating buffer</span>
-			<span class="legend-item"><span class="swatch swatch-zero"></span>Zero-cash floor</span>
-			<span class="legend-item"><span class="swatch swatch-income"></span>Known income</span>
-			<span class="legend-item"><span class="swatch swatch-obligation"></span>Known obligations</span>
-			{#if layout.shockMarkers.length > 0}
-				<span class="legend-item"><span class="swatch swatch-shock"></span>Inserted obligations</span>
+		<div class="chart-readout" aria-live="polite">
+			<div>
+				<span>Inspecting</span>
+				<strong>{selected.dateLabel}</strong>
+			</div>
+			<div>
+				<span>{deterministic ? 'Known cash' : 'Median cash'}</span>
+				<strong class="numeric">{formatCurrency(selected.median)}</strong>
+			</div>
+			{#if !deterministic}
+				<div>
+					<span>Range</span>
+					<strong class="numeric">{formatCurrency(selected.low)}–{formatCurrency(selected.high)}</strong>
+				</div>
 			{/if}
+			{#if selected.comparison !== null}
+				<div><span>{comparisonLabel}</span><strong class="numeric">{formatCurrency(selected.comparison)}</strong></div>
+			{/if}
+			<div>
+				<span>Known flows</span>
+				<strong class="numeric">+{formatCurrency(selected.income)} · −{formatCurrency(selected.outflows)}</strong>
+			</div>
+		</div>
+		<figcaption>
+			{#if deterministic}
+				Known scheduled income and outflows only. No probability range is shown.
+			{:else}
+				Blue fan: P10–P90 cash position. Flow bars show per-day known income and outflows.
+			{/if}
+			{#if comparisonPaths}<span> Dashed line: {comparisonLabel} (median).</span>{/if}
+			<span> Focus this chart and use <kbd>←</kbd><kbd>→</kbd>, Home, or End to inspect dates.</span>
 		</figcaption>
 	</figure>
 {/if}
 
 <style>
 	.empty-state {
-		padding: var(--space-6);
-		color: #8b8b91;
-		font-size: var(--font-size-md);
+		padding: 1rem;
+		color: var(--ink-soft);
+		font-size: 0.84rem;
 	}
 
 	.cash-path-chart {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		gap: 0.55rem;
+		min-width: 0;
 		margin: 0;
-		gap: var(--space-3);
 	}
 
 	.chart-frame {
-		flex: 1;
-		min-height: 0;
+		min-height: clamp(17rem, 38vw, 29rem);
 	}
 
 	svg {
 		display: block;
 		width: 100%;
 		height: 100%;
+		cursor: crosshair;
+		touch-action: pan-y;
 	}
 
-	.band {
-		fill: rgb(46 190 172 / 13%);
-		stroke: none;
+	svg:focus-visible {
+		outline: 2px solid var(--cobalt-bright);
+		outline-offset: 4px;
 	}
 
-	.median-line {
-		fill: none;
-		stroke: #42d3ba;
-		stroke-width: 2.5;
+	.grid-line {
+		stroke: var(--rule);
+		stroke-dasharray: 2 3;
 	}
 
-	.buffer-line {
-		stroke: #d8a84e;
-		stroke-width: 1.5;
-		stroke-dasharray: 6 4;
+	.grid-line--vertical {
+		stroke: var(--paper-deep);
+	}
+
+	.axis-value {
+		fill: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 10px;
 	}
 
 	.zero-line {
-		stroke: #a74252;
-		stroke-width: 1;
+		stroke: var(--negative);
 		stroke-dasharray: 3 4;
 	}
 
-	.line-label {
-		fill: #c7c7cc;
-		font-size: 11px;
+	.buffer-line {
+		stroke: var(--warning);
+		stroke-dasharray: 6 4;
 	}
 
-	.shock-line {
-		stroke: #f45d77;
-		stroke-width: 1;
+	.buffer-label {
+		fill: var(--warning);
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+	}
+
+	.cash-range {
+		fill: rgb(36 72 255 / 15%);
+	}
+
+	.comparison-line { fill: none; stroke: var(--ink-soft); stroke-width: 1.75; stroke-dasharray: 7 5; }
+
+	.cash-median {
+		fill: none;
+		stroke: var(--cobalt);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 2.5;
+	}
+
+	.event-line {
+		stroke: var(--negative);
 		stroke-dasharray: 3 4;
 	}
 
-	.shock-dot {
-		fill: #f45d77;
+	.event-line.event-income {
+		stroke: var(--cobalt-bright);
 	}
 
-	.flow-baseline {
-		stroke: #37373b;
-		stroke-width: 1;
+	.event-dot {
+		fill: var(--negative);
 	}
 
-	.income-mark {
-		stroke: #2c8f81;
-		stroke-width: 3;
+	.event-dot.event-income {
+		fill: var(--cobalt-bright);
 	}
 
-	.obligation-mark {
-		stroke: #a74354;
-		stroke-width: 3;
+	.flow-line {
+		stroke: var(--rule-strong);
 	}
 
-	.axis-label {
-		fill: #8b8b91;
-		font-size: 11px;
+	.income-bar {
+		stroke: var(--cobalt-bright);
+		stroke-width: 4;
 	}
 
-	.legend {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-4);
-		font-size: var(--font-size-xs);
-		color: #9a9aa0;
+	.outflow-bar {
+		stroke: var(--negative);
+		stroke-width: 4;
 	}
 
-	.legend-item {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-2);
+	.cursor-line {
+		stroke: var(--ink);
+		stroke-dasharray: 2 3;
+		stroke-opacity: 0.64;
 	}
 
-	.swatch {
-		width: 12px;
-		height: 12px;
-		border-radius: 3px;
+	.cursor-dot {
+		fill: var(--paper);
+		stroke: var(--ink);
+		stroke-width: 1.75;
+	}
+
+	.chart-readout {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 1px;
+		background: var(--rule);
+		border: 1px solid var(--rule);
+	}
+
+	.chart-readout > div {
+		display: grid;
+		gap: 0.14rem;
+		min-width: 0;
+		padding: 0.45rem 0.55rem;
+		background: var(--paper);
+	}
+
+	.chart-readout span {
+		color: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 0.58rem;
+		font-weight: 700;
+		letter-spacing: 0.045em;
+		text-transform: uppercase;
+	}
+
+	.chart-readout strong {
+		overflow: hidden;
+		font-size: 0.72rem;
+		letter-spacing: -0.02em;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	figcaption {
+		color: var(--ink-soft);
+		font-size: 0.7rem;
+		line-height: 1.4;
+	}
+
+	figcaption span {
 		display: inline-block;
+		margin-left: 0.35rem;
 	}
 
-	.swatch-band {
-		background: rgb(46 190 172 / 40%);
+	kbd {
+		display: inline-grid;
+		min-width: 1.2rem;
+		place-items: center;
+		margin-left: 0.18rem;
+		padding: 0.04rem 0.17rem;
+		background: var(--paper);
+		border: 1px solid var(--control-border);
+		color: var(--ink);
+		font-family: var(--font-mono);
+		font-size: 0.62rem;
 	}
 
-	.swatch-median {
-		background: #42d3ba;
-	}
+	@media (max-width: 48rem) {
+		.chart-frame {
+			min-height: 18rem;
+		}
 
-	.swatch-buffer {
-		background: #d8a84e;
-	}
+		.chart-readout {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 
-	.swatch-zero {
-		background: #a74252;
+		figcaption span {
+			display: block;
+			margin: 0.35rem 0 0;
+		}
 	}
-
-	.swatch-income {
-		background: #2c8f81;
-	}
-
-	.swatch-obligation {
-		background: #a74354;
-	}
-
-	.swatch-shock {
-		background: #f45d77;
-	}
-	/* Cobalt ledger skin */
-	.empty-state { color: var(--ink-muted); }
-	.band { fill: rgb(36 72 255 / 14%); }
-	.median-line { stroke: var(--cobalt); }
-	.buffer-line { stroke: var(--warning); }
-	.zero-line, .shock-line { stroke: var(--negative); }
-	.line-label, .axis-label { fill: var(--ink-soft); }
-	.shock-dot { fill: var(--negative); }
-	.flow-baseline { stroke: var(--rule-strong); }
-	.income-mark { stroke: var(--cobalt-bright); }
-	.obligation-mark { stroke: var(--negative); }
-	.legend { color: var(--ink-muted); }
-	.swatch-band { background: rgb(36 72 255 / 38%); }
-	.swatch-median { background: var(--cobalt); }
-	.swatch-buffer { background: var(--warning); }
-	.swatch-zero, .swatch-obligation, .swatch-shock { background: var(--negative); }
-	.swatch-income { background: var(--cobalt-bright); }
 </style>

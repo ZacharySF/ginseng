@@ -14,23 +14,23 @@
 	const steps: Step[] = [
 		{
 			icon: 'workspace',
-			title: 'Model your account',
-			body: '2,000 simulated cash paths project your next 14, 30, or 60 days from your real income and spending pattern.'
+			title: 'Save your cash position',
+			body: 'Save opening balances, an as-of date, and known bills in your personal ledger.'
 		},
 		{
 			icon: 'events',
-			title: "Add what's coming",
-			body: "Insert a real future obligation — a deposit, a bill, a repair. Today's cash and your portfolio stay untouched; only the timeline changes."
+			title: 'Track known bills',
+			body: 'Add each amount and due date once. The same saved record appears in your personal event ledger and schedule.'
 		},
 		{
 			icon: 'reserve',
-			title: 'See the exact reserve',
-			body: 'A running-minimum liquidity requirement at your coverage target, computed straight from the simulated paths.'
+			title: 'Explore a synthetic reserve',
+			body: 'The probabilistic reserve model uses a separate synthetic demo, never your personal balances or bills.'
 		},
 		{
 			icon: 'funding',
-			title: 'Compare ways to close it',
-			body: 'Credit, liquidation, and hybrid plans, evaluated on the exact same simulated future so the differences are real.'
+			title: 'Compare synthetic funding',
+			body: 'Credit, liquidation, and hybrid plans run only against the synthetic demo scenario.'
 		}
 	];
 </script>
@@ -39,7 +39,7 @@
 	<title>Ginseng — Liquidity workspace</title>
 	<meta
 		name="description"
-		content="Ginseng models the dollar amount your next 30 days actually require, and compares the ways to close the gap."
+		content="Save personal balances and known bills, then explore separate synthetic reserve and funding scenarios."
 	/>
 </svelte:head>
 
@@ -65,10 +65,8 @@
 			</h1>
 			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
-				Variable-income earners can hold plenty of assets and still have a timing problem.
-				Ginseng runs 2,000 simulated cash paths to show the dollar amount your next 30 days
-				actually require — and compares the credit, liquidation, and hybrid ways to close the
-				gap.
+				Ginseng keeps saved balances and known bills in a personal ledger. A separate synthetic demo
+				explores probabilistic reserve and funding decisions without using those personal records.
 			</p>
 			<div class="hero-actions">
 				<a class="hero-cta" href={resolve('/login?mode=sign-up')}>Create free account</a>
@@ -79,7 +77,7 @@
 
 	<section class="how" aria-labelledby="how-heading">
 		<p class="section-kicker">How it works</p>
-		<h2 id="how-heading">Four steps, one model.</h2>
+		<h2 id="how-heading">Four steps, clear boundaries.</h2>
 		<div class="how-grid">
 			{#each steps as step (step.title)}
 				<article class="how-step">
@@ -109,16 +107,15 @@
 	</section>
 
 	<section class="frozen">
-		<p class="frozen-statement">The market didn't change.<br />The person did.</p>
+		<p class="frozen-statement">Your ledger stays personal.<br />The demo stays synthetic.</p>
 		<p class="frozen-body">
-			Every plan comparison runs on the exact same simulated futures. Your portfolio value and
-			volatility stay frozen beside a funding requirement that moved — because the shock was a
-			future obligation, not a market event.
+			Saved balances and known bills remain in your personal workspace. Probabilistic reserve and
+			funding comparisons run only against the separate synthetic demo scenario.
 		</p>
 	</section>
 
 	<section class="final-cta">
-		<h2>See your next 30 days.</h2>
+		<h2>Start your personal ledger.</h2>
 		<a class="cta-button" href={resolve('/login?mode=sign-up')}>Create free account</a>
 		<p class="final-note">No credit card. No bank connection required.</p>
 	</section>

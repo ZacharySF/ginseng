@@ -6,13 +6,12 @@
 		postChat,
 		type ChatContext,
 		type ChatTurn,
-		type WorkspaceAdditionsProposal
+		type WorkspaceAdditionsProposal,
+		type AdditionsProjectionPreview
 	} from '$lib/chat';
 	import {
 		WORKSPACE_SAVED_EVENT,
-		projectWorkspace,
-		saveWorkspace,
-		type ScheduledProjection
+		saveWorkspace
 	} from '$lib/workspace';
 	import { authStore } from '$lib/auth.svelte';
 
@@ -40,7 +39,7 @@
 	interface ProposalCard {
 		proposal: WorkspaceAdditionsProposal;
 		kind: 'pending' | 'saving' | 'saved' | 'failed';
-		confirmed: ScheduledProjection | null;
+		confirmed: AdditionsProjectionPreview | null;
 		note: string | null;
 		savedRevision: number | null;
 	}
@@ -49,9 +48,15 @@
 	let requestGeneration = 0;
 	let contextInitialized = false;
 	let previousContextKey: string | null = null;
+	let previousScenarioKey: string | null = null;
 
-	const sourceLabel = $derived(context?.source === 'personal' ? 'Personal saved data' : 'Simulated demo data');
+	const sourceLabel = $derived(context?.source === 'personal'
+		? context.overrides ? 'Personal what-if' : 'Personal saved data'
+		: 'Synthetic demo data');
 	const contextKey = $derived(context ? JSON.stringify(context) : null);
+	const scenarioKey = $derived(context?.source === 'personal'
+		? JSON.stringify({ source: context.source, horizon: context.horizon_days, overrides: context.overrides })
+		: contextKey);
 	const trimmedDraft = $derived(draft.trim());
 	const draftTooLong = $derived(draft.length > CHAT_MAX_MESSAGE_LENGTH);
 	const notSignedIn = $derived(authStore.status !== 'signed-in' || !authStore.user);
@@ -130,15 +135,10 @@
 			window.dispatchEvent(new CustomEvent(WORKSPACE_SAVED_EVENT, {
 				detail: { ownerId, workspace: result.data }
 			}));
-			const projected = await projectWorkspace(card.proposal.horizon_days);
-			if (!isCurrent()) return;
 			card.kind = 'saved';
-			if (projected.status === 'ok' && projected.data.input_revision === result.data.revision) {
-				card.confirmed = projected.data;
-			} else {
-				card.note = projected.status === 'ok'
-					? 'Saved successfully, but the workspace changed again. Request a new cash schedule.'
-					: `Saved successfully. The cash schedule is unavailable: ${projected.message}`;
+			if (result.data.revision === card.proposal.draft.expected_revision + 1) {
+				// CAS committed precisely these additions while preserving supplemental inputs.
+				card.confirmed = card.proposal.projection;
 			}
 		} catch {
 			if (!isCurrent()) return;
@@ -280,11 +280,19 @@
 		if (!contextInitialized) {
 			contextInitialized = true;
 			previousContextKey = contextKey;
+			previousScenarioKey = scenarioKey;
 			return;
 		}
 		if (previousContextKey === contextKey) return;
 
 		previousContextKey = contextKey;
+		const sameScenario = previousScenarioKey === scenarioKey;
+		previousScenarioKey = scenarioKey;
+		if (sameScenario && context?.source === 'personal' && proposalCard?.kind === 'saved'
+			&& context.expected_revision === proposalCard.savedRevision) {
+			requestNotice = 'Your approved additions are saved. The forecast now uses the updated inputs.';
+			return;
+		}
 		proposalSession += 1;
 		proposalCard = null;
 		requestGeneration += 1;
@@ -333,17 +341,17 @@
 				{#if notSignedIn}
 					<p>Sign in to send questions to the assistant.</p>
 				{:else if context?.source === 'personal'}
-					<p>Uses your latest saved inputs and 30-day schedule, not unsaved drafts.</p>
+					<p>Uses your {context.horizon_days}-day forecast and {context.overrides ? 'active unsaved what-if, compared with saved inputs' : 'latest saved financial inputs'}. Unsubmitted Data form edits are excluded.</p>
 				{:else if context?.source === 'demo'}
-					<p>Uses the current simulated scenario only. It is not your personal financial data.</p>
+					<p>Uses the current synthetic scenario only. It is not your personal financial data.</p>
 				{:else}
-					<p>Demo scenario context is unavailable. Load a current scenario before asking about simulated data.</p>
+					<p>Load your financial workspace or an example scenario before asking about its results.</p>
 				{/if}
 			</section>
 
 			<div bind:this={transcriptContainer} class="chat-transcript" aria-label="Conversation" aria-live="polite" aria-busy={sending}>
 				{#if transcript.length === 0 && !pendingText}
-					<p class="empty-state">{context?.source === 'personal' ? 'Ask about saved balances, bill timing, or the scheduled balance after bills.' : 'Ask about coverage, timing, reserves, or upcoming obligations in this simulated scenario.'}</p>
+					<p class="empty-state">{context?.source === 'personal' ? 'Ask about your forecast, assumptions, reserve, event timing, or funding tradeoffs.' : 'Ask about coverage, timing, reserves, or upcoming obligations in this synthetic scenario.'}</p>
 				{/if}
 				{#each transcript as turn, index (index)}
 					<article class:user-message={turn.role === 'user'} class="message-row">
@@ -389,10 +397,10 @@
 							<p><strong>{proposalCard.kind === 'saved' ? 'Saved cash schedule' : 'After approval'} · {proposalCard.proposal.horizon_days} days</strong></p>
 							<dl class="proposal-totals">
 								<div><dt>Cash for scheduled bills</dt><dd>{formatCents(shownSchedule.scheduled_bills_cents)}</dd></div>
-								<div><dt>Cash after bills</dt><dd>{formatCents(shownSchedule.ending_balance_cents)}</dd></div>
+								<div><dt>Cash after scheduled flows</dt><dd>{formatCents(shownSchedule.ending_balance_cents)}</dd></div>
 								<div><dt>Additional cash needed</dt><dd>{formatCents(Math.max(0, -shownSchedule.lowest_balance_cents))}</dd></div>
 							</dl>
-							<p>Known bills only, not a probabilistic reserve. Bills outside this horizon are not included.</p>
+							<p>Scheduled income and outflows only, not variable cash flows or a probabilistic reserve. Approving additions does not save your active what-if.</p>
 						{:else if proposalCard.kind === 'pending' && proposalCard.proposal.projection_error}
 							<p>Cash schedule unavailable: {proposalCard.proposal.projection_error}</p>
 						{/if}

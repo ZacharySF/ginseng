@@ -32,11 +32,13 @@ class WorkspaceRepositoryStub:
     def __init__(self, workspace: CashWorkspace, save_error: Exception | None = None) -> None:
         self.workspace = workspace
         self.save_error = save_error
+        self.save_calls = 0
 
     def get(self, _: str) -> CashWorkspace:
         return self.workspace
 
     def save(self, _: object, __: str) -> CashWorkspace:
+        self.save_calls += 1
         if self.save_error is not None:
             raise self.save_error
         return self.workspace
@@ -56,7 +58,7 @@ def authenticated_client(repository: WorkspaceRepositoryStub) -> Iterator[TestCl
         app.dependency_overrides.pop(get_workspace_repository, None)
 
 
-def workspace_for_projection() -> CashWorkspace:
+def cash_workspace() -> CashWorkspace:
     as_of = date(2026, 9, 12)
     return CashWorkspace(
         revision=4,
@@ -88,98 +90,11 @@ def workspace_for_projection() -> CashWorkspace:
     )
 
 
-def test_projection_uses_exact_cents_and_includes_both_date_boundaries() -> None:
-    with authenticated_client(WorkspaceRepositoryStub(workspace_for_projection())) as client:
-        response = client.post("/workspace/projection", json={"horizon_days": 14})
-
-    assert response.status_code == 200
-    projection = response.json()
-    assert projection["input_revision"] == 4
-    assert projection["opening_balance_cents"] == 120
-    assert projection["scheduled_bills_cents"] == 120
-    assert projection["ending_balance_cents"] == 0
-    assert projection["lowest_balance_cents"] == 0
-    assert projection["first_shortfall_date"] is None
-    assert len(projection["days"]) == 14
-    assert projection["days"][0] == {
-        "date": "2026-09-12",
-        "bills_cents": 20,
-        "balance_cents": 100,
-    }
-    assert projection["days"][-1] == {
-        "date": "2026-09-25",
-        "bills_cents": 100,
-        "balance_cents": 0,
-    }
-
-
-def test_projection_marks_a_negative_opening_balance_on_as_of() -> None:
-    workspace = CashWorkspace(
-        revision=1,
-        as_of=date(2026, 9, 12),
-        currency="USD",
-        accounts=[
-            CashAccount(
-                id=_ACCOUNT_ID,
-                name="Checking",
-                kind="checking",
-                balance_cents=-1,
-            )
-        ],
-        bills=[],
-    )
-    with authenticated_client(WorkspaceRepositoryStub(workspace)) as client:
-        response = client.post("/workspace/projection", json={"horizon_days": 14})
-
-    assert response.status_code == 200
-    assert response.json()["first_shortfall_date"] == "2026-09-12"
-
-
-def test_projection_can_extend_beyond_the_latest_storable_snapshot_date() -> None:
-    workspace = CashWorkspace(
-        revision=9_007_199_254_740_991,
-        as_of=date(2100, 12, 31),
-        currency="USD",
-        accounts=[
-            CashAccount(
-                id=_ACCOUNT_ID,
-                name="Checking",
-                kind="checking",
-                balance_cents=1,
-            )
-        ],
-        bills=[],
-    )
-    with authenticated_client(WorkspaceRepositoryStub(workspace)) as client:
-        response = client.post("/workspace/projection", json={"horizon_days": 60})
-
-    assert response.status_code == 200
-    projection = response.json()
-    assert projection["input_revision"] == 9_007_199_254_740_991
-    assert projection["days"][-1]["date"] == "2101-02-28"
-
-
-def test_projection_rejects_unresolved_overdue_bill() -> None:
-    workspace = workspace_for_projection()
-    workspace.bills.append(
-        CashBill(
-            id=UUID("00000000-0000-0000-0000-000000000014"),
-            label="Overdue",
-            amount_cents=1,
-            due_date=date(2026, 9, 11),
-        )
-    )
-    with authenticated_client(WorkspaceRepositoryStub(workspace)) as client:
-        response = client.post("/workspace/projection", json={"horizon_days": 14})
-
-    assert response.status_code == 422
-
-
 
 
 def test_save_maps_a_compare_and_swap_conflict_to_409() -> None:
     repository = WorkspaceRepositoryStub(
-        workspace_for_projection(),
+        cash_workspace(),
         save_error=SupabaseConflictError("Workspace changed. Reload before saving."),
     )
     with authenticated_client(repository) as client:

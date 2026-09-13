@@ -49,12 +49,77 @@ class DrawBundle:
     index_matrix: np.ndarray
     bootstrap_draw_id: str
 
+@dataclass(frozen=True)
+class PathBundle:
+    """Precomputed prospective paths for models without a historical bootstrap.
+
+    Assumption-based forecasts generate their stochastic paths prospectively
+    and scheduled forecasts are deterministic.  Both retain one reusable
+    bundle so baseline, preview, funding, and optimizer calculations share
+    exactly the same draws without inventing a ledger history.  Arrays carry
+    a longer material horizon and are sliced by ``horizon_days``; funding can
+    therefore evaluate real settlement/payment dates beyond the visible chart
+    without drawing a second world.
+    """
+
+    source: str
+    seed: int
+    horizon_days: int
+    n_paths: int
+    bootstrap_draw_id: str
+    daily_cash_flows: np.ndarray
+    known_income_daily: np.ndarray
+    known_obligation_daily: np.ndarray
+    discretionary_daily: np.ndarray
+    portfolio_values: np.ndarray | None = None
+    mean_block_length: int = 0
+    mean_block_length_was_clipped: bool = False
+    history_length: int = 0
+
+    def __post_init__(self) -> None:
+        full_horizon = self.daily_cash_flows.shape[1] if self.daily_cash_flows.ndim == 2 else 0
+        expected_paths = self.daily_cash_flows.shape[0] if self.daily_cash_flows.ndim == 2 else 0
+        if (
+            self.horizon_days < 1
+            or self.horizon_days > full_horizon
+            or expected_paths != self.n_paths
+            or self.known_income_daily.shape != (full_horizon,)
+            or self.known_obligation_daily.shape != (full_horizon,)
+            or self.discretionary_daily.shape != (self.n_paths, full_horizon)
+        ):
+            raise ValueError("Path bundle arrays do not match their declared horizon.")
+        if self.portfolio_values is not None and self.portfolio_values.shape != (
+            self.n_paths,
+            full_horizon,
+        ):
+            raise ValueError("Portfolio paths do not match the cash-path bundle.")
+
+    @property
+    def available_horizon_days(self) -> int:
+        return self.daily_cash_flows.shape[1]
+
+
+def direct_path_draw_id(source: str, seed: int, n_paths: int, horizon_days: int) -> str:
+    """Stable CRN identity for direct prospective path generators.
+
+    Deterministic schedule changes deliberately do not enter the digest:
+    paired what-if comparisons differ only in their known flows while using
+    the same generated innovations.
+    """
+
+    material = f"{source}:{seed}:{n_paths}:{horizon_days}".encode()
+    return hashlib.sha256(material).hexdigest()
+
 
 def _joint_history(state: FinancialState) -> pd.DataFrame:
     """The daily joint series Y_t (spec 15) over the full recorded ledger
     window. Irregular expenses are excluded, per spec 10."""
-    start = min(t.txn_date for t in state.transactions)
-    end = state.as_of
+    if not state.transactions and state.history_start is None:
+        raise ValueError("Classified history is required to draw a bootstrap bundle.")
+    start = state.history_start or min(t.txn_date for t in state.transactions)
+    end = state.history_end or state.as_of
+    if start > end:
+        raise ValueError("Classified history cannot begin after its recorded end date.")
     return pd.DataFrame(
         {
             "variable_income": state.daily_series(TransactionType.INCOME_VARIABLE, start, end),
@@ -187,6 +252,16 @@ def _recurring_days(item: Obligation, horizon_days: int) -> list[int]:
     return days
 
 
+def _future_obligation_daily(obligations: Sequence[Obligation], horizon_days: int) -> np.ndarray:
+    """Positive outflows for one-off scenario obligations."""
+    obligation_daily = np.zeros(horizon_days, dtype=float)
+    for obligation in obligations:
+        day = max(1, obligation.due_in_days)
+        if day <= horizon_days:
+            obligation_daily[day - 1] += abs(obligation.amount)
+    return obligation_daily
+
+
 def _deterministic_daily_flow(
     state: FinancialState, obligations: Sequence[Obligation], horizon_days: int
 ) -> np.ndarray:
@@ -200,18 +275,29 @@ def _deterministic_daily_flow(
     for item in state.fixed_obligations:
         for day in _recurring_days(item, horizon_days):
             flow[day - 1] -= abs(item.amount)
-    for obligation in obligations:
-        day = max(1, obligation.due_in_days)
-        if day <= horizon_days:
-            flow[day - 1] -= abs(obligation.amount)
-    return flow
+    return flow - _future_obligation_daily(obligations, horizon_days)
 
 
 def known_flows(
-    state: FinancialState, obligations: Sequence[Obligation], horizon_days: int
+    state: FinancialState,
+    obligations: Sequence[Obligation],
+    horizon_days: int,
+    bundle: PathBundle | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Cumulative deterministic income and obligation series for charting
-    context, each of length `horizon_days`."""
+    """Cumulative deterministic income and obligation series for charting.
+
+    Direct prospective bundles carry their known schedule separately from
+    stochastic/direct cash paths.  Bootstrap callers retain the historical
+    state-derived behavior exactly.
+    """
+    if bundle is not None:
+        income_daily = bundle.known_income_daily[:horizon_days]
+        obligation_daily = bundle.known_obligation_daily[:horizon_days]
+        additional = _future_obligation_daily(obligations, horizon_days)
+        if np.any(additional):
+            obligation_daily = obligation_daily + additional
+        return np.cumsum(income_daily), np.cumsum(obligation_daily)
+
     income_daily = np.zeros(horizon_days, dtype=float)
     for item in state.fixed_income_schedule:
         for day in _recurring_days(item, horizon_days):
@@ -221,33 +307,28 @@ def known_flows(
     for item in state.fixed_obligations:
         for day in _recurring_days(item, horizon_days):
             obligation_daily[day - 1] += abs(item.amount)
-    for obligation in obligations:
-        day = max(1, obligation.due_in_days)
-        if day <= horizon_days:
-            obligation_daily[day - 1] += abs(obligation.amount)
+    obligation_daily += _future_obligation_daily(obligations, horizon_days)
 
     return np.cumsum(income_daily), np.cumsum(obligation_daily)
 
 
-def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray:
-    """Per-path, per-day resampled discretionary spending, shape
-    `(n_paths, horizon_days)`, selected by the same joint bootstrap
-    indices `cash_paths` uses for its discretionary column (spec 15), so
-    funding plans defer exactly the spending the cash forecast spent."""
+def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle | PathBundle) -> np.ndarray:
+    """Per-path discretionary spending from the shared forecast bundle."""
+    if isinstance(bundle, PathBundle):
+        return bundle.discretionary_daily[:, : bundle.horizon_days]
     disc = _joint_history(state)["discretionary_spending"].to_numpy()
     return disc[bundle.index_matrix]
 
 
-def portfolio_value_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray | None:
-    """Per-path market value of the marketable portfolio at each forecast
-    day, shape `(n_paths, horizon_days)`, grown from today's
-    `marketable_backup_capital` by the market returns on the same joint
-    bootstrap day indices the cash forecast resamples (spec 8.3, 15).
+def portfolio_value_paths(
+    state: FinancialState, bundle: DrawBundle | PathBundle
+) -> np.ndarray | None:
+    """Per-path market value on the same paths as the cash forecast."""
+    if isinstance(bundle, PathBundle):
+        if bundle.portfolio_values is None:
+            return None
+        return bundle.portfolio_values[:, : bundle.horizon_days]
 
-    Returns None when the state carries no market history or no marketable
-    assets, so no portfolio-dependent metric is fabricated from a flat or
-    zero-valued market.
-    """
     initial_value = state.marketable_backup_capital
     if not state.portfolio_daily_returns or initial_value <= 0.0:
         return None
@@ -261,10 +342,16 @@ def portfolio_value_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarr
 
 
 def cash_paths(
-    state: FinancialState, bundle: DrawBundle, obligations: Sequence[Obligation] = ()
+    state: FinancialState, bundle: DrawBundle | PathBundle, obligations: Sequence[Obligation] = ()
 ) -> np.ndarray:
-    """`X_{j,t}` (spec 21): cumulative future net cash flow, excluding
-    today's starting immediate funding. Shape `(n_paths, horizon_days)`."""
+    """`X_{j,t}` cumulative future net cash flow, excluding opening cash."""
+    if isinstance(bundle, PathBundle):
+        daily_net = bundle.daily_cash_flows[:, : bundle.horizon_days]
+        additional = _future_obligation_daily(obligations, bundle.horizon_days)
+        if np.any(additional):
+            daily_net = daily_net - additional[np.newaxis, :]
+        return np.cumsum(daily_net, axis=1)
+
     joint = _joint_history(state)
     income = joint["variable_income"].to_numpy()
     essential = joint["essential_variable_spending"].to_numpy()

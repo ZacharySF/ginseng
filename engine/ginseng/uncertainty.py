@@ -132,8 +132,8 @@ def _joint_arrays(state: FinancialState) -> tuple[pd.DatetimeIndex, np.ndarray, 
     using only `FinancialState.daily_series` (spec 7's public API) so this
     module never depends on `simulate`'s private helpers — only its public
     `draw_bundle`/`cash_paths` entry points."""
-    start = min(t.txn_date for t in state.transactions)
-    end = state.as_of
+    start = state.history_start or min(t.txn_date for t in state.transactions)
+    end = state.history_end or state.as_of
     income = state.daily_series(TransactionType.INCOME_VARIABLE, start, end)
     essential = state.daily_series(TransactionType.EXPENSE_ESSENTIAL_VARIABLE, start, end)
     discretionary = state.daily_series(TransactionType.EXPENSE_DISCRETIONARY_VARIABLE, start, end)

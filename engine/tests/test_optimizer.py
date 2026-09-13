@@ -7,11 +7,15 @@ from datetime import date, timedelta
 from math import isfinite
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 
 import ginseng.optimizer as optimizer
+from ginseng.funding import FundingConfig, _liquidate
 from ginseng.optimizer import optimize_funding
-from ginseng.simulate import draw_bundle
+from ginseng.policy import FundingPolicy
+from ginseng.scenario_service import evaluate_scenario
+from ginseng.simulate import PathBundle, draw_bundle
 from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot, Transaction, TransactionType
 
 
@@ -53,6 +57,55 @@ def _taxable_holding(market_value: float, cost_basis: float) -> Holding:
                 purchase_date=AS_OF - timedelta(days=365),
             ),
         ),
+    )
+
+
+def _multi_lot_taxable_holding(lot_market_value: float = 5_000.0) -> Holding:
+    """Two equal-value lots whose FIFO and HIFO basis differ materially."""
+    current_price = 100.0
+    quantity = lot_market_value / current_price
+    return Holding(
+        symbol="MULTI",
+        account="taxable",
+        current_price=current_price,
+        tax_lots=(
+            TaxLot(
+                lot_id="older-low-basis",
+                symbol="MULTI",
+                quantity=quantity,
+                cost_basis_per_share=20.0,
+                purchase_date=AS_OF - timedelta(days=730),
+            ),
+            TaxLot(
+                lot_id="newer-high-basis",
+                symbol="MULTI",
+                quantity=quantity,
+                cost_basis_per_share=90.0,
+                purchase_date=AS_OF - timedelta(days=365),
+            ),
+        ),
+    )
+
+
+def _mix_bundle() -> PathBundle:
+    """A bounded direct path with credit repayment cash at its actual day."""
+    full_horizon = 30
+    n_paths = 2
+    daily_cash_flows = np.zeros((n_paths, full_horizon))
+    daily_cash_flows[:, :5] = -200.0
+    daily_cash_flows[:, 23] = 1_000.0
+    discretionary_daily = np.zeros((n_paths, full_horizon))
+    discretionary_daily[:, :5] = 200.0
+    return PathBundle(
+        source="optimizer-test",
+        seed=23,
+        horizon_days=5,
+        n_paths=n_paths,
+        bootstrap_draw_id="optimizer-mix",
+        daily_cash_flows=daily_cash_flows,
+        known_income_daily=np.zeros(full_horizon),
+        known_obligation_daily=np.zeros(full_horizon),
+        discretionary_daily=discretionary_daily,
     )
 
 
@@ -167,6 +220,18 @@ def test_returns_none_when_model_exceeds_documented_resource_cap(monkeypatch):
     assert optimize_funding(state, _bundle(state, 2, n_paths=2), ()) is None
 
 
+def test_returns_none_when_exact_lot_partition_exceeds_resource_cap(monkeypatch):
+    state = _state(holdings=(_multi_lot_taxable_holding(),))
+    monkeypatch.setattr(optimizer, "MAX_LIQUIDATION_SEGMENTS", 1)
+
+    assert optimize_funding(
+        state,
+        _bundle(state, 5),
+        (Obligation("bill", "Bill", 6_000.0, 5),),
+        funding_config=FundingConfig(settlement_days=0, external_transfer_days=0),
+    ) is None
+
+
 def test_credit_draw_is_limited_to_the_primary_card_not_all_card_limits():
     _require_cvxpy()
     primary = _credit_account("primary", 3_000.0)
@@ -177,6 +242,7 @@ def test_credit_draw_is_limited_to_the_primary_card_not_all_card_limits():
         _bundle(state, 5),
         (Obligation("bill", "Bill", 4_000.0, 3),),
         buffer_tolerance_dollar_days=1e9,
+        funding_policy=FundingPolicy(max_credit_utilization=1.0),
     )
 
     assert result is not None
@@ -193,6 +259,7 @@ def test_credit_repayment_beyond_the_chart_is_costed_on_its_actual_day():
         (Obligation("bill", "Bill", 3_000.0, 3),),
         overdraft_apr=0.365,
         buffer_tolerance_dollar_days=1e9,
+        funding_policy=FundingPolicy(max_credit_utilization=1.0),
     )
 
     assert result is not None
@@ -230,6 +297,7 @@ def test_coverage_one_uses_a_finite_worst_case_objective():
         coverage_target=1.0,
         overdraft_apr=0.365,
         buffer_tolerance_dollar_days=1e9,
+        funding_policy=FundingPolicy(max_credit_utilization=1.0),
     )
 
     assert result is not None
@@ -308,3 +376,143 @@ def test_already_funded_paths_need_no_shortfall_cost_or_extra_funding():
     assert result.cvar_cost == pytest.approx(0.0, abs=1e-6)
     assert result.cash_shortfall_probability == 0.0
     assert result.credit_draw == pytest.approx(0.0, abs=1e-5)
+
+
+def test_credit_draw_respects_the_actual_utilization_policy():
+    _require_cvxpy()
+    account = _credit_account("primary", 10_000.0)
+    policy = FundingPolicy(max_credit_utilization=0.20)
+    state = _state(cards=(account,))
+
+    result = optimize_funding(
+        state,
+        _bundle(state, 5),
+        (Obligation("bill", "Bill", 4_000.0, 3),),
+        overdraft_apr=0.365,
+        buffer_tolerance_dollar_days=1e9,
+        funding_policy=policy,
+    )
+
+    assert result is not None
+    utilization = (account.current_balance + result.credit_draw) / account.credit_limit
+    assert utilization <= policy.max_credit_utilization + 1e-6
+    assert result.credit_draw == pytest.approx(2_000.0, abs=1e-3)
+
+
+@pytest.mark.parametrize(
+    ("lot_selection", "expected_basis"),
+    (("fifo", 1_900.0), ("hifo", 4_700.0)),
+)
+def test_multi_lot_liquidation_uses_exact_fifo_hifo_basis(
+    lot_selection: str,
+    expected_basis: float,
+):
+    _require_cvxpy()
+    state = _state(holdings=(_multi_lot_taxable_holding(),))
+    config = FundingConfig(
+        settlement_days=0,
+        external_transfer_days=0,
+        lot_selection=lot_selection,
+    )
+    result = optimize_funding(
+        state,
+        _bundle(state, 5),
+        (Obligation("bill", "Bill", 6_000.0, 5),),
+        operating_buffer=0.0,
+        overdraft_apr=0.0,
+        buffer_tolerance_dollar_days=0.0,
+        capital_gains_rate=0.10,
+        funding_config=config,
+    )
+
+    assert result is not None
+    assert result.liquidation_amount == pytest.approx(6_000.0, abs=1e-3)
+    disposal = _liquidate(state.taxable_portfolio, result.liquidation_amount, lot_selection)
+    assert disposal.cost_basis_disposed == pytest.approx(expected_basis, abs=1e-3)
+    assert result.expected_cost == pytest.approx(
+        max(0.0, result.liquidation_amount - disposal.cost_basis_disposed) * 0.10,
+        abs=2e-3,
+    )
+
+
+def test_shared_scenario_pipeline_optimizes_taxable_lots_instead_of_refusing_them():
+    _require_cvxpy()
+    state = _state(holdings=(_multi_lot_taxable_holding(),))
+    config = FundingConfig(
+        settlement_days=0,
+        external_transfer_days=0,
+        lot_selection="fifo",
+    )
+
+    evaluation = evaluate_scenario(
+        state,
+        _bundle(state, 5),
+        (Obligation("bill", "Bill", 6_000.0, 5),),
+        coverage_target=0.95,
+        operating_buffer=0.0,
+        funding_config=config,
+        funding_policy=FundingPolicy(max_credit_utilization=1.0),
+        overdraft_apr=0.0,
+        buffer_tolerance_dollar_days=0.0,
+        capital_gains_rate=0.10,
+    )
+
+    assert evaluation.optimizer_reason is None
+    assert evaluation.response.optimal_plan is not None
+
+
+def test_tax_loss_liquidation_never_becomes_a_spendable_optimizer_credit():
+    _require_cvxpy()
+    state = _state(holdings=(_taxable_holding(6_000.0, 12_000.0),))
+    result = optimize_funding(
+        state,
+        _bundle(state, 5),
+        (Obligation("bill", "Bill", 1_000.0, 5),),
+        operating_buffer=0.0,
+        overdraft_apr=0.0,
+        buffer_tolerance_dollar_days=0.0,
+        capital_gains_rate=0.20,
+        funding_config=FundingConfig(settlement_days=0, external_transfer_days=0),
+    )
+
+    assert result is not None
+    assert result.liquidation_amount >= 1_000.0 - 1e-3
+    assert result.expected_cost == pytest.approx(0.0, abs=2e-3)
+    assert result.cvar_cost >= -1e-6
+
+
+def test_multi_lot_portfolio_can_use_credit_liquidation_and_deferral_together():
+    _require_cvxpy()
+    account = _credit_account(
+        "primary",
+        10_000.0,
+        grace_period_eligible=True,
+    )
+    state = _state(
+        cards=(account,),
+        holdings=(_multi_lot_taxable_holding(lot_market_value=750.0),),
+    )
+    policy = FundingPolicy(
+        max_cash_shortfall_probability=0.0,
+        max_credit_utilization=0.10,
+    )
+    result = optimize_funding(
+        state,
+        _mix_bundle(),
+        (Obligation("bill", "Bill", 2_000.0, 5),),
+        operating_buffer=0.0,
+        overdraft_apr=0.0,
+        buffer_tolerance_dollar_days=0.0,
+        capital_gains_rate=0.10,
+        funding_config=FundingConfig(
+            settlement_days=0,
+            external_transfer_days=0,
+            lot_selection="fifo",
+        ),
+        funding_policy=policy,
+    )
+
+    assert result is not None
+    assert result.credit_draw == pytest.approx(1_000.0, abs=2e-3)
+    assert result.liquidation_amount == pytest.approx(1_500.0, abs=2e-3)
+    assert result.deferral_fraction == pytest.approx(0.50, abs=2e-3)

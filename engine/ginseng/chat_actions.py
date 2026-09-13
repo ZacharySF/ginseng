@@ -11,10 +11,10 @@ from pydantic import BaseModel, ConfigDict, Field
 from ginseng.workspace import (
     CashAccount,
     CashBill,
-    CashWorkspace,
     SaveWorkspaceRequest,
-    project_saved_workspace,
 )
+from ginseng.finance_models import FinanceWorkspace
+from ginseng.personal_forecast import evaluate_personal_forecast
 
 
 def _addition_schema(model: type[BaseModel]) -> dict[str, Any]:
@@ -57,7 +57,7 @@ class _Additions(BaseModel):
     horizon_days: Literal[14, 30, 60]
 
 
-def build_additions_proposal(arguments: dict[str, Any], workspace: CashWorkspace) -> dict[str, Any]:
+def build_additions_proposal(arguments: dict[str, Any], workspace: FinanceWorkspace) -> dict[str, Any]:
     additions = _Additions.model_validate(arguments)
     if not additions.accounts and not additions.bills:
         raise ValueError("Specify at least one new account or bill.")
@@ -85,23 +85,26 @@ def build_additions_proposal(arguments: dict[str, Any], workspace: CashWorkspace
         accounts=[*workspace.accounts, *accounts],
         bills=[*workspace.bills, *bills],
     )
-    preview_workspace = CashWorkspace(
-        revision=workspace.revision + 1,
-        as_of=draft.as_of,
-        currency="USD",
-        accounts=draft.accounts,
-        bills=draft.bills,
-    )
+    preview_workspace = workspace.model_copy(update={
+        "as_of": draft.as_of, "accounts": draft.accounts, "bills": draft.bills,
+        "inputs": workspace.inputs.model_copy(update={"mode": "scheduled"}),
+    })
     projection = None
     projection_error = None
     try:
-        result = project_saved_workspace(preview_workspace, additions.horizon_days)
+        run = evaluate_personal_forecast(preview_workspace, additions.horizon_days)
+        if run.result is None:
+            raise ValueError("; ".join(requirement.label for requirement in run.requirements))
+        result = run.result
+        opening = sum(account.balance_cents for account in preview_workspace.accounts)
+        balances = [opening, *[round(value * 100) for value in result.cash_paths.p50]]
+        scheduled_bills = result.cash_paths.known_obligations
         projection = {
-            "opening_balance_cents": result.opening_balance_cents,
-            "scheduled_bills_cents": result.scheduled_bills_cents,
-            "ending_balance_cents": result.ending_balance_cents,
-            "lowest_balance_cents": result.lowest_balance_cents,
-            "additional_cash_needed_cents": max(0, -result.lowest_balance_cents),
+            "opening_balance_cents": opening,
+            "scheduled_bills_cents": round(scheduled_bills[-1] * 100) if scheduled_bills else 0,
+            "ending_balance_cents": balances[-1],
+            "lowest_balance_cents": min(balances),
+            "additional_cash_needed_cents": max(0, -min(balances)),
         }
     except ValueError as error:
         projection_error = str(error)

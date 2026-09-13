@@ -6,11 +6,12 @@ from uuid import uuid4
 import pytest
 
 from ginseng.chat_actions import build_additions_proposal
-from ginseng.workspace import CashAccount, CashWorkspace
+from ginseng.workspace import CashAccount, CashBill
+from ginseng.finance_models import FinanceWorkspace, EventRule, EventSettlement
 
 
-def empty_workspace() -> CashWorkspace:
-    return CashWorkspace(revision=0, as_of=date(2026, 9, 12), currency="USD", accounts=[], bills=[])
+def empty_workspace() -> FinanceWorkspace:
+    return FinanceWorkspace(revision=0, as_of=date(2026, 9, 12), currency="USD", accounts=[], bills=[])
 
 
 def arguments() -> dict:
@@ -76,3 +77,26 @@ def test_bill_only_addition_reports_unavailable_projection_without_fabricated_ca
     args["bills"][0]["due_date"] = "2026-02-30"
     with pytest.raises(ValueError):
         build_additions_proposal(args, empty_workspace())
+
+
+def test_addition_preview_includes_income_without_rededucting_paid_bills():
+    workspace = empty_workspace()
+    workspace.accounts = [CashAccount(id=uuid4(), name="Cash", kind="checking", balance_cents=100_000)]
+    paid = CashBill(id=uuid4(), label="Paid rent", amount_cents=90_000, due_date=date(2026, 9, 11))
+    workspace.bills = [paid]
+    workspace.inputs.income_events = [
+        CashBill(id=uuid4(), label="Pay", amount_cents=50_000, due_date=date(2026, 9, 13))
+    ]
+    workspace.inputs.event_rules = [EventRule(
+        event_id=paid.id, recurrence="none", end_date=None,
+        settlements=[EventSettlement(due_date=paid.due_date, status="settled", settled_on=paid.due_date)],
+    )]
+    proposal = build_additions_proposal({
+        "accounts": [], "bills": [
+            {"label": "Repair", "amount_cents": 120_000, "due_date": "2026-09-15"}
+        ], "horizon_days": 14,
+    }, workspace)
+    assert proposal["projection"]["ending_balance_cents"] == 30_000
+    assert proposal["projection"]["scheduled_bills_cents"] == 120_000
+    assert workspace.accounts[0].balance_cents == 100_000
+    assert workspace.bills == [paid]
