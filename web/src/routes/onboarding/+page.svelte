@@ -1,17 +1,39 @@
 <script lang="ts">
-	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/auth.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import OnboardingCashStep from '$lib/components/OnboardingCashStep.svelte';
+	import OnboardingEventsStep from '$lib/components/OnboardingEventsStep.svelte';
+	import {
+		getFinanceWorkspace,
+		saveFinanceWorkspace,
+		type FinanceWorkspace
+	} from '$lib/finance';
+	import {
+		cashStepError,
+		localCalendarDate,
+		normalizedOnboardingWorkspace,
+		scheduleStepError
+	} from '$lib/onboarding-finance';
 	import { profileStore, type SetupPath } from '$lib/profile.svelte';
 	import { getNessieSample, type NessieSampleResult } from '$lib/api';
 
-	type Step = 1 | 2 | 3;
+	type Step = 1 | 2 | 3 | 4 | 5 | 6;
+	type FinanceStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-	const STEPS: { id: Step; label: string }[] = [
+	const MANUAL_STEPS: { id: Step; label: string }[] = [
 		{ id: 1, label: 'Welcome' },
 		{ id: 2, label: 'Setup path' },
-		{ id: 3, label: 'Review' }
+		{ id: 3, label: 'Cash' },
+		{ id: 4, label: 'Income' },
+		{ id: 5, label: 'Bills' },
+		{ id: 6, label: 'Review' }
+	];
+	const SAMPLE_STEPS: { id: Step; label: string }[] = [
+		{ id: 1, label: 'Welcome' },
+		{ id: 2, label: 'Setup path' },
+		{ id: 6, label: 'Review' }
 	];
 
 	interface PathOption {
@@ -33,7 +55,7 @@
 		{
 			id: 'manual',
 			title: 'Enter manually',
-			body: 'Add cash accounts and today’s balances, then enter one-time bills for a scheduled cash projection.',
+			body: 'Set up cash balances, expected income, and upcoming bills in a short guided flow.',
 			available: true,
 			badge: null
 		},
@@ -54,23 +76,52 @@
 	let choosingPath = $state(false);
 	let navigating = $state(false);
 	let finishing = $state(false);
+	let financeStatus = $state<FinanceStatus>('idle');
+	let financeSaving = $state(false);
+	let financeDraft = $state<FinanceWorkspace | null>(null);
 	let saveError = $state('');
 	let resumed = $state(false);
 	let sampleRequest = 0;
+	let financeRequest = 0;
 
 	const profileReady = $derived(
 		profileStore.status === 'bypassed' ||
 			(authStore.user !== null && profileStore.isReadyFor(authStore.user.id))
 	);
-	const busy = $derived(choosingPath || navigating || finishing || profileStore.saving);
+	const busy = $derived(
+		choosingPath ||
+			navigating ||
+			finishing ||
+			financeSaving ||
+			financeStatus === 'loading' ||
+			profileStore.saving
+	);
+	const visibleSteps = $derived(selectedPath === 'sample' ? SAMPLE_STEPS : MANUAL_STEPS);
+	const currentStepIndex = $derived(
+		Math.max(0, visibleSteps.findIndex((candidate) => candidate.id === step))
+	);
 	const canAdvanceFromWelcome = $derived(profileReady && !busy);
 	const canAdvanceFromPath = $derived(
 		!busy && (selectedPath === 'manual' || selectedPath === 'sample')
 	);
+	const manualCashError = $derived(
+		financeDraft ? cashStepError(financeDraft.as_of, financeDraft.accounts) : 'Loading your cash workspace.'
+	);
+	const manualIncomeError = $derived(
+		financeDraft ? scheduleStepError('income', financeDraft.inputs.income_events) : 'Loading your income schedule.'
+	);
+	const manualBillsError = $derived(
+		financeDraft ? scheduleStepError('bill', financeDraft.bills) : 'Loading your bill schedule.'
+	);
 	const canFinish = $derived(
 		!busy &&
 			selectedPath !== null &&
-			(selectedPath === 'manual' || sample?.status !== 'ok' || consented)
+			(selectedPath === 'sample'
+				? sample?.status !== 'ok' || consented
+				: financeDraft !== null && !manualCashError && !manualIncomeError && !manualBillsError)
+	);
+	const totalCashCents = $derived(
+		financeDraft?.accounts.reduce((total, account) => total + account.balance_cents, 0) ?? 0
 	);
 
 	$effect(() => {
@@ -78,24 +129,113 @@
 		resumed = true;
 		const path = profileStore.profile.setup_path;
 		selectedPath = path === 'import' ? null : path;
-		const savedStep = Math.min(3, Math.max(1, profileStore.profile.onboarding_step)) as Step;
-		step = savedStep === 3 && selectedPath === null ? 2 : savedStep;
+		const savedStep = Math.min(6, Math.max(1, profileStore.profile.onboarding_step)) as Step;
+		if (selectedPath === null && savedStep > 2) {
+			step = 2;
+		} else if (selectedPath === 'sample' && savedStep >= 3) {
+			step = 6;
+		} else {
+			step = savedStep;
+		}
 	});
 
 	$effect(() => {
-		if (step === 3 && selectedPath === 'sample' && sample === null && !sampleLoading) {
+		if (step === 6 && selectedPath === 'sample' && sample === null && !sampleLoading) {
 			void loadSample();
 		}
 	});
+
+	$effect(() => {
+		if (
+			profileReady &&
+			selectedPath === 'manual' &&
+			step >= 3 &&
+			financeStatus === 'idle'
+		) {
+			void ensureFinanceDraft();
+		}
+	});
+
+	async function ensureFinanceDraft(): Promise<boolean> {
+		if (financeDraft && financeStatus === 'ready') return true;
+		if (financeStatus === 'loading') return false;
+		const ownerId = authStore.user?.id;
+		if (!ownerId) {
+			saveError = 'Sign in again to load your financial workspace.';
+			return false;
+		}
+		const request = ++financeRequest;
+		financeStatus = 'loading';
+		saveError = '';
+		const result = await getFinanceWorkspace();
+		if (request !== financeRequest || authStore.user?.id !== ownerId) return false;
+		if (result.status !== 'ok') {
+			financeStatus = 'error';
+			saveError = result.message;
+			return false;
+		}
+		const next = structuredClone(result.data);
+		next.as_of ??= localCalendarDate();
+		if (next.accounts.length === 0) {
+			next.accounts.push({
+				id: crypto.randomUUID(),
+				name: '',
+				kind: 'checking',
+				balance_cents: 0
+			});
+		}
+		financeDraft = next;
+		financeStatus = 'ready';
+		return true;
+	}
+
+	async function saveManualFinance(from: Step): Promise<boolean> {
+		if (!financeDraft || from < 3 || from > 5) return false;
+		const error =
+			from === 3
+				? cashStepError(financeDraft.as_of, financeDraft.accounts)
+				: from === 4
+					? scheduleStepError('income', financeDraft.inputs.income_events)
+					: scheduleStepError('bill', financeDraft.bills);
+		if (error) {
+			saveError = error;
+			return false;
+		}
+		const candidate = normalizedOnboardingWorkspace($state.snapshot(financeDraft));
+		if (!candidate.as_of) {
+			saveError = 'Choose the opening date for these balances.';
+			return false;
+		}
+		financeSaving = true;
+		saveError = '';
+		const result = await saveFinanceWorkspace({
+			expected_revision: candidate.revision,
+			as_of: candidate.as_of,
+			accounts: candidate.accounts,
+			bills: candidate.bills,
+			inputs: candidate.inputs
+		});
+		financeSaving = false;
+		if (result.status !== 'ok') {
+			saveError = result.message;
+			return false;
+		}
+		financeDraft = structuredClone(result.data);
+		return true;
+	}
 
 	async function advance(from: Step) {
 		if (busy || (from === 1 && !canAdvanceFromWelcome) || (from === 2 && !canAdvanceFromPath)) {
 			return;
 		}
+		if (from === 2 && selectedPath === 'manual' && !(await ensureFinanceDraft())) return;
+		if (selectedPath === 'manual' && from >= 3 && from <= 5 && !(await saveManualFinance(from))) {
+			return;
+		}
 
 		navigating = true;
 		saveError = '';
-		const next = (from + 1) as Step;
+		const next = from === 2 && selectedPath === 'sample' ? 6 : ((from + 1) as Step);
 		const saved = await profileStore.updateStep(next);
 		navigating = false;
 		if (!saved) {
@@ -158,7 +298,7 @@
 		if (busy || step === 1) return;
 		navigating = true;
 		saveError = '';
-		const previous = (step - 1) as Step;
+		const previous = selectedPath === 'sample' && step === 6 ? 2 : ((step - 1) as Step);
 		const saved = await profileStore.updateStep(previous);
 		navigating = false;
 		if (!saved) {
@@ -176,6 +316,9 @@
 		});
 	}
 
+	function cents(amount: number): string {
+		return money(amount / 100);
+	}
 </script>
 
 <svelte:head>
@@ -219,16 +362,16 @@
 	{:else}
 		<div class="panel">
 			<ol class="steps" aria-label="Setup progress">
-				{#each STEPS as s (s.id)}
+				{#each visibleSteps as visibleStep, index (visibleStep.id)}
 					<li
-						class:current={step === s.id}
-						class:done={step > s.id}
-						aria-current={step === s.id ? 'step' : undefined}
+						class:current={step === visibleStep.id}
+						class:done={index < currentStepIndex}
+						aria-current={step === visibleStep.id ? 'step' : undefined}
 					>
-						<span class="step-badge" aria-hidden="true">{step > s.id ? '✓' : s.id}</span>
-						<span class="step-label">{s.label}</span>
+						<span class="step-badge" aria-hidden="true">{index < currentStepIndex ? '✓' : index + 1}</span>
+						<span class="step-label">{visibleStep.label}</span>
 						<span class="visually-hidden">
-							{step > s.id ? '(completed)' : step === s.id ? '(current step)' : '(not started)'}
+							{index < currentStepIndex ? '(completed)' : step === visibleStep.id ? '(current step)' : '(not started)'}
 						</span>
 					</li>
 				{/each}
@@ -237,16 +380,17 @@
 			{#if step === 1}
 				<h1>Welcome{authStore.displayName ? ', ' + authStore.displayName : ''}.</h1>
 				<p class="body-copy">
-					Ginseng starts with the cash you have today and the bills you know are due. It
-					calculates a scheduled cash projection from those saved records.
+					Ginseng starts with the cash you have now, expected income, and bills you know are
+					coming. A short guided setup turns those records into your first cash projection.
 				</p>
 				<ul class="needs-list">
 					<li><strong>Cash accounts</strong> — checking or savings balances at the opening of the day.</li>
-					<li><strong>One-time bills</strong> — an amount and due date for each expected outflow.</li>
+					<li><strong>Expected income</strong> — paychecks or deposits with known dates and cadence.</li>
+					<li><strong>Upcoming bills</strong> — one-time or recurring payments you expect.</li>
 				</ul>
 				<p class="body-copy quiet">
-					The personal workspace is USD-only. It does not connect to a bank, import
-					transactions, or infer income.
+					Income and bills are optional. Ginseng saves only what you enter and never fills
+					missing amounts with guesses.
 				</p>
 			{:else if step === 2}
 				<h1>How do you want to set up?</h1>
@@ -276,22 +420,57 @@
 						</label>
 					{/each}
 				</fieldset>
+			{:else if step >= 3 && step <= 5}
+				{#if financeStatus === 'loading' || financeStatus === 'idle'}
+					<div class="finance-loading" role="status">
+						<strong>Loading your saved financial data…</strong>
+						<span>Existing accounts and schedules will appear here.</span>
+					</div>
+				{:else if financeStatus === 'error' || !financeDraft}
+					<div class="notice notice-error" role="alert">
+						<p>We could not load your financial data.</p>
+						<button type="button" class="button secondary" onclick={() => { financeStatus = 'idle'; void ensureFinanceDraft(); }}>Try again</button>
+					</div>
+				{:else if step === 3}
+					<OnboardingCashStep bind:asOf={financeDraft.as_of} bind:accounts={financeDraft.accounts} disabled={busy} />
+				{:else if step === 4}
+					<OnboardingEventsStep
+						kind="income"
+						bind:events={financeDraft.inputs.income_events}
+						bind:rules={financeDraft.inputs.event_rules}
+						asOf={financeDraft.as_of ?? localCalendarDate()}
+						disabled={busy}
+					/>
+				{:else}
+					<OnboardingEventsStep
+						kind="bill"
+						bind:events={financeDraft.bills}
+						bind:rules={financeDraft.inputs.event_rules}
+						asOf={financeDraft.as_of ?? localCalendarDate()}
+						disabled={busy}
+					/>
+				{/if}
 			{:else}
 				{#if selectedPath === 'manual'}
 					<div class="review-heading">
-						<h1>Start your personal workspace</h1>
+						<h1>Review your starting plan</h1>
 					</div>
 					<p class="body-copy">
-						Next, enter your cash accounts and their opening balances, then add one-time
-						bills with due dates.
+						These saved records will create a deterministic scheduled cash projection.
+						You can refine every item later in Data or Events.
 					</p>
-					<ul class="needs-list">
-						<li><strong>Accounts</strong> — checking and savings balances in USD.</li>
-						<li><strong>Bills</strong> — one-time amounts deducted on their scheduled dates.</li>
-					</ul>
+					{#if financeDraft}
+						<dl class="review-summary">
+							<div><dt>Opening date</dt><dd>{financeDraft.as_of}</dd></div>
+							<div><dt>Cash accounts</dt><dd>{financeDraft.accounts.length}</dd></div>
+							<div><dt>Opening cash</dt><dd>{cents(totalCashCents)}</dd></div>
+							<div><dt>Income schedules</dt><dd>{financeDraft.inputs.income_events.length}</dd></div>
+							<div><dt>Bill schedules</dt><dd>{financeDraft.bills.length}</dd></div>
+						</dl>
+					{/if}
 					<p class="body-copy quiet">
-						Ginseng will show a deterministic scheduled cash projection from the records
-						you save. It is not a probabilistic forecast.
+						No probabilistic assumptions are added during setup. Historical and variable
+						income models remain opt-in.
 					</p>
 				{:else}
 					<div class="review-heading">
@@ -420,14 +599,14 @@
 				{#if step > 1}
 					<button type="button" class="button secondary" disabled={busy} onclick={back}>Back</button>
 				{/if}
-				{#if step < 3}
+				{#if step < 6}
 					<button
 						type="button"
 						class="button primary"
 						disabled={busy || (step === 1 && !canAdvanceFromWelcome) || (step === 2 && !canAdvanceFromPath)}
 						onclick={() => advance(step)}
 					>
-						Continue
+						{financeSaving ? 'Saving…' : 'Continue'}
 					</button>
 				{:else}
 					<button type="button" class="button primary" disabled={!canFinish} onclick={finish}>
@@ -455,7 +634,7 @@
 		justify-content: space-between;
 		gap: 1rem;
 		width: 100%;
-		max-width: 38rem;
+		max-width: 48rem;
 	}
 
 	.header-brand {
@@ -502,7 +681,7 @@
 
 	.signout-error {
 		width: 100%;
-		max-width: 38rem;
+		max-width: 48rem;
 		margin: -0.75rem 0 0;
 		color: var(--negative);
 		font-size: 0.875rem;
@@ -534,7 +713,7 @@
 		display: grid;
 		gap: 1.2rem;
 		width: 100%;
-		max-width: 38rem;
+		max-width: 48rem;
 		padding: 2rem;
 		background: var(--paper);
 		border: 1px solid var(--rule);
@@ -599,13 +778,13 @@
 	}
 
 	.steps {
-		display: flex;
-		gap: 1.25rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+		gap: 0.65rem;
 		margin: 0;
-		padding: 0;
+		padding: 0 0 0.9rem;
 		list-style: none;
 		border-bottom: 1px solid var(--rule);
-		padding-bottom: 0.9rem;
 	}
 
 	.steps li {
@@ -846,6 +1025,50 @@
 		outline-offset: 2px;
 	}
 
+	.finance-loading {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1.2rem;
+		background: var(--paper-soft);
+		border-left: 3px solid var(--cobalt);
+	}
+
+	.finance-loading strong { color: var(--ink); font-size: 0.88rem; }
+	.finance-loading span { color: var(--ink-soft); font-size: 0.78rem; }
+
+	.review-summary {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1px;
+		margin: 0;
+		background: var(--rule);
+		border: 1px solid var(--rule);
+	}
+
+	.review-summary div {
+		display: grid;
+		gap: 0.25rem;
+		padding: 0.8rem;
+		background: var(--paper-soft);
+	}
+
+	.review-summary dt {
+		color: var(--ink-soft);
+		font-family: var(--font-mono);
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.review-summary dd {
+		margin: 0;
+		color: var(--ink);
+		font-size: 0.9rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 750;
+	}
+
 	.review-heading {
 		display: flex;
 		align-items: center;
@@ -918,6 +1141,7 @@
 		.header-email { display: none; }
 		.actions { flex-direction: column-reverse; }
 		.actions .button { width: 100%; }
+		.review-summary { grid-template-columns: 1fr 1fr; }
 	}
 
 	@media (max-width: 30rem) {
@@ -927,5 +1151,6 @@
 		.step-label { display: none; }
 		.sample-table { font-size: 0.8rem; }
 		.sample-table th, .sample-table td { padding: 0.4rem 0.45rem; }
+		.review-summary { grid-template-columns: 1fr; }
 	}
 </style>
