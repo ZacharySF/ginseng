@@ -35,6 +35,8 @@
 			<strong>Finding a funding mix…</strong>
 			<p>Evaluating the scenario and its funding options. Larger runs can take a little longer.</p>
 		</div>
+	{:else if response?.stress?.status === 'unsupported'}
+		<div class="state failure" role="status"><strong>Stress assumption unavailable</strong><p>The selected stress has no supporting scenarios. Remove or adjust it before using a funding mix.</p></div>
 	{:else if status?.code === 'not_needed'}
 		<div class="state">
 			<strong>No additional funding needed</strong>
@@ -42,7 +44,8 @@
 			<button type="button" onclick={onLoadExample}>Load repair example <span aria-hidden="true">↗</span></button>
 		</div>
 	{:else if plan && response}
-		<p class="intro">Minimizes modeled tail cost under the average buffer deficit limit below.</p>
+		<p class="intro">Minimizes modeled tail cost under the selected buffer deficit limits below.</p>
+		{#if response.stress && !response.stress.recommendation_supported}<p class="coverage-note analysis-alert">The stress tail is too concentrated under the support policy. This computed mix is not a recommendation.</p>{/if}
 		<p class="run-context">{count.format(plan.evaluation_paths)} futures · {plan.evaluation_horizon_days}-day evaluation</p>
 		<div class="cost-grid">
 			<div>
@@ -74,6 +77,7 @@
 				<div><span>Allowed by this optimization</span><strong>{count.format(plan.buffer_tolerance_dollar_days)} dollar-days</strong></div>
 			</div>
 			<p class="explanation">A $100 buffer deficit lasting 3 days is 300 dollar-days. The limit applies to the average across all futures.</p>
+			{#if plan.tail_deficit !== undefined}<p class="explanation">Tail buffer deficit: <strong>{formatCurrency(plan.tail_deficit)}</strong>. {plan.tail_deficit_limit == null ? 'No additional tail-deficit limit is set.' : `Allowed tail deficit: ${formatCurrency(plan.tail_deficit_limit)}.`} This averages each path's largest buffer deficit in the worst {plan.cost_coverage_target === 1 ? 'modeled case' : `${formatPercent(1 - plan.cost_coverage_target)} of deficits`}.</p>{/if}
 			<p class="coverage-note">The {formatPercent(plan.cost_coverage_target)} setting selects the cost tail. It does not require {formatPercent(plan.cost_coverage_target)} of these funding paths to stay above the buffer.</p>
 		</div>
 

@@ -5,7 +5,7 @@
 // begins at a healthy baseline and can hold user-authored future obligations,
 // the staged repair preset, and policy settings.
 import { postScenario } from './api';
-import type { Obligation, ScenarioRequest, ScenarioResponse } from './types';
+import type { Obligation, ScenarioRequest, ScenarioResponse, ScenarioSummary } from './types';
 
 export type LoadState = 'loading' | 'ready' | 'unreachable' | 'error';
 export interface ObligationDraft {
@@ -53,22 +53,21 @@ function baselineRequest(): ScenarioRequest {
 	};
 }
 
-class ScenarioStore {
+export class ScenarioStore {
 	request = $state<ScenarioRequest>(baselineRequest());
 	response = $state<ScenarioResponse | null>(null);
-	// Same seed/horizon/paths/mean_block_length as `request`, obligations
-	// forced empty. `draw_bundle` is a pure function of those shared fields,
-	// so this reuses the identical bundle as `response` (spec 20's common
-	// random numbers) — it exists only to show the frozen-portfolio contrast
-	// (spec 35) honestly, from two real engine responses, never by
-	// subtracting or fabricating a number client-side.
-	baselineResponse = $state<ScenarioResponse | null>(null);
+	// The engine returns the no-event baseline in the same response, using
+	// the same draws and weights. No second request or client-side estimate
+	// is needed to show the effect of the user's future events.
+	baselineResponse = $state<ScenarioSummary | null>(null);
 	loadState = $state<LoadState>('loading');
 	errorMessage = $state('');
 
 	#requestSeq = 0;
 	#initialized = false;
 	#customObligationSequence = 0;
+	#running = false;
+	#queued: { sequence: number; request: ScenarioRequest } | null = null;
 
 	readonly hasShock = $derived(
 		CANONICAL_SHOCKS.every((shock) =>
@@ -83,12 +82,12 @@ class ScenarioStore {
 		const amount = Number(obligation.amount);
 		const dueInDays = Number(obligation.due_in_days);
 		if (
-			!label ||
+			!label || label.length > 100 ||
 			!Number.isFinite(amount) ||
-			amount <= 0 ||
+			amount <= 0 || amount > 1_000_000 ||
 			!Number.isInteger(dueInDays) ||
 			dueInDays < 1 ||
-			dueInDays > this.request.horizon_days
+			dueInDays > 365
 		) {
 			return null;
 		}
@@ -99,23 +98,30 @@ class ScenarioStore {
 		const seq = ++this.#requestSeq;
 		this.loadState = 'loading';
 		this.errorMessage = '';
-
-		const baselineRequestForCompare: ScenarioRequest = { ...this.request, obligations: [] };
-		const [mainResult, baselineResult] = await Promise.all([
-			postScenario(this.request),
-			postScenario(baselineRequestForCompare)
-		]);
-		if (seq !== this.#requestSeq) return; // superseded by a newer mutation
-
-		if (mainResult.status === 'ok') {
-			this.response = mainResult.data;
-			this.baselineResponse = baselineResult.status === 'ok' ? baselineResult.data : null;
-			this.loadState = 'ready';
-		} else {
-			this.response = null;
-			this.baselineResponse = null;
-			this.errorMessage = mainResult.message;
-			this.loadState = mainResult.status === 'engine-unreachable' ? 'unreachable' : 'error';
+		this.response = null;
+		this.baselineResponse = null;
+		this.#queued = { sequence: seq, request: JSON.parse(JSON.stringify(this.request)) };
+		if (this.#running) return;
+		this.#running = true;
+		try {
+			// One request at a time. Rapid edits replace the pending request;
+			// they do not leave multiple expensive server solves running.
+			while (this.#queued) {
+				const current = this.#queued;
+				this.#queued = null;
+				const mainResult = await postScenario(current.request);
+				if (current.sequence !== this.#requestSeq) continue;
+				if (mainResult.status === 'ok') {
+					this.response = mainResult.data;
+					this.baselineResponse = mainResult.data.baseline_summary;
+					this.loadState = 'ready';
+				} else {
+					this.errorMessage = mainResult.message;
+					this.loadState = mainResult.status === 'engine-unreachable' ? 'unreachable' : 'error';
+				}
+			}
+		} finally {
+			this.#running = false;
 		}
 	}
 
@@ -136,6 +142,7 @@ class ScenarioStore {
 	 * Inputs are validated here so every surface shares the same scenario invariant.
 	 */
 	addObligation(draft: ObligationDraft): void {
+		if (this.request.obligations.length >= 200) return;
 		const obligation = this.#normalizeObligation({
 			id: `custom-obligation-${++this.#customObligationSequence}`,
 			...draft
@@ -187,7 +194,7 @@ class ScenarioStore {
 		if (this.hasShock) return;
 		this.request = {
 			...this.request,
-			obligations: [...this.request.obligations, ...CANONICAL_SHOCKS]
+			obligations: [...this.request.obligations, ...CANONICAL_SHOCKS.filter(shock => !this.request.obligations.some(item => item.id === shock.id))]
 		};
 		void this.#refresh();
 	}
@@ -204,28 +211,44 @@ class ScenarioStore {
 	}
 
 	setCoverageTarget(value: number): void {
+		if (!Number.isFinite(value) || value <= 0 || value > 1) return;
 		if (value === this.request.coverage_target) return;
 		this.request = { ...this.request, coverage_target: value };
 		void this.#refresh();
 	}
 
 	setHorizonDays(value: number): void {
-		if (!Number.isInteger(value) || value < 1 || value === this.request.horizon_days) return;
+		if (!Number.isInteger(value) || value < 1 || value > 365 || value === this.request.horizon_days) return;
 		this.request = {
 			...this.request,
-			horizon_days: value,
-			obligations: this.request.obligations.map((obligation) => ({
-				...obligation,
-				due_in_days: Math.min(obligation.due_in_days, value)
-			}))
+			horizon_days: value
 		};
 		void this.#refresh();
 	}
 
 	setOperatingBuffer(value: number): void {
-		if (!Number.isFinite(value) || value < 0) return;
+		if (!Number.isFinite(value) || value < 0 || value > 1_000_000) return;
 		if (value === this.request.operating_buffer) return;
 		this.request = { ...this.request, operating_buffer: value };
+		void this.#refresh();
+	}
+
+	setTailDeficitLimit(value: number | null): void {
+		if (value !== null && (!Number.isFinite(value) || value < 0 || value > 1_000_000)) return;
+		if (value === this.request.tail_deficit_limit) return;
+		this.request = { ...this.request, tail_deficit_limit: value };
+		void this.#refresh();
+	}
+
+	setRiskLimits(tail: number | null, mean: number | null): void {
+		if ([tail, mean].some(value => value !== null && (!Number.isFinite(value) || value < 0 || value > 1_000_000))) return;
+		this.request = { ...this.request, tail_deficit_limit: tail, buffer_tolerance_dollar_days: mean };
+		void this.#refresh();
+	}
+
+	setStressProbability(value: number | null): void {
+		if (value !== null && (!Number.isFinite(value) || value < 0 || value > 1)) return;
+		this.request = { ...this.request, drought_view: value === null ? null : { probability: value, window_days: 14, income_fraction: 0.5 } };
 		void this.#refresh();
 	}
 }

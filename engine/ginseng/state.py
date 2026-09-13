@@ -181,6 +181,12 @@ class CreditAccount:
 
 
 @dataclass(frozen=True)
+class AssetReturnHistory:
+    symbol: str
+    daily_returns: tuple[tuple[date, float], ...]
+
+
+@dataclass(frozen=True)
 class FinancialState:
     """The financial digital twin (spec section 7).
 
@@ -205,6 +211,7 @@ class FinancialState:
     # twin carries no market history, which disables all portfolio-path
     # features rather than fabricating a flat market.
     portfolio_daily_returns: tuple[tuple[date, float], ...] = ()
+    asset_daily_returns: tuple[AssetReturnHistory, ...] = ()
 
     # ---- Funding classes (spec section 8): always derived ----
 

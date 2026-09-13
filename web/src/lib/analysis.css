@@ -1,0 +1,27 @@
+.analysis-panel { margin: 1rem 0; padding: 1.2rem; border: 1px solid var(--rule); border-top: 3px solid var(--cobalt); color: var(--ink); background: var(--paper); }
+.analysis-panel h2 { margin: 0 0 .5rem; font-size: 1.45rem; letter-spacing: -.03em; }
+.analysis-panel h3 { margin: 1rem 0 .5rem; font-size: 1.05rem; }
+.analysis-panel p { margin: .55rem 0; font-size: .88rem; line-height: 1.5; }
+.analysis-panel small, .analysis-note { color: var(--ink-muted); font-size: .8rem; line-height: 1.5; }
+.analysis-panel button, .analysis-panel input, .analysis-panel select { min-height: 2.5rem; max-width: 100%; padding: .5rem .65rem; border: 1px solid var(--rule-strong); font: inherit; background: var(--paper); color: var(--ink); }
+.analysis-panel button { cursor: pointer; font: 700 .73rem var(--font-mono); }
+.analysis-panel button.primary { background: var(--cobalt); color: var(--paper); border-color: var(--cobalt); }
+.analysis-panel button:disabled { opacity: .55; cursor: wait; }
+.analysis-panel label { display: grid; gap: .4rem; margin: .75rem 0; font-size: .85rem; }
+.analysis-panel summary { cursor: pointer; font-weight: 700; padding: .5rem 0; }
+.analysis-panel :is(button,input,select,summary):focus-visible { outline: 2px solid var(--cobalt); outline-offset: 3px; }
+.analysis-panel details { border-top: 1px solid var(--rule); margin-top: 1rem; padding-top: .5rem; }
+.analysis-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,10rem),1fr)); gap: 1rem; margin: 1rem 0; }
+.analysis-grid > div { display: grid; align-content: start; gap: .35rem; }
+.analysis-value { font-size: 1.5rem; color: var(--cobalt); }
+.analysis-alert { border-left: 3px solid var(--negative); padding: .65rem .8rem; background: var(--paper-soft); }
+.analysis-table { max-width: 100%; overflow-x: auto; margin: 1rem 0; }
+.analysis-table table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+.analysis-table :is(th,td) { padding: .55rem; text-align: left; border: 1px solid var(--rule); }
+.analysis-table th { background: var(--paper-soft); font-weight: 700; }
+.analysis-panel .fingerprint { display: block; overflow-wrap: anywhere; white-space: normal; font: .7rem var(--font-mono); margin: .4rem 0 1rem; }
+.analysis-plot { width: 100%; height: auto; display: block; color: var(--cobalt); }
+.analysis-plot text { font: 12px var(--font-mono); fill: var(--ink-muted); }
+.analysis-panel ul { padding-left: 1.2rem; font-size: .84rem; line-height: 1.5; }
+.analysis-panel li { margin: .4rem 0; }
+@media (max-width: 38rem) { .analysis-panel { padding: .85rem; } }

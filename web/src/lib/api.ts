@@ -232,6 +232,13 @@ export function postScenario(request: ScenarioRequest): Promise<ScenarioResult> 
 	);
 }
 
+export function postAnalysis<T>(kind: 'calibration' | 'funding' | 'portfolio', request: ScenarioRequest, signal?: AbortSignal): Promise<EngineResult<T>> {
+	return requestEngine<T>(`/analysis/${kind}`, {
+		method: 'POST', headers: { 'content-type': 'application/json' },
+		body: JSON.stringify(request), signal
+	}, { requiresAuth: true, timeoutMs: 60000 });
+}
+
 // Nessie is a deliberately simulated demo provider; its API key never enters
 // this bundle, and all access still requires the user's own session.
 export function getNessieStatus(): Promise<NessieStatusResult> {

@@ -40,6 +40,8 @@ SCENARIO_BODY_FIELDS = {
     "wrong_way_risk",
     "optimal_plan",
     "optimizer_status",
+    "provenance", "model_card", "stress", "baseline_summary", "unstressed_summary",
+    "immediate_cash_coverage_ratio", "recommendation_status", "excluded_obligations",
 }
 
 REPAIR_SCHEDULE = [
@@ -221,7 +223,7 @@ def test_scenario_array_lengths_match_horizon_days_and_histogram_bins():
         assert all(a <= b for a, b in zip(cash[lower], cash[upper]))
 
     distribution = body["shortfall_distribution"]
-    assert set(distribution) == {"bin_edges", "counts"}
+    assert set(distribution) == {"bin_edges", "counts", "probabilities"}
     counts = distribution["counts"]
     edges = distribution["bin_edges"]
     assert len(counts) == 30  # frozen histogram bins

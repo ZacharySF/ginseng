@@ -1,4 +1,4 @@
-// Types for the frozen POST /scenario contract (Ginseng spec section 20-34).
+// Types for the POST /scenario contract and its model diagnostics.
 // Field names are snake_case and must match the engine's JSON exactly —
 // the frontend never renames, derives, or computes a financial number.
 
@@ -20,6 +20,8 @@ export interface ScenarioRequest {
 	overdraft_apr?: number;
 	buffer_tolerance_dollar_days?: number | null;
 	capital_gains_rate?: number;
+	tail_deficit_limit?: number | null;
+	drought_view?: { probability: number; window_days?: number; income_fraction?: number } | null;
 }
 
 export interface Severity {
@@ -54,6 +56,7 @@ export interface CashPaths {
 export interface ShortfallDistribution {
 	bin_edges: number[];
 	counts: number[];
+	probabilities?: number[];
 }
 
 // Funding plans (spec sections 38-45, 60), serialized by
@@ -119,6 +122,12 @@ export interface OptimalPlan {
 	dollar_days_below_buffer: number;
 	buffer_tolerance_dollar_days: number;
 	buffer_constraint_binding: boolean;
+	evaluation_weight_hash: string;
+	tail_deficit: number;
+	tail_deficit_limit: number | null;
+	implied_credit_price: number | null;
+	credit_constraint_binding: boolean;
+	objective_kind: 'cvar' | 'expected';
 }
 
 export interface OptimizerStatus {
@@ -157,6 +166,54 @@ export interface ScenarioResponse {
 	wrong_way_risk: WrongWayRisk | null;
 	optimal_plan: OptimalPlan | null;
 	optimizer_status: OptimizerStatus;
+	provenance: Record<string, string>;
+	model_card: ModelCard;
+	stress: StressReport;
+	baseline_summary: ScenarioSummary;
+	unstressed_summary: ScenarioSummary;
+	immediate_cash_coverage_ratio: number | null;
+	recommendation_status: string;
+	excluded_obligations: string[];
+}
+
+export interface ScenarioSummary {
+	required_liquidity_reserve: number;
+	funding_gap: number;
+	severity: Severity;
+	coverage_at_current_funding: number;
+}
+
+export interface StressReport {
+	status: 'inactive' | 'active' | 'unsupported';
+	label: string;
+	message?: string;
+	definition?: string;
+	baseline_probability?: number;
+	target_probability?: number;
+	achieved_probability?: number;
+	constraint_residual?: number;
+	ens_overall: number;
+	ens_tail: number;
+	max_weight: number;
+	recommendation_supported: boolean;
+	support_policy: string;
+}
+
+export interface ModelCard {
+	version: string;
+	evidence_statement: string;
+	source: string;
+	history_start: string;
+	history_end: string;
+	history_days: number;
+	simulation_paths: number;
+	purpose: string;
+	target: string;
+	prohibited_uses: string[];
+	assumptions: Record<string, unknown>;
+	limitations: string[];
+	recommendation_gates: string[];
+	guidance: { name: string; url: string; use: string };
 }
 
 

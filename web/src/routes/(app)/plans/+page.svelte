@@ -4,6 +4,9 @@
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import PlanTable from '$lib/components/PlanTable.svelte';
 	import OptimalPlanPanel from '$lib/components/OptimalPlanPanel.svelte';
+	import FundingLimits from '$lib/components/FundingLimits.svelte';
+	import FundingAnalysisPanel from '$lib/components/FundingAnalysisPanel.svelte';
+	import PortfolioAnalysisPanel from '$lib/components/PortfolioAnalysisPanel.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -30,9 +33,12 @@
 				<OptimalPlanPanel response={s} onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} />
 				{#if s.plans.length > 0}<h2 class="named-plans-heading">Compare named funding plans</h2>{/if}
 				<PlanTable plans={s.plans} recommendation={s.recommendation} />
+				<FundingAnalysisPanel />
+				<PortfolioAnalysisPanel />
 			</section>
 
 			<aside class="funding-inspector">
+				<FundingLimits />
 				<section>
 					<p class="label">Current constraint</p>
 					<strong class:attention={s.funding_gap > 0} class="inspector-value numeric">{formatCurrency(s.funding_gap)}</strong>

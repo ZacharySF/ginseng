@@ -45,16 +45,16 @@
 			due_in_days: Number(dueDay)
 		};
 
-		if (!label.trim()) {
+		if (!label.trim() || label.trim().length > 100) {
 			formError = 'Name the expected obligation.';
 			return;
 		}
-		if (!Number.isFinite(amount) || amount <= 0) {
-			formError = 'Enter an amount greater than zero.';
+		if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000) {
+			formError = 'Enter an amount greater than zero and no more than $1,000,000.';
 			return;
 		}
-		if (!Number.isInteger(draft.due_in_days) || draft.due_in_days < 1) {
-			formError = 'Choose a whole day inside the forecast.';
+		if (!Number.isInteger(draft.due_in_days) || draft.due_in_days < 1 || draft.due_in_days > 365) {
+			formError = 'Choose a whole day from 1 to 365.';
 			return;
 		}
 
@@ -69,7 +69,6 @@
 	function changeHorizon(event: Event) {
 		const value = Number((event.currentTarget as HTMLSelectElement).value);
 		scenarioStore.setHorizonDays(value);
-		if (dueDay > value) dueDay = value;
 	}
 </script>
 
@@ -114,7 +113,7 @@
 				</label>
 				<label>
 					<span>Due on day</span>
-					<input bind:value={dueDay} type="number" min="1" max={scenarioStore.request.horizon_days} step="1" />
+					<input bind:value={dueDay} type="number" min="1" max="365" step="1" />
 				</label>
 			</div>
 			{#if formError}
@@ -138,7 +137,7 @@
 					{#each sortedObligations as obligation (obligation.id)}
 						<li>
 							<div class="event-row-top">
-								<span class="event-day">D{String(obligation.due_in_days).padStart(2, '0')}</span>
+								<span class="event-day">D{String(obligation.due_in_days).padStart(2, '0')}{obligation.due_in_days > scenarioStore.request.horizon_days ? ' · outside chart window' : ''}</span>
 								<strong class="event-label">{obligation.label}</strong>
 							</div>
 							<div class="event-row-bottom">

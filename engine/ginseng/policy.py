@@ -46,8 +46,8 @@ def _dominates(a: PlanResult, b: PlanResult) -> bool:
 
 
 def _require_common_evaluation(results: Sequence[PlanResult]) -> None:
-    if len({(r.evaluation_horizon_days, r.evaluation_draw_id) for r in results}) > 1:
-        raise ValueError("Funding plans must share the same evaluation horizon and draw bundle.")
+    if len({(r.evaluation_horizon_days, r.evaluation_draw_id, r.evaluation_weight_hash) for r in results}) > 1:
+        raise ValueError("Funding plans must share the same evaluation horizon and draw bundle, and identical probability weights.")
 
 
 def pareto_filter(results: Sequence[PlanResult]) -> list[PlanResult]:
@@ -210,7 +210,7 @@ def recommend(results: Sequence[PlanResult], policy: FundingPolicy) -> Recommend
         closest = min(feasible, key=lambda r: r.cash_shortfall_probability)
         _, reason = _meets_hard_requirements(closest, policy)
         return Recommendation(
-            plan_id=closest.id,
+            plan_id="",
             explanation=(
                 f"{closest.label} is the closest available option, but no candidate plan satisfies every hard "
                 f"requirement in your funding policy: {reason}."
@@ -289,6 +289,7 @@ def to_contract(
                 "label": result.label,
                 "evaluation_horizon_days": result.evaluation_horizon_days,
                 "evaluation_draw_id": result.evaluation_draw_id,
+                "evaluation_weight_hash": result.evaluation_weight_hash,
                 "cash_shortfall_probability": result.cash_shortfall_probability,
                 "avg_cash_deficit_when_short": result.avg_cash_deficit_when_short,
                 "new_debt": result.new_debt,

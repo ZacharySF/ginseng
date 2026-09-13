@@ -172,6 +172,12 @@
 							<strong class="numeric">{formatCurrency(response.estimate_band.low)}–{formatCurrency(response.estimate_band.high)}</strong>
 						</p>
 					{/if}
+					{#if response.optimal_plan && response.stress?.status !== 'unsupported'}
+						<p class="estimate-readout">Optimized funding cost · average <strong>{formatCurrency(response.optimal_plan.expected_cost)}</strong> / worst-tail average <strong>{formatCurrency(response.optimal_plan.cvar_cost)}</strong> · <a href={resolve('/plans')}>View funding mix</a></p>
+					{/if}
+					{#if response.stress?.status === 'active'}<p class="estimate-readout">Stress assumption active — not an estimated probability. <a href={resolve('/liquidity')}>Inspect weights</a></p>{/if}
+					{#if response.stress?.status === 'unsupported'}<p class="estimate-readout">Stress not applied: this view has no supporting futures. These figures use baseline weights.</p>{/if}
+					{#if response.excluded_obligations?.length}<p class="estimate-readout">{response.excluded_obligations.length} scheduled events fall after this chart window. Their dates have been preserved.</p>{/if}
 				</div>
 				<div class="chart-side">
 					{#if selected}
@@ -292,6 +298,7 @@
 			<section class="inspector-block capital-readout">
 				<p class="inspector-label">Capital position</p>
 				<div><span>Available cash</span><strong class="numeric">{formatCurrency(response.immediate_funding)}</strong></div>
+				{#if response.immediate_cash_coverage_ratio != null}<div><span>Cash / required reserve</span><strong>{formatPercent(response.immediate_cash_coverage_ratio)}</strong></div>{/if}
 				<div><span>Marketable backup</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
 				<div><span>Restricted capital</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
 				<p>Only available cash counts toward the reserve. Selling marketable assets is a separate funding action.</p>

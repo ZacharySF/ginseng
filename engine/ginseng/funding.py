@@ -22,6 +22,7 @@ from typing import Sequence
 import numpy as np
 
 from ginseng.metrics import severity_metrics
+from ginseng.risk import probabilities, weight_hash
 from ginseng.simulate import (
     DrawBundle,
     cash_paths,
@@ -43,12 +44,11 @@ class PlanKind(str, Enum):
 class FundingConfig:
     """Knobs `build_candidates` uses to size the spec-38 candidate plans.
 
-    `settlement_days` + `external_transfer_days` model spec 40 (T+1 plus a
-    configurable brokerage-to-bank transfer delay: 1-3 business days per
-    finance-sources.md section 3, so the 2-day default is a realistic
-    floor, not a guess). `hybrid_*_fraction` values must sum to 1.0; they
-    partition the funding gap across cash, liquidation, credit, and
-    deferral (spec 38 Plan C).
+    `settlement_days` + `external_transfer_days` approximate sale settlement
+    and brokerage-to-bank transfer as calendar-day offsets. The three-day
+    default does not implement a business-day or exchange holiday calendar.
+    `hybrid_*_fraction` values must sum to 1.0 across liquidation, credit,
+    and deferral; existing cash has already reduced the funding gap.
     """
 
     settlement_days: int = 1
@@ -56,12 +56,20 @@ class FundingConfig:
     trailing_days: int = 3
     protective_spending_reduction: float = 0.30
     protective_spending_days: int | None = None
-    hybrid_cash_fraction: float = 0.30
-    hybrid_liquidation_fraction: float = 0.30
+    hybrid_cash_fraction: float = 0.0
+    hybrid_liquidation_fraction: float = 0.60
     hybrid_credit_fraction: float = 0.25
     hybrid_deferral_fraction: float = 0.15
     lot_selection: str = "fifo"
     specific_lot_ids: tuple[str, ...] = ()
+
+    def __post_init__(self):
+        fractions = (self.hybrid_cash_fraction, self.hybrid_liquidation_fraction,
+                     self.hybrid_credit_fraction, self.hybrid_deferral_fraction)
+        if any(not np.isfinite(f) or f < 0 for f in fractions) or not np.isclose(sum(fractions), 1.0):
+            raise ValueError("Hybrid funding fractions must be nonnegative and sum to one.")
+        if self.hybrid_cash_fraction != 0:
+            raise ValueError("Existing cash is already included in the funding gap and cannot fund it twice.")
 
 
 @dataclass(frozen=True)
@@ -112,6 +120,14 @@ class PlanResult:
     infeasibility_reason: str | None = None
     dominated: bool = False
     dominated_by: str | None = None
+    evaluation_weight_hash: str = ""
+
+
+@dataclass(frozen=True)
+class PlanEvaluation:
+    result: PlanResult
+    cash_matrix: np.ndarray
+    spending_reduction: np.ndarray
 
 
 # --------------------------------------------------------------------------
@@ -189,10 +205,13 @@ def _day_of_month_offset(as_of: date, day_of_month: int) -> int:
     day-of-month is `day_of_month`. Mirrors `generate.py`'s scheduling
     convention: `CreditAccount.statement_close_day` / `payment_due_day`
     are day-of-month integers, not day offsets."""
-    for offset in range(0, 32):
+    if not 1 <= day_of_month <= 31:
+        raise ValueError("Credit calendar days must be between 1 and 31.")
+    # A day such as the 31st may be absent from the current month.
+    for offset in range(0, 63):
         if (as_of + timedelta(days=offset)).day == day_of_month:
             return offset
-    raise ValueError(f"no day-of-month {day_of_month} found within a month of {as_of}")
+    raise ValueError(f"No calendar occurrence of day {day_of_month} follows {as_of}.")
 
 
 def _next_charge_payment_offset(as_of: date, account: CreditAccount) -> int:
@@ -206,10 +225,13 @@ def _next_charge_payment_offset(as_of: date, account: CreditAccount) -> int:
     earlier in the month than `statement_close_day` refers to the
     already-closing cycle's payment, not this one)."""
     close_offset = _day_of_month_offset(as_of, account.statement_close_day)
-    due_offset = _day_of_month_offset(as_of, account.payment_due_day)
-    if due_offset <= close_offset:
-        due_offset += 30
-    return due_offset
+    # Find the actual calendar occurrence after this statement closes.
+    # Adding a fixed 30 days places payments on the wrong date in February
+    # and in 31-day months.
+    for offset in range(close_offset + 1, close_offset + 63):
+        if (as_of + timedelta(days=offset)).day == account.payment_due_day:
+            return offset
+    raise ValueError("No valid credit payment date follows statement close.")
 
 
 def _select_primary_credit_account(state: FinancialState) -> CreditAccount | None:
@@ -271,6 +293,10 @@ def _liquidate(
     cost_basis_disposed = 0.0
     for holding in holdings:
         allocation = to_raise * (holding.market_value / total_market_value)
+        if lot_selection == "proportional":
+            proceeds += allocation
+            cost_basis_disposed += holding.cost_basis * allocation / holding.market_value if holding.market_value > 0 else 0.0
+            continue
         remaining_allocation = allocation
         for lot in _disposal_order(holding.tax_lots, lot_selection, specific_lot_ids):
             if remaining_allocation <= 1e-9:
@@ -440,18 +466,30 @@ def comparison_draw_bundle(
     return extend_draw_bundle(bundle, horizon)
 
 
-def evaluate_plan(
+def optimizer_comparison_bundle(state: FinancialState, bundle: DrawBundle, specs: Sequence[PlanSpec]) -> DrawBundle:
+    account = _select_primary_credit_account(state)
+    available_levers = PlanSpec("bounds", "Available funding", PlanKind.HYBRID,
+        credit_account_id=account.account_id if account else None,
+        credit_draw=account.available_credit if account else 0,
+        liquidation_target=state.marketable_backup_capital)
+    return comparison_draw_bundle(state, bundle, [*specs, available_levers])
+
+
+def evaluate_plan_paths(
     state: FinancialState,
     bundle: DrawBundle,
     obligations: Sequence[Obligation],
     spec: PlanSpec,
-) -> PlanResult:
+    weights: np.ndarray | None = None,
+) -> PlanEvaluation:
     """Evaluate one `PlanSpec` on `bundle` (spec 20: the same bundle every
     candidate plan in a comparison must share) and return every spec-60
     objective. For comparisons, first prepare `comparison_draw_bundle`.
     Standalone evaluation still extends to include the plan's own liabilities.
     """
     reasons: list[str] = []
+    if spec.unfunded_cash_amount > 0:
+        reasons.append("Existing cash is already in the forecast; this plan declares an unfunded cash contribution")
 
     credit_account = None
     if spec.credit_account_id is not None:
@@ -542,17 +580,19 @@ def evaluate_plan(
         per_path_adjustment[:, settlement_day - 1] += investment_sold
 
     deferred_spending = 0.0
+    spending_reduction = np.zeros(n_paths)
     if spec.discretionary_reduction_fraction > 0:
         reduction_days = min(spec.discretionary_reduction_days or horizon_days, horizon_days)
         discretionary = discretionary_resampled_paths(state, eval_bundle)
         savings = spec.discretionary_reduction_fraction * discretionary[:, :reduction_days]
         per_path_adjustment[:, :reduction_days] += savings
-        deferred_spending = float(np.mean(np.sum(savings, axis=1)))
+        spending_reduction = np.sum(savings, axis=1)
+        deferred_spending = float(np.dot(probabilities(n_paths, weights), spending_reduction))
 
     adjusted_cash = cash_matrix + np.cumsum(per_path_adjustment, axis=1)
-    severity = severity_metrics(adjusted_cash, state.immediate_funding, state.operating_buffer)
+    severity = severity_metrics(adjusted_cash, state.immediate_funding, state.operating_buffer, weights)
 
-    return PlanResult(
+    result = PlanResult(
         id=spec.id,
         label=spec.label,
         kind=spec.kind,
@@ -568,4 +608,11 @@ def evaluate_plan(
         credit_utilization=credit_utilization,
         feasible=not reasons,
         infeasibility_reason="; ".join(reasons) if reasons else None,
+        evaluation_weight_hash=weight_hash(probabilities(n_paths, weights)),
     )
+    return PlanEvaluation(result, adjusted_cash, spending_reduction)
+
+
+def evaluate_plan(state: FinancialState, bundle: DrawBundle, obligations: Sequence[Obligation],
+                  spec: PlanSpec, weights: np.ndarray | None = None) -> PlanResult:
+    return evaluate_plan_paths(state, bundle, obligations, spec, weights).result
