@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Probabilistic liquidity planning for variable-income investors"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "anyio>=4.0",
     "numpy>=2.1",
     "pandas>=2.2",
     "scipy>=1.14",
@@ -11,6 +12,8 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "httpx>=0.28",
+    "pydantic>=2.10",
+    "cvxpy>=1.4",
 ]
 
 [project.optional-dependencies]

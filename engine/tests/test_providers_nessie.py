@@ -11,12 +11,21 @@ from typing import Any
 
 import pytest
 
-from ginseng.api import app
+from ginseng.api import AuthenticatedIdentity, app, require_identity
 from ginseng.providers.nessie import NessieError, NessieProvider
 
 from fastapi.testclient import TestClient
 
 client = TestClient(app)
+
+def _authenticated_get(path: str):
+    app.dependency_overrides[require_identity] = lambda: AuthenticatedIdentity(
+        user_id="00000000-0000-0000-0000-000000000001", access_token="test-token"
+    )
+    try:
+        return client.get(path)
+    finally:
+        app.dependency_overrides.pop(require_identity, None)
 
 CUSTOMER = {"_id": "cust-1", "first_name": "Ada", "last_name": "Lovelace", "account_ids": ["acc-1"]}
 ACCOUNT = {
@@ -142,17 +151,17 @@ class TestSampleWorkspace:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setenv("NESSIE_API_KEY", "secret-value")
-        response = client.get("/providers/nessie/status")
+        response = _authenticated_get("/providers/nessie/status")
         assert response.status_code == 200
         assert response.json() == {"configured": True}
         assert "secret-value" not in response.text
 
     def test_sample_returns_503_when_key_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("NESSIE_API_KEY", raising=False)
-        response = client.get("/providers/nessie/sample")
+        response = _authenticated_get("/providers/nessie/sample")
         assert response.status_code == 503
 
-    def test_sample_returns_502_when_provider_fails(
+    def test_sample_sanitizes_provider_failure(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setenv("NESSIE_API_KEY", "k")
@@ -162,11 +171,11 @@ class TestSampleWorkspace:
         original = api_module.NessieProvider
         api_module.NessieProvider = lambda *args, **kwargs: _FailingProvider()
         try:
-            response = client.get("/providers/nessie/sample")
+            response = _authenticated_get("/providers/nessie/sample")
         finally:
             api_module.NessieProvider = original
-        assert response.status_code == 502
-        assert "boom" in response.json()["detail"]
+        assert response.status_code == 503
+        assert response.json() == {"detail": "Nessie provider is unavailable."}
 
 
 class _FailingProvider(NessieProvider):

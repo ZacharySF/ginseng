@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { dev } from '$app/environment';
+	import { localAuthDatabase } from '$lib/supabase';
 	import { authStore } from '$lib/auth.svelte';
 	import { parallax } from '$lib/parallax';
 	import { dotField } from '$lib/dotField';
@@ -18,7 +20,7 @@
 
 	const canSubmit = $derived(
 		email.trim().length > 3 &&
-			password.length >= 6 &&
+			password.length >= (mode === 'sign-up' ? 8 : 1) &&
 			(mode === 'sign-in' || (firstName.trim().length > 0 && lastName.trim().length > 0)) &&
 			!submitting
 	);
@@ -83,6 +85,7 @@
 					type="button"
 					class:active={mode === 'sign-in'}
 					aria-pressed={mode === 'sign-in'}
+					disabled={submitting}
 					onclick={() => switchMode('sign-in')}
 				>
 					Sign in
@@ -92,11 +95,19 @@
 					class:active={mode === 'sign-up'}
 					aria-pressed={mode === 'sign-up'}
 					onclick={() => switchMode('sign-up')}
+					disabled={submitting}
 				>
 					Create account
 				</button>
 			</div>
 
+			{#if dev && localAuthDatabase}
+				<p class="auth-status-message">
+					<strong>Local test database</strong><br />
+					{page.url.origin}<br />
+					Test accounts are separate from hosted accounts.
+				</p>
+			{/if}
 			{#if authStore.status === 'unconfigured'}
 				<p class="auth-status-message">
 					Supabase is not configured for this build. Set <code>PUBLIC_SUPABASE_URL</code> and
@@ -104,8 +115,8 @@
 				</p>
 			{:else if confirmationPending}
 				<div class="auth-confirm">
-					<p>Check <strong>{email}</strong> for a confirmation link.</p>
-					<span>Sign-in unlocks once the email is confirmed.</span>
+					<p>If registration can proceed, check <strong>{email}</strong> for a confirmation link.</p>
+					<span>Confirm your email before signing in. If you already have an account, sign in with its existing password.</span>
 					<button type="button" class="text-button" onclick={() => switchMode('sign-in')}>
 						Back to sign in
 					</button>
@@ -116,24 +127,25 @@
 						<div class="name-row">
 							<label>
 								<span>First name</span>
-								<input type="text" autocomplete="given-name" bind:value={firstName} required />
+								<input type="text" autocomplete="given-name" bind:value={firstName} required disabled={submitting} />
 							</label>
 							<label>
 								<span>Last name</span>
-								<input type="text" autocomplete="family-name" bind:value={lastName} required />
+								<input type="text" autocomplete="family-name" bind:value={lastName} required disabled={submitting} />
 							</label>
 						</div>
 					{/if}
 					<label>
 						<span>Email</span>
-						<input type="email" autocomplete="email" bind:value={email} required />
+						<input type="email" autocomplete="email" bind:value={email} required disabled={submitting} />
 					</label>
 					<label>
 						<span>Password</span>
 						<input
 							type="password"
 							autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
-							minlength="6"
+							minlength={mode === 'sign-up' ? 8 : 1}
+							disabled={submitting}
 							bind:value={password}
 							required
 						/>

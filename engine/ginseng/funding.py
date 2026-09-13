@@ -21,8 +21,13 @@ from typing import Sequence
 import numpy as np
 
 from ginseng.metrics import severity_metrics
-from ginseng.simulate import DrawBundle, cash_paths
-from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot, TransactionType
+from ginseng.simulate import (
+    DrawBundle,
+    cash_paths,
+    discretionary_resampled_paths,
+    portfolio_value_paths,
+)
+from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot
 
 
 class PlanKind(str, Enum):
@@ -290,30 +295,11 @@ def _liquidate(
 # --------------------------------------------------------------------------
 
 
-def _discretionary_history_series(state: FinancialState) -> np.ndarray:
-    """The historical discretionary-spending series over the exact window
-    `simulate.cash_paths` resamples (spec 15), built from
-    `FinancialState`'s public API so the per-path, per-day discretionary
-    values it uses internally can be reproduced here for the
-    protective-spending and hybrid-deferral scenarios."""
-    start = min(t.txn_date for t in state.transactions)
-    end = state.as_of
-    return state.daily_series(TransactionType.EXPENSE_DISCRETIONARY_VARIABLE, start, end).to_numpy()
-
-
-def _discretionary_resampled(state: FinancialState, bundle: DrawBundle) -> np.ndarray:
-    """Per-path, per-day resampled discretionary spending, shape
-    `(n_paths, horizon_days)`, indexed by `bundle.index_matrix` exactly as
-    `simulate.cash_paths` indexes its own discretionary column."""
-    series = _discretionary_history_series(state)
-    return series[bundle.index_matrix]
-
-
 def _avg_daily_discretionary_spend(state: FinancialState) -> float:
     """Historical average daily discretionary spending, used only to size
     the hybrid plan's discretionary-reduction fraction against its target
     dollar contribution to the gap (spec 38 Plan C). The actual evaluated
-    savings always come from the real resampled per-path series above."""
+    savings always come from `simulate.discretionary_resampled_paths`."""
     if not state.transactions:
         return 0.0
     start = min(t.txn_date for t in state.transactions)
@@ -517,15 +503,29 @@ def evaluate_plan(
     if spec.credit_draw > 0 and credit_account is not None:
         adjustment[0] += spec.credit_draw
         adjustment[credit_due_day - 1] -= credit_payment_due_amount
-    if spec.liquidation_target > 0:
-        adjustment[settlement_day - 1] += investment_sold
 
     per_path_adjustment = np.broadcast_to(adjustment, (n_paths, horizon_days)).copy()
+
+    if spec.liquidation_target > 0:
+        # Path-scaled settlement (spec 8.3): the sale is sized at today's
+        # prices, but proceeds arrive T+1 plus the transfer delay later, so
+        # what each path actually receives is the nominal amount scaled by
+        # that path's portfolio value on the settlement day. Without market
+        # history the nominal amount is used unchanged, preserving the
+        # pre-market-data evaluation.
+        pv_matrix = portfolio_value_paths(state, eval_bundle)
+        settle_col = min(settlement_day - 1, horizon_days - 1)
+        if pv_matrix is not None:
+            scale = pv_matrix[:, settle_col] / max(state.marketable_backup_capital, 1e-9)
+            per_path_proceeds = investment_sold * np.clip(scale, 0.0, None)
+            per_path_adjustment[:, settle_col] += per_path_proceeds
+        else:
+            per_path_adjustment[:, settle_col] += investment_sold
 
     deferred_spending = 0.0
     if spec.discretionary_reduction_fraction > 0:
         reduction_days = min(spec.discretionary_reduction_days or horizon_days, horizon_days)
-        discretionary = _discretionary_resampled(state, eval_bundle)
+        discretionary = discretionary_resampled_paths(state, eval_bundle)
         savings = spec.discretionary_reduction_fraction * discretionary[:, :reduction_days]
         per_path_adjustment[:, :reduction_days] += savings
         deferred_spending = float(np.mean(np.sum(savings, axis=1)))

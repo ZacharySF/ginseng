@@ -20,3 +20,8 @@ export const supabase: SupabaseClient | null =
 		: null;
 
 export const supabaseConfigured = supabase !== null;
+
+// Local test accounts and hosted accounts are separate, even on the same machine.
+export const localAuthDatabase = PUBLIC_SUPABASE_URL
+	? ['localhost', '127.0.0.1', '[::1]'].includes(new URL(PUBLIC_SUPABASE_URL).hostname)
+	: false;

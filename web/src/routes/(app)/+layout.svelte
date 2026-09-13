@@ -3,10 +3,12 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { authStore } from '$lib/auth.svelte';
+	import AgentChat from '$lib/components/AgentChat.svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
+	import type { ChatContext, DemoChatContext } from '$lib/chat';
 
-	type AppRoute = '/' | '/future' | '/liquidity' | '/plans';
-	type NavIcon = 'workspace' | 'events' | 'reserve' | 'funding';
+	type AppRoute = '/' | '/demo' | '/future' | '/liquidity' | '/plans';
+	type NavIcon = 'workspace' | 'demo' | 'events' | 'reserve' | 'funding';
 
 	interface NavItem {
 		label: string;
@@ -20,16 +22,77 @@
 	}
 
 	let { children }: Props = $props();
+	let isSigningOut = $state(false);
 
 	const navItems: NavItem[] = [
-		{ label: 'Workspace', shortLabel: 'Work', href: '/', icon: 'workspace' },
-		{ label: 'Events', shortLabel: 'Events', href: '/future', icon: 'events' },
-		{ label: 'Reserve', shortLabel: 'Reserve', href: '/liquidity', icon: 'reserve' },
-		{ label: 'Funding', shortLabel: 'Funding', href: '/plans', icon: 'funding' }
+		{ label: 'Personal workspace', shortLabel: 'Personal', href: '/', icon: 'workspace' },
+		{ label: 'Demo', shortLabel: 'Demo', href: '/demo', icon: 'demo' },
+		{ label: 'Events demo', shortLabel: 'Events', href: '/future', icon: 'events' },
+		{ label: 'Reserve demo', shortLabel: 'Reserve', href: '/liquidity', icon: 'reserve' },
+		{ label: 'Funding demo', shortLabel: 'Funding', href: '/plans', icon: 'funding' }
 	];
 
-	function isActive(href: string) {
-		return page.url.pathname === href;
+	const isDemoRoute = $derived(page.url.pathname !== resolve('/'));
+
+	function isChatHorizon(value: number): value is DemoChatContext['horizon_days'] {
+		return value === 14 || value === 30 || value === 60;
+	}
+
+	function currentDemoContext(): ChatContext | null {
+		const response = scenarioStore.response;
+		const request = scenarioStore.request;
+		if (
+			scenarioStore.loadState !== 'ready' ||
+			!response ||
+			!isChatHorizon(request.horizon_days) ||
+			![
+				response.coverage_target,
+				response.operating_buffer,
+				response.funding_gap,
+				response.required_liquidity_reserve,
+				response.coverage_at_current_funding
+			].every(Number.isFinite) ||
+			!request.obligations.every(
+				(obligation) =>
+					obligation.label.trim().length > 0 &&
+					Number.isFinite(obligation.amount) &&
+					Number.isInteger(obligation.due_in_days)
+			)
+		) {
+			return null;
+		}
+		return {
+			source: 'demo',
+			scenario: {
+				horizon_days: request.horizon_days,
+				coverage_target: response.coverage_target,
+				operating_buffer: response.operating_buffer,
+				funding_gap: response.funding_gap,
+				required_liquidity_reserve: response.required_liquidity_reserve,
+				coverage_at_current_funding: response.coverage_at_current_funding,
+				obligations: request.obligations.map(({ label, amount, due_in_days }) => ({ label, amount, due_in_days }))
+			}
+		};
+	}
+
+	const chatContext: ChatContext | null = $derived(
+		isDemoRoute ? currentDemoContext() : { source: 'personal', horizon_days: 30 }
+	);
+
+	function isActive(href: AppRoute) {
+		return page.url.pathname === resolve(href);
+	}
+
+	async function signOut(): Promise<void> {
+		if (isSigningOut) return;
+		isSigningOut = true;
+		try {
+			await authStore.signOut();
+		} catch {
+			authStore.error = 'Could not sign out. Check your connection and try again.';
+		} finally {
+			isSigningOut = false;
+		}
 	}
 </script>
 
@@ -40,19 +103,21 @@
 			<span>Ginseng</span>
 		</a>
 		<div class="topbar-context">
-			<span>Cash workspace</span>
-			<span aria-hidden="true">/</span>
-			<span>{scenarioStore.request.horizon_days} day forward view</span>
+			<span>{isDemoRoute ? 'Simulated data' : 'Personal workspace'}</span>
 		</div>
 		<div class="topbar-actions">
-			<p class="topbar-status"><i aria-hidden="true"></i>Model ready</p>
+			<p class:topbar-status--demo={isDemoRoute} class="topbar-status"><i aria-hidden="true"></i>{isDemoRoute ? 'Simulated data' : 'Personal inputs'}</p>
+			{#key `${authStore.user?.id ?? 'signed-out'}-${isDemoRoute ? 'demo' : 'personal'}`}
+				<AgentChat context={chatContext} />
+			{/key}
 			{#if authStore.status === 'signed-in' && authStore.user}
 				<div class="account-chip">
 					<span class="account-email">{authStore.displayName ?? authStore.user.email}</span>
-					<button type="button" onclick={() => authStore.signOut()}>Sign out</button>
+					<button type="button" onclick={signOut} disabled={isSigningOut}>{isSigningOut ? 'Signing out…' : 'Sign out'}</button>
 				</div>
 			{/if}
 		</div>
+		{#if authStore.error}<p class="signout-error" role="alert">{authStore.error}</p>{/if}
 	</header>
 
 	<aside class="terminal-rail">
@@ -69,6 +134,9 @@
 					<svg aria-hidden="true" viewBox="0 0 24 24">
 						{#if item.icon === 'workspace'}
 							<path d="M4 19V5m0 14h16M7 15l3-4 3 2 5-7" />
+						{:else if item.icon === 'demo'}
+							<rect x="4" y="5" width="16" height="15" rx="2" />
+							<path d="m10 10 5 2-5 2v-4Z" />
 						{:else if item.icon === 'events'}
 							<rect x="4" y="5" width="16" height="15" rx="2" />
 							<path d="M8 3v4m8-4v4M4 10h16m-8 3v4m-3-2h6" />
@@ -85,7 +153,7 @@
 				</a>
 			{/each}
 		</nav>
-		<p class="rail-meta">{scenarioStore.request.paths.toLocaleString()}<br />paths</p>
+		<p class="rail-meta">{isDemoRoute ? 'simulated' : 'personal'}<br />{isDemoRoute ? 'data' : 'ledger'}</p>
 	</aside>
 
 	<main class="app-main">
@@ -116,6 +184,7 @@
 	}
 
 	.terminal-topbar {
+		position: relative;
 		grid-column: 1 / -1;
 		display: flex;
 		align-items: center;
@@ -192,6 +261,11 @@
 		box-shadow: 0 0 0 2px rgb(184 199 255 / 20%);
 	}
 
+	.topbar-status--demo i {
+		background: var(--paper);
+		box-shadow: 0 0 0 2px rgb(255 255 255 / 20%);
+	}
+
 	.account-chip {
 		display: flex;
 		align-items: center;
@@ -225,9 +299,28 @@
 		cursor: pointer;
 	}
 
-	.account-chip button:hover {
+	.account-chip button:hover:not(:disabled) {
 		background: rgb(255 255 255 / 14%);
 		border-color: rgb(255 255 255 / 55%);
+	}
+
+	.account-chip button:disabled {
+		cursor: wait;
+		opacity: 0.65;
+	}
+
+	.signout-error {
+		position: absolute;
+		z-index: 11;
+		top: calc(100% + 0.45rem);
+		right: 1rem;
+		max-width: min(28rem, calc(100vw - 2rem));
+		margin: 0;
+		padding: 0.5rem 0.65rem;
+		background: var(--negative);
+		border: 1px solid var(--paper);
+		color: var(--paper);
+		font-size: 0.78rem;
 	}
 
 	.terminal-rail {
@@ -318,8 +411,6 @@
 			text-overflow: ellipsis;
 		}
 
-		.topbar-context span:last-child,
-		.topbar-context span:nth-child(2),
 		.topbar-status { display: none; }
 
 		.account-chip { padding-left: 0; border-left: 0; }
@@ -335,7 +426,7 @@
 			bottom: 0;
 			left: 0;
 			display: grid;
-			grid-template-columns: repeat(4, 1fr);
+			grid-template-columns: repeat(5, minmax(0, 1fr));
 			padding: 0.3rem max(0.45rem, env(safe-area-inset-right)) calc(0.3rem + env(safe-area-inset-bottom)) max(0.45rem, env(safe-area-inset-left));
 			background: var(--cobalt-deep);
 			border-top: 1px solid rgb(255 255 255 / 28%);
@@ -347,9 +438,10 @@
 			min-height: 2.8rem;
 			color: rgb(255 255 255 / 70%);
 			font-family: var(--font-mono);
-			font-size: 0.63rem;
+			font-size: 0.55rem;
 			font-weight: 700;
-			letter-spacing: 0.045em;
+			letter-spacing: 0.025em;
+			text-align: center;
 			text-decoration: none;
 			text-transform: uppercase;
 		}

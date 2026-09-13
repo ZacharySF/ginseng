@@ -15,7 +15,12 @@ from typing import Sequence
 
 import numpy as np
 
-from ginseng.simulate import DrawBundle, cash_paths as _compute_cash_paths, known_flows
+from ginseng.simulate import (
+    DrawBundle,
+    cash_paths as _compute_cash_paths,
+    known_flows,
+    portfolio_value_paths,
+)
 from ginseng.state import FinancialState, Obligation
 
 
@@ -102,6 +107,39 @@ def reserve_buffer_curve(
     ]
 
 
+def wrong_way_risk(
+    cash_matrix: np.ndarray,
+    portfolio_value_matrix: np.ndarray,
+    immediate_funding: float,
+    operating_buffer: float,
+    initial_portfolio_value: float,
+) -> dict:
+    """Spec 8.4: whether the portfolio underperforms in exactly the paths
+    where cash runs short - the conditioning that makes liquidating into a
+    downturn expensive precisely when it is needed.
+
+    A path is *forced* when available cash `B_{j,t} = C + X_{j,t}` dips
+    below the operating buffer on any day; the metric compares the mean
+    terminal portfolio return across all paths against the same mean over
+    only the forced paths. `portfolio_return_when_forced` is None when no
+    path is ever forced.
+    """
+    available = immediate_funding + cash_matrix
+    forced_mask = np.any(available < operating_buffer, axis=1)
+    terminal_return = (
+        (portfolio_value_matrix[:, -1] - initial_portfolio_value)
+        / max(initial_portfolio_value, 1e-9)
+    )
+    avg_all = float(terminal_return.mean())
+    avg_forced = float(terminal_return[forced_mask].mean()) if forced_mask.any() else None
+    return {
+        "fraction_forced_to_sell": float(forced_mask.mean()),
+        "portfolio_return_all_paths": avg_all,
+        "portfolio_return_when_forced": avg_forced,
+        "wrong_way_risk_present": bool(avg_forced is not None and avg_forced < avg_all),
+    }
+
+
 def shortfall_distribution(
     cash_matrix: np.ndarray, immediate_funding: float, n_bins: int = 30
 ) -> dict:
@@ -135,6 +173,7 @@ class ScenarioMetrics:
     reserve_buffer_curve: list
     cash_paths: dict
     shortfall_distribution: dict
+    wrong_way_risk: dict | None = None  # None when no market history / marketable assets
 
 
 def compute_scenario_metrics(
@@ -151,6 +190,16 @@ def compute_scenario_metrics(
     required_per_path = required_liquidity_per_path(matrix, operating_buffer)
     immediate_funding = state.immediate_funding
     reserve = required_liquidity_reserve(required_per_path, coverage_target)
+
+    pv_matrix = portfolio_value_paths(state, bundle)
+    wwr = (
+        wrong_way_risk(
+            matrix, pv_matrix, immediate_funding,
+            operating_buffer, state.marketable_backup_capital,
+        )
+        if pv_matrix is not None
+        else None
+    )
 
     known_income, known_obligations = known_flows(state, obligations, bundle.horizon_days)
     paths = {
@@ -169,4 +218,5 @@ def compute_scenario_metrics(
         reserve_buffer_curve=reserve_buffer_curve(matrix, coverage_target, operating_buffer),
         cash_paths=paths,
         shortfall_distribution=shortfall_distribution(matrix, immediate_funding),
+        wrong_way_risk=wwr,
     )

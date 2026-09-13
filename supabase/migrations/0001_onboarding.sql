@@ -1,8 +1,8 @@
 -- 0001_onboarding.sql — Phase 1 onboarding schema.
 --
--- No Supabase CLI in this environment, so this file is the canonical
--- record; apply through Dashboard → SQL Editor. Idempotent so it can be
--- re-run safely.
+-- Originally applied through the hosted Dashboard SQL Editor. New local
+-- stacks apply this through the CLI. Reconcile the hosted migration history
+-- before promotion; do not reset hosted accounts to replay migrations.
 --
 -- Patterns per Supabase docs:
 --   https://supabase.com/docs/guides/auth/managing-user-data

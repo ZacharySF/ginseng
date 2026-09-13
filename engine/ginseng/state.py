@@ -199,6 +199,12 @@ class FinancialState:
     operating_buffer: float
     coverage_target: float
     forecast_horizon: int
+    # Spec 8.3 (wrong-way risk): optional daily simple returns of the
+    # marketable portfolio over the recorded history window, keyed by date
+    # so they align with the joint bootstrap's day indices. Empty when the
+    # twin carries no market history, which disables all portfolio-path
+    # features rather than fabricating a flat market.
+    portfolio_daily_returns: tuple[tuple[date, float], ...] = ()
 
     # ---- Funding classes (spec section 8): always derived ----
 

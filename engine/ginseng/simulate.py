@@ -229,6 +229,37 @@ def known_flows(
     return np.cumsum(income_daily), np.cumsum(obligation_daily)
 
 
+def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray:
+    """Per-path, per-day resampled discretionary spending, shape
+    `(n_paths, horizon_days)`, selected by the same joint bootstrap
+    indices `cash_paths` uses for its discretionary column (spec 15), so
+    funding plans defer exactly the spending the cash forecast spent."""
+    disc = _joint_history(state)["discretionary_spending"].to_numpy()
+    return disc[bundle.index_matrix]
+
+
+def portfolio_value_paths(state: FinancialState, bundle: DrawBundle) -> np.ndarray | None:
+    """Per-path market value of the marketable portfolio at each forecast
+    day, shape `(n_paths, horizon_days)`, grown from today's
+    `marketable_backup_capital` by the market returns on the same joint
+    bootstrap day indices the cash forecast resamples (spec 8.3, 15).
+
+    Returns None when the state carries no market history or no marketable
+    assets, so no portfolio-dependent metric is fabricated from a flat or
+    zero-valued market.
+    """
+    initial_value = state.marketable_backup_capital
+    if not state.portfolio_daily_returns or initial_value <= 0.0:
+        return None
+    joint = _joint_history(state)
+    returns_by_date = dict(state.portfolio_daily_returns)
+    market_history = np.array(
+        [returns_by_date.get(ts.date(), 0.0) for ts in joint.index]
+    )
+    daily_returns = market_history[bundle.index_matrix]
+    return initial_value * np.cumprod(1.0 + daily_returns, axis=1)
+
+
 def cash_paths(
     state: FinancialState, bundle: DrawBundle, obligations: Sequence[Obligation] = ()
 ) -> np.ndarray:

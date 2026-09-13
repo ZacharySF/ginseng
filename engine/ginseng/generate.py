@@ -93,6 +93,16 @@ _DISCRETIONARY_SHAPE = 2.0
 _SPEND_MOMENTUM = 0.75
 _SPEND_MOMENTUM_SD = 0.18
 
+# Market returns (spec 8.3): geometric Brownian motion whose drift follows
+# the same busy/dry regime as income, so income-market correlation emerges
+# naturally when the joint bootstrap resamples shared day indices. Returns
+# are stored as simple returns derived from the GBM log returns,
+# `exp(mu dt + sigma sqrt(dt) z) - 1`, so every daily growth factor is
+# strictly positive and portfolio paths can never go below zero.
+_MARKET_MU_BUSY = 0.10 / 365       # ~10% annualised drift in busy regimes
+_MARKET_MU_DRY = -0.05 / 365       # mild drag through dry spells
+_MARKET_SIGMA = 0.16 / np.sqrt(365)  # ~16% annualised volatility
+
 
 def _next_occurrence(as_of: date, day_of_month: int) -> int:
     """Days from `as_of` (inclusive of `as_of` itself, offset 0) until the
@@ -362,6 +372,17 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
         ),
     )
 
+    # Market returns (spec 8.3): drawn after every other use of `rng` so the
+    # existing random stream - and therefore every transaction amount, the
+    # opening-balance calibration, and the spec 17 block-length estimate -
+    # is bit-for-bit unchanged by this addition. The drift follows the same
+    # busy/dry regime path the income series used, so a resampled dry-day
+    # block brings its weak market day along with it (joint bootstrap).
+    market_log_returns = np.where(busy, _MARKET_MU_BUSY, _MARKET_MU_DRY) + (
+        rng.standard_normal(HISTORY_DAYS) * _MARKET_SIGMA
+    )
+    market_returns = np.exp(market_log_returns) - 1.0
+
     return FinancialState(
         as_of=AS_OF,
         transactions=tuple(transactions),
@@ -373,6 +394,9 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
         operating_buffer=OPERATING_BUFFER,
         coverage_target=COVERAGE_TARGET,
         forecast_horizon=FORECAST_HORIZON,
+        portfolio_daily_returns=tuple(
+            (d, float(r)) for d, r in zip(dates, market_returns)
+        ),
     )
 
 

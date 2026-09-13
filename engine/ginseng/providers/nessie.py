@@ -55,7 +55,7 @@ class NessieProvider:
             response = httpx.get(f"{self.base_url}{path}", params=query, timeout=self.timeout)
             response.raise_for_status()
         except httpx.HTTPError as error:
-            raise NessieError(f"Nessie request failed: {error}") from error
+            raise NessieError("Nessie service is unavailable.") from error
         try:
             return response.json()
         except ValueError as error:
