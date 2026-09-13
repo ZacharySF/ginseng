@@ -3,6 +3,7 @@
 	import { scenarioStore } from '$lib/scenario.svelte';
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import PlanTable from '$lib/components/PlanTable.svelte';
+	import OptimalPlanPanel from '$lib/components/OptimalPlanPanel.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -13,7 +14,9 @@
 	<title>Ginseng — Funding terminal</title>
 </svelte:head>
 
-{#if scenarioStore.response}
+{#if scenarioStore.loadState === 'loading'}
+	<div class="optimizer-loading"><OptimalPlanPanel loading onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} /></div>
+{:else if scenarioStore.response}
 	{@const s = scenarioStore.response}
 	{@const baseline = scenarioStore.baselineResponse}
 	<div class="terminal-view">
@@ -24,6 +27,8 @@
 
 		<div class="funding-layout">
 			<section class="plan-console" aria-label="Funding plan comparison">
+				<OptimalPlanPanel response={s} onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} />
+				{#if s.plans.length > 0}<h2 class="named-plans-heading">Compare named funding plans</h2>{/if}
 				<PlanTable plans={s.plans} recommendation={s.recommendation} />
 			</section>
 
@@ -64,6 +69,8 @@
 {/if}
 
 <style>
+	.optimizer-loading { padding: 1rem; }
+	.named-plans-heading { margin: 0 0 0.75rem; font-size: 1.15rem; color: var(--ink); }
 	.terminal-view {
 		display: flex;
 		flex-direction: column;

@@ -39,6 +39,7 @@ SCENARIO_BODY_FIELDS = {
     "sensitivity_verdict",
     "wrong_way_risk",
     "optimal_plan",
+    "optimizer_status",
 }
 
 REPAIR_SCHEDULE = [
@@ -82,6 +83,8 @@ def test_scenario_funding_results_share_one_complete_evaluation():
     assert optimal is not None
     assert optimal["evaluation_horizon_days"] == horizon
     assert optimal["evaluation_draw_id"] == draw_id
+    assert optimal["evaluation_paths"] == 120
+    assert body["optimizer_status"]["code"] == "optimal"
 
 FLOAT_FIELDS = (
     "immediate_funding",

@@ -197,6 +197,12 @@ class ScenarioStore {
 		void this.#refresh();
 	}
 
+	/** Load the complete 30-day example so both repair payments are included. */
+	loadRepairExample(): void {
+		this.request = { ...baselineRequest(), obligations: [...CANONICAL_SHOCKS] };
+		void this.#refresh();
+	}
+
 	setCoverageTarget(value: number): void {
 		if (value === this.request.coverage_target) return;
 		this.request = { ...this.request, coverage_target: value };

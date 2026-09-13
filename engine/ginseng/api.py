@@ -15,7 +15,7 @@ from functools import lru_cache
 import os
 from threading import BoundedSemaphore
 import time
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import anyio
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -47,7 +47,13 @@ from ginseng.chat import (
 from ginseng.funding import FundingConfig, build_candidates, comparison_draw_bundle, evaluate_plan
 from ginseng.generate import DEFAULT_SEED, generate_persona
 from ginseng.metrics import compute_scenario_metrics
-from ginseng.optimizer import optimize_funding
+from ginseng.optimizer import (
+    SOLVER_TIME_LIMIT_SECONDS,
+    OptimalPlan,
+    OptimizationFailure,
+    OptimizationFailureReason,
+    optimize_funding,
+)
 from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.providers.nessie import NessieError, NessieProvider
 from ginseng.simulate import draw_bundle
@@ -140,6 +146,39 @@ class ShortfallDistribution(BaseModel):
     counts: list[int]
 
 
+class OptimizerStatus(BaseModel):
+    code: OptimizationFailureReason | Literal["optimal", "optimal_inaccurate", "not_needed"]
+    message: str
+    paths: int
+    time_limit_seconds: float
+
+
+def _optimizer_status(result: OptimalPlan | OptimizationFailure | None, paths: int) -> OptimizerStatus:
+    if result is None:
+        code = "not_needed"
+        message = "Current cash covers the scenario's required reserve; no additional funding is needed."
+    elif isinstance(result, OptimalPlan):
+        code = result.solver_status
+        message = "Optimized funding mix ready." if code == "optimal" else "An approximate solution passed the numerical checks."
+    else:
+        code = result.reason
+        messages = {
+            "invalid_input": "The scenario contains inputs the optimizer cannot evaluate.",
+            "no_funding_levers": "No available credit, taxable investments, or reducible spending can fund this scenario.",
+            "resource_limit": f"This {paths:,}-path scenario exceeds the optimizer's size limit. Try a shorter forecast window.",
+            "cvxpy_unavailable": "The optimization library is unavailable on this server.",
+            "solver_unavailable": "The optimization solver is unavailable on this server.",
+            "solver_timeout": f"Optimization timed out after {SOLVER_TIME_LIMIT_SECONDS:g} seconds at {paths:,} paths. Try again or shorten the forecast window.",
+            "solver_limit": "The solver reached a time or iteration limit before finding an acceptable solution.",
+            "solver_error": "The solver could not finish this scenario. Try again or adjust the scenario.",
+            "infeasible": "No funding mix meets the average buffer deficit limit with the available resources.",
+            "unbounded": "The solver could not establish a bounded funding solution.",
+            "invalid_solution": "The solver's result failed the numerical checks and cannot be shown as a funding plan.",
+        }
+        message = messages[code]
+    return OptimizerStatus(code=code, message=message, paths=paths, time_limit_seconds=SOLVER_TIME_LIMIT_SECONDS)
+
+
 class ScenarioResponse(BaseModel):
     as_of: str
     seed: int
@@ -166,6 +205,7 @@ class ScenarioResponse(BaseModel):
     sensitivity_verdict: str | None = None
     wrong_way_risk: dict[str, Any] | None = None
     optimal_plan: dict[str, Any] | None = None
+    optimizer_status: OptimizerStatus
 
 
 class HealthResponse(BaseModel):
@@ -520,11 +560,12 @@ def scenario(
                 buffer_tolerance_dollar_days=request.buffer_tolerance_dollar_days,
                 capital_gains_rate=request.capital_gains_rate,
             )
-            optimal_plan = asdict(optimal) if optimal is not None else None
+            optimal_plan = asdict(optimal) if isinstance(optimal, OptimalPlan) else None
         else:
             plans = []
             recommendation_dict = None
             optimal_plan = None
+            optimal = None
         return ScenarioResponse(
             as_of=persona.as_of.isoformat(),
             seed=request.seed,
@@ -553,6 +594,7 @@ def scenario(
             sensitivity_verdict=uncertainty.stability_verdict(rows),
             wrong_way_risk=computed.wrong_way_risk,
             optimal_plan=optimal_plan,
+            optimizer_status=_optimizer_status(optimal, request.paths),
         )
     finally:
         _SCENARIO_GATE.release()

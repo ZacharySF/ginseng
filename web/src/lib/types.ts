@@ -113,6 +113,21 @@ export interface OptimalPlan {
 	solver_status: string;
 	evaluation_horizon_days: number;
 	evaluation_draw_id: string;
+	evaluation_paths: number;
+	cost_coverage_target: number;
+	buffer_breach_probability: number;
+	dollar_days_below_buffer: number;
+	buffer_tolerance_dollar_days: number;
+	buffer_constraint_binding: boolean;
+}
+
+export interface OptimizerStatus {
+	code: 'optimal' | 'optimal_inaccurate' | 'not_needed' | 'invalid_input'
+		| 'no_funding_levers' | 'resource_limit' | 'cvxpy_unavailable' | 'solver_unavailable'
+		| 'solver_timeout' | 'solver_limit' | 'solver_error' | 'infeasible' | 'unbounded' | 'invalid_solution';
+	message: string;
+	paths: number;
+	time_limit_seconds: number;
 }
 
 export interface ScenarioResponse {
@@ -141,6 +156,7 @@ export interface ScenarioResponse {
 	sensitivity_verdict: string | null;
 	wrong_way_risk: WrongWayRisk | null;
 	optimal_plan: OptimalPlan | null;
+	optimizer_status: OptimizerStatus;
 }
 
 

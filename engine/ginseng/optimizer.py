@@ -4,7 +4,7 @@ The model evaluates every supplied bootstrap path under common random numbers.
 Buffer-shortfall and overdraft auxiliaries are created only for path-days that
 can incur those costs under the control bounds. Provably zero terms are omitted,
 never paths or their probability weights. Requests whose evaluation bundle
-exceeds ``MAX_SCENARIO_DAYS`` fail closed with ``None``.
+exceeds ``MAX_SCENARIO_DAYS`` return an explicit resource-limit failure.
 
 The default Telser tolerance is a *mean* dollar-day limit:
 ``operating_buffer * evaluation_horizon_days * policy shortfall probability``.
@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
-from typing import Sequence
+from typing import Literal, Sequence
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -47,9 +47,21 @@ from ginseng.state import FinancialState, Obligation
 # This covers the UI's 14/30/60-day horizons at up to 3,000 paths; larger
 # evaluations omit the optional optimizer, never substitute fewer paths.
 MAX_SCENARIO_DAYS = 200_000
-SOLVER_TIME_LIMIT_SECONDS = 3.0
+SOLVER_TIME_LIMIT_SECONDS = 10.0
 _NUMERICAL_TOLERANCE = 1e-6
 _OPTIMAL_STATUSES = frozenset(("optimal", "optimal_inaccurate"))
+
+
+OptimizationFailureReason = Literal[
+    "invalid_input", "no_funding_levers", "resource_limit", "cvxpy_unavailable",
+    "solver_unavailable", "solver_timeout", "solver_limit", "solver_error",
+    "infeasible", "unbounded", "invalid_solution",
+]
+
+
+@dataclass(frozen=True)
+class OptimizationFailure:
+    reason: OptimizationFailureReason
 
 
 @dataclass(frozen=True)
@@ -66,6 +78,12 @@ class OptimalPlan:
     solver_status: str
     evaluation_horizon_days: int
     evaluation_draw_id: str
+    evaluation_paths: int
+    cost_coverage_target: float
+    buffer_breach_probability: float
+    dollar_days_below_buffer: float
+    buffer_tolerance_dollar_days: float
+    buffer_constraint_binding: bool
 
 
 def _finite_nonnegative(value: float) -> bool:
@@ -152,7 +170,7 @@ def optimize_funding(
     overdraft_apr: float = 0.2999,
     buffer_tolerance_dollar_days: float | None = None,
     capital_gains_rate: float = 0.15,
-) -> OptimalPlan | None:
+) -> OptimalPlan | OptimizationFailure:
     """Return the bounded CLARABEL CVaR-optimal funding mix, if it solves.
 
     The scalar credit leg is deliberately limited to the funding module's
@@ -163,27 +181,24 @@ def optimize_funding(
 
     ``coverage_target == 1`` is the empirical worst-case objective. Other
     targets in ``[0, 1)`` use the Rockafellar-Uryasev CVaR formulation.
-    Returns ``None`` when CVXPY/CLARABEL is unavailable, the bounded model is
-    infeasible or times out, or a solver result fails numerical checks.
+    Returns an ``OptimizationFailure`` with a stable reason when unavailable,
+    infeasible, resource-limited, or rejected by the numerical checks.
     """
     q = float(coverage_target)
     if not isfinite(q) or q < 0.0 or q > 1.0:
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(operating_buffer)):
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(overdraft_apr)):
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(capital_gains_rate)):
-        return None
+        return OptimizationFailure("invalid_input")
     if buffer_tolerance_dollar_days is not None and not _finite_nonnegative(
         float(buffer_tolerance_dollar_days)
     ):
-        return None
+        return OptimizationFailure("invalid_input")
     if bundle.n_paths <= 0 or bundle.horizon_days <= 0:
-        return None
-    if not state.credit_accounts and not state.holdings:
-        return None
-
+        return OptimizationFailure("invalid_input")
     funding_config = FundingConfig()
     primary_account = _select_primary_credit_account(state)
     available_credit = (
@@ -191,7 +206,7 @@ def optimize_funding(
     )
     initial_market_value = float(state.marketable_backup_capital)
     if not _finite_nonnegative(available_credit) or not _finite_nonnegative(initial_market_value):
-        return None
+        return OptimizationFailure("invalid_input")
 
     credit_due_day = 0
     interest_per_credit_dollar = 0.0
@@ -204,7 +219,7 @@ def optimize_funding(
         if not grace_applies:
             interest_per_credit_dollar = primary_account.purchase_apr / 365.0 * due_offset
             if not _finite_nonnegative(interest_per_credit_dollar):
-                return None
+                return OptimizationFailure("invalid_input")
 
     settlement_day = max(
         1, funding_config.settlement_days + funding_config.external_transfer_days
@@ -221,15 +236,15 @@ def optimize_funding(
         else latest_material_day + funding_config.trailing_days
     )
     if bundle.n_paths * evaluation_horizon > MAX_SCENARIO_DAYS:
-        return None
+        return OptimizationFailure("resource_limit")
     evaluation_bundle = extend_draw_bundle(bundle, evaluation_horizon)
 
     try:
         import cvxpy as cp
     except ImportError:
-        return None
+        return OptimizationFailure("cvxpy_unavailable")
     if cp.CLARABEL not in cp.installed_solvers():
-        return None
+        return OptimizationFailure("solver_unavailable")
 
     baseline_cash = cash_paths(state, evaluation_bundle, obligations)
     discretionary_savings = np.cumsum(
@@ -242,9 +257,11 @@ def optimize_funding(
         or n_paths != bundle.n_paths
         or horizon_days != evaluation_horizon
     ):
-        return None
+        return OptimizationFailure("invalid_input")
     if not np.all(np.isfinite(baseline_cash)) or not np.all(np.isfinite(discretionary_savings)):
-        return None
+        return OptimizationFailure("invalid_input")
+    if available_credit == 0.0 and initial_market_value == 0.0 and not np.any(discretionary_savings > 0.0):
+        return OptimizationFailure("no_funding_levers")
     credit_effect_daily = np.zeros(horizon_days, dtype=float)
     if available_credit > 0.0:
         credit_effect_daily[0] = 1.0
@@ -256,21 +273,21 @@ def optimize_funding(
     liquidation_effect[:, settlement_column:] = 1.0
     total_cost_basis = float(sum(holding.cost_basis for holding in state.taxable_portfolio))
     if not isfinite(total_cost_basis):
-        return None
+        return OptimizationFailure("invalid_input")
     cost_basis_fraction = total_cost_basis / max(initial_market_value, 1e-9)
     if not isfinite(cost_basis_fraction):
-        return None
+        return OptimizationFailure("invalid_input")
 
     # A proportional sale disposes the same fraction of every taxable lot
     # at today's prices. Loss relief depends on the household's wider tax
     # situation, so it cannot subsidize the objective or fund a cash path.
     tax_per_liquidation_dollar = max(0.0, 1.0 - cost_basis_fraction) * capital_gains_rate
     if not _finite_nonnegative(tax_per_liquidation_dollar):
-        return None
+        return OptimizationFailure("invalid_input")
 
     deferred_cost_per_fraction = float(np.mean(discretionary_savings[:, -1]))
     if not isfinite(deferred_cost_per_fraction):
-        return None
+        return OptimizationFailure("invalid_input")
     if buffer_tolerance_dollar_days is None:
         buffer_tolerance = (
             operating_buffer
@@ -354,11 +371,23 @@ def optimize_funding(
             time_limit=SOLVER_TIME_LIMIT_SECONDS,
         )
     except cp.error.SolverError:
-        return None
+        return OptimizationFailure("solver_error")
 
     status = str(problem.status or "")
+    if status == cp.USER_LIMIT:
+        solve_time = getattr(problem.solver_stats, "solve_time", None)
+        reason = (
+            "solver_timeout"
+            if solve_time is not None and solve_time >= SOLVER_TIME_LIMIT_SECONDS
+            else "solver_limit"
+        )
+        return OptimizationFailure(reason)
+    if status in (cp.INFEASIBLE, cp.INFEASIBLE_INACCURATE):
+        return OptimizationFailure("infeasible")
+    if status in (cp.UNBOUNDED, cp.UNBOUNDED_INACCURATE):
+        return OptimizationFailure("unbounded")
     if status not in _OPTIMAL_STATUSES:
-        return None
+        return OptimizationFailure("solver_error")
 
     credit_value = _bounded_solution(credit.value, 0.0, available_credit)
     liquidation_value = _bounded_solution(liquidation.value, 0.0, initial_market_value)
@@ -372,7 +401,10 @@ def optimize_funding(
         or eta_value is None
         or cvar_value is None
     ):
-        return None
+        return OptimizationFailure("invalid_solution")
+    if deferred_cost_per_fraction == 0.0:
+        # A free auxiliary choice cannot imply reducing nonexistent spending.
+        deferral_value = 0.0
 
     adjusted_balance_value = (
         float(state.immediate_funding)
@@ -382,7 +414,7 @@ def optimize_funding(
         + deferral_value * discretionary_savings
     )
     if not np.all(np.isfinite(adjusted_balance_value)):
-        return None
+        return OptimizationFailure("invalid_solution")
 
     if tax_per_liquidation_dollar == 0.0:
         trimmed = _trim_redundant_liquidation(
@@ -397,7 +429,7 @@ def optimize_funding(
     )
     buffer_feasibility_tolerance = _NUMERICAL_TOLERANCE * max(1.0, abs(buffer_tolerance))
     if actual_buffer_shortfall > buffer_tolerance + buffer_feasibility_tolerance:
-        return None
+        return OptimizationFailure("invalid_solution")
 
     actual_overdraft_cost = (overdraft_apr / 365.0) * np.maximum(
         0.0, -adjusted_balance_value
@@ -410,14 +442,14 @@ def optimize_funding(
         + actual_overdraft_cost
     )
     if not np.all(np.isfinite(path_cost_value)):
-        return None
+        return OptimizationFailure("invalid_solution")
     if q == 1.0:
         maximum_path_cost = float(np.max(path_cost_value))
         eta_feasibility_tolerance = _NUMERICAL_TOLERANCE * max(
             1.0, abs(eta_value), abs(maximum_path_cost)
         )
         if eta_value < maximum_path_cost - eta_feasibility_tolerance:
-            return None
+            return OptimizationFailure("invalid_solution")
 
     expected_cost = float(np.mean(path_cost_value))
     # Report observed variation in this plan's costs, including cash-flow
@@ -430,13 +462,13 @@ def optimize_funding(
         np.mean(np.any(adjusted_balance_value < 0.0, axis=1))
     )
     if not isfinite(expected_cost) or not isfinite(cash_shortfall_probability):
-        return None
+        return OptimizationFailure("invalid_solution")
 
     dual_value = _scalar_value(buffer_constraint.dual_value)
     if dual_value is None:
         implied_liquidity_price = None
     elif dual_value < -_NUMERICAL_TOLERANCE:
-        return None
+        return OptimizationFailure("invalid_solution")
     else:
         implied_liquidity_price = max(0.0, dual_value)
 
@@ -453,4 +485,10 @@ def optimize_funding(
         solver_status=status,
         evaluation_horizon_days=evaluation_bundle.horizon_days,
         evaluation_draw_id=evaluation_bundle.bootstrap_draw_id,
+        evaluation_paths=n_paths,
+        cost_coverage_target=q,
+        buffer_breach_probability=float(np.mean(np.any(adjusted_balance_value < operating_buffer, axis=1))),
+        dollar_days_below_buffer=actual_buffer_shortfall,
+        buffer_tolerance_dollar_days=buffer_tolerance,
+        buffer_constraint_binding=abs(buffer_tolerance - actual_buffer_shortfall) <= buffer_feasibility_tolerance,
     )

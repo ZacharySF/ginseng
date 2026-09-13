@@ -19,6 +19,8 @@ const ENGINE_BASE_URL =
 			? 'http://localhost:8000'
 			: null;
 const REQUEST_TIMEOUT_MS = 8000;
+// The scenario includes bootstrap diagnostics as well as a 10-second solver budget.
+const SCENARIO_TIMEOUT_MS = 30000;
 
 export type EngineResult<T> =
 	| { status: 'ok'; data: T }
@@ -226,7 +228,7 @@ export function postScenario(request: ScenarioRequest): Promise<ScenarioResult> 
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(request)
 		},
-		{ requiresAuth: true }
+		{ requiresAuth: true, timeoutMs: SCENARIO_TIMEOUT_MS }
 	);
 }
 

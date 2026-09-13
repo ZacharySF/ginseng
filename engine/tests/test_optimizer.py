@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 import ginseng.optimizer as optimizer
-from ginseng.optimizer import optimize_funding
+from ginseng.optimizer import OptimalPlan, OptimizationFailure, optimize_funding
 from ginseng.simulate import draw_bundle
 from ginseng.state import CreditAccount, FinancialState, Holding, Obligation, TaxLot, Transaction, TransactionType
 
@@ -122,13 +122,13 @@ def _require_cvxpy():
     return pytest.importorskip("cvxpy")
 
 
-def test_returns_none_without_any_funding_lever():
+def test_reports_reason_without_any_funding_lever():
     state = _state()
 
-    assert optimize_funding(state, _bundle(state, 5), ()) is None
+    assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure("no_funding_levers")
 
 
-def test_returns_none_when_cvxpy_is_unavailable():
+def test_reports_reason_when_cvxpy_is_unavailable():
     state = _state(cards=(_credit_account("primary", 5_000.0),))
     real_import = builtins.__import__
 
@@ -138,18 +138,18 @@ def test_returns_none_when_cvxpy_is_unavailable():
         return real_import(name, *args, **kwargs)
 
     with patch("builtins.__import__", side_effect=unavailable_cvxpy):
-        assert optimize_funding(state, _bundle(state, 5), ()) is None
+        assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure("cvxpy_unavailable")
 
 
-def test_returns_none_when_clarabel_is_unavailable(monkeypatch):
+def test_reports_reason_when_clarabel_is_unavailable(monkeypatch):
     cvxpy = _require_cvxpy()
     state = _state(cards=(_credit_account("primary", 5_000.0),))
     monkeypatch.setattr(cvxpy, "installed_solvers", lambda: [])
 
-    assert optimize_funding(state, _bundle(state, 5), ()) is None
+    assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure("solver_unavailable")
 
 
-def test_returns_none_when_clarabel_fails(monkeypatch):
+def test_reports_reason_when_clarabel_fails(monkeypatch):
     cvxpy = _require_cvxpy()
     state = _state(cards=(_credit_account("primary", 5_000.0),))
     monkeypatch.setattr(
@@ -158,14 +158,14 @@ def test_returns_none_when_clarabel_fails(monkeypatch):
         lambda *args, **kwargs: (_ for _ in ()).throw(cvxpy.error.SolverError("failed")),
     )
 
-    assert optimize_funding(state, _bundle(state, 5), ()) is None
+    assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure("solver_error")
 
 
-def test_returns_none_when_model_exceeds_documented_resource_cap(monkeypatch):
+def test_reports_reason_when_model_exceeds_documented_resource_cap(monkeypatch):
     state = _state(cards=(_credit_account("primary", 5_000.0),))
     monkeypatch.setattr(optimizer, "MAX_SCENARIO_DAYS", 1)
 
-    assert optimize_funding(state, _bundle(state, 2, n_paths=2), ()) is None
+    assert optimize_funding(state, _bundle(state, 2, n_paths=2), ()) == OptimizationFailure("resource_limit")
 
 
 def test_credit_draw_is_limited_to_the_primary_card_not_all_card_limits():
@@ -180,7 +180,7 @@ def test_credit_draw_is_limited_to_the_primary_card_not_all_card_limits():
         buffer_tolerance_dollar_days=1e9,
     )
 
-    assert result is not None
+    assert isinstance(result, OptimalPlan)
     assert result.credit_draw == pytest.approx(primary.available_credit, abs=1e-3)
     assert result.credit_draw <= primary.available_credit + 1e-6
 
@@ -196,7 +196,7 @@ def test_credit_repayment_beyond_the_chart_is_costed_on_its_actual_day():
         buffer_tolerance_dollar_days=1e9,
     )
 
-    assert result is not None
+    assert isinstance(result, OptimalPlan)
     # The day-24 repayment lies outside the five-day chart. Spec-14 extends
     # to day 27, leaving a $3,000 four-day overdraft: 3000 * 4 * .365 / 365.
     assert result.expected_cost == pytest.approx(12.0, abs=2e-4)
@@ -213,7 +213,7 @@ def test_liquidation_settlement_beyond_the_chart_is_not_clamped_earlier():
         buffer_tolerance_dollar_days=1e9,
     )
 
-    assert result is not None
+    assert isinstance(result, OptimalPlan)
     # Settlement is day 3, after the two-day chart. A $4,000 deficit therefore
     # remains for the second forecast day, costing $4 and triggering a path
     # shortfall on every deterministic path.
@@ -233,7 +233,7 @@ def test_coverage_one_uses_a_finite_worst_case_objective():
         buffer_tolerance_dollar_days=1e9,
     )
 
-    assert result is not None
+    assert isinstance(result, OptimalPlan)
     assert result.cvar_cost == pytest.approx(result.var_cost, abs=2e-4)
     assert result.cvar_cost == pytest.approx(result.expected_cost, abs=2e-4)
     assert result.expected_cost == pytest.approx(12.0, abs=2e-4)
@@ -267,7 +267,7 @@ def test_optimizer_prices_todays_sale_at_execution(market_return):
         capital_gains_rate=0.01,
         buffer_tolerance_dollar_days=1e9,
     )
-    assert plan is not None
+    assert isinstance(plan, OptimalPlan)
     assert plan.liquidation_amount == pytest.approx(4_000.0, abs=1e-3)
     # Selling $4,000 realizes an $800 gain at the assumed 1% tax rate.
     assert plan.expected_cost == pytest.approx(8.0, abs=1e-4)
@@ -285,7 +285,7 @@ def test_tax_losses_cannot_make_an_already_funded_plan_profitable(market_return)
     )
     plan = optimize_funding(state, _bundle(state, 10), ())
 
-    assert plan is not None
+    assert isinstance(plan, OptimalPlan)
     assert plan.expected_cost == pytest.approx(0.0, abs=1e-6)
     assert plan.cvar_cost == pytest.approx(0.0, abs=1e-6)
     assert plan.liquidation_amount == pytest.approx(0.0, abs=1e-6)
@@ -302,7 +302,7 @@ def test_loss_sale_keeps_only_proceeds_needed_for_cash_and_buffer_limits(
         operating_buffer=1000.0, buffer_tolerance_dollar_days=buffer_tolerance,
     )
 
-    assert plan is not None
+    assert isinstance(plan, OptimalPlan)
     assert plan.liquidation_amount == pytest.approx(expected_sale, abs=1e-3)
     assert plan.expected_cost == pytest.approx(0.0, abs=1e-6)
     assert plan.cvar_cost == pytest.approx(0.0, abs=1e-6)
@@ -312,6 +312,12 @@ def test_loss_sale_keeps_only_proceeds_needed_for_cash_and_buffer_limits(
     # bill, requiring a further $900 of cash beyond the $4,000 sale.
     dollar_days = 2000.0 + 6.0 * max(0.0, 5000.0 - plan.liquidation_amount)
     assert dollar_days <= buffer_tolerance + 1e-6
+    assert plan.buffer_breach_probability == 1.0
+    assert plan.dollar_days_below_buffer == pytest.approx(dollar_days)
+    assert plan.buffer_tolerance_dollar_days == buffer_tolerance
+    assert plan.buffer_constraint_binding is (buffer_tolerance == 2600.0)
+    assert plan.evaluation_paths == 4
+    assert plan.cost_coverage_target == 0.95
 
 
 def test_cost_variation_is_detected_from_cash_paths_without_market_history(monkeypatch):
@@ -324,7 +330,7 @@ def test_cost_variation_is_detected_from_cash_paths_without_market_history(monke
         operating_buffer=0.0, buffer_tolerance_dollar_days=1e9, overdraft_apr=0.365,
     )
 
-    assert plan is not None
+    assert isinstance(plan, OptimalPlan)
     assert plan.cost_is_path_dependent is True
     assert plan.expected_cost == pytest.approx(0.1485, abs=1e-5)
     assert plan.cvar_cost == pytest.approx(0.297, abs=1e-5)
@@ -341,7 +347,7 @@ def test_infeasible_buffer_constraint_fails_closed():
         buffer_tolerance_dollar_days=0.0,
     )
 
-    assert result is None
+    assert result == OptimizationFailure("infeasible")
 
 
 def test_already_funded_paths_need_no_shortfall_cost_or_extra_funding():
@@ -351,8 +357,47 @@ def test_already_funded_paths_need_no_shortfall_cost_or_extra_funding():
         cards=(_credit_account("primary", 1_000.0, apr=0.365),),
     )
     result = optimize_funding(state, _bundle(state, 30), (), operating_buffer=1_000.0)
-    assert result is not None
+    assert isinstance(result, OptimalPlan)
     assert result.expected_cost == pytest.approx(0.0, abs=1e-6)
     assert result.cvar_cost == pytest.approx(0.0, abs=1e-6)
     assert result.cash_shortfall_probability == 0.0
     assert result.credit_draw == pytest.approx(0.0, abs=1e-5)
+    assert result.deferral_fraction == 0.0
+
+
+@pytest.mark.parametrize("solve_time, reason", [(10.1, "solver_timeout"), (0.1, "solver_limit")])
+def test_solver_limits_have_explicit_reasons(monkeypatch, solve_time, reason):
+    from types import SimpleNamespace
+
+    cvxpy = _require_cvxpy()
+    state = _state(cards=(_credit_account("primary", 5000.0),))
+
+    def limited(problem, **kwargs):
+        assert kwargs["time_limit"] == 10.0
+        problem._status = cvxpy.USER_LIMIT
+        problem._solver_stats = SimpleNamespace(solve_time=solve_time)
+
+    monkeypatch.setattr(cvxpy.Problem, "solve", limited)
+    assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure(reason)
+
+
+def test_invalid_solver_output_is_not_returned_as_a_plan(monkeypatch):
+    cvxpy = _require_cvxpy()
+    state = _state(cards=(_credit_account("primary", 5000.0),))
+
+    def missing_values(problem, **kwargs):
+        problem._status = cvxpy.OPTIMAL
+
+    monkeypatch.setattr(cvxpy.Problem, "solve", missing_values)
+    assert optimize_funding(state, _bundle(state, 5), ()) == OptimizationFailure("invalid_solution")
+
+
+def test_spending_reduction_is_an_available_lever_without_assets_or_credit():
+    _require_cvxpy()
+    state = _state(daily_discretionary=10.0)
+    result = optimize_funding(
+        state, _bundle(state, 5), (Obligation("bill", "Bill", 25.0, 5),),
+        operating_buffer=0.0, buffer_tolerance_dollar_days=0.0,
+    )
+    assert isinstance(result, OptimalPlan)
+    assert result.deferral_fraction == pytest.approx(0.5, abs=1e-5)
