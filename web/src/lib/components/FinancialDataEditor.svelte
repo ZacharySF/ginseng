@@ -5,6 +5,10 @@
 	import FinancialHistoryCsv from '$lib/components/FinancialHistoryCsv.svelte';
 	import CurrencyInput from '$lib/components/CurrencyInput.svelte';
 	import { financialStore } from '$lib/finance.svelte';
+	import {
+		deriveHistoricalIncome,
+		type HistoricalIncomeWindow
+	} from '$lib/historical-income';
 	import { MAX_ABS_BALANCE_CENTS, MAX_BILL_CENTS } from '$lib/workspace';
 	import {
 		exportFinanceWorkspace,
@@ -34,15 +38,6 @@
 
 	let { section = 'cash' }: Props = $props();
 
-	const SECTIONS: Array<{ id: FinanceSection; label: string; note: string }> = [
-		{ id: 'cash', label: 'Cash', note: 'Opening cash' },
-		{ id: 'income', label: 'Income', note: 'Model source' },
-		{ id: 'history', label: 'History', note: 'CSV & review' },
-		{ id: 'assumptions', label: 'Assumptions', note: 'Variability' },
-		{ id: 'credit', label: 'Credit', note: 'Actual accounts' },
-		{ id: 'investments', label: 'Investments', note: 'Lots & returns' },
-		{ id: 'policy', label: 'Policy', note: 'Funding rules' }
-	];
 	const PRIORITIES = [
 		'avoid_interest_bearing_debt',
 		'minimize_taxable_sales',
@@ -77,6 +72,7 @@
 	let returnFileRequest = 0;
 	let exportState = $state<'idle' | 'working' | 'error' | 'done'>('idle');
 	let exportMessage = $state<string | null>(null);
+	let incomeHistoryWindow = $state<HistoricalIncomeWindow>(12);
 
 	const HISTORY_PAGE_SIZE = 50;
 	const PORTFOLIO_RETURN_PAGE_SIZE = 50;
@@ -99,6 +95,14 @@
 		(draft?.accounts ?? []).reduce((total, account) => total + account.balance_cents, 0)
 	);
 	const historyRows = $derived(draft?.inputs.transactions ?? []);
+	const historicalIncomeEstimate = $derived(
+		deriveHistoricalIncome(
+			historyRows,
+			draft?.inputs.history_start ?? null,
+			draft?.inputs.history_end ?? null,
+			incomeHistoryWindow
+		)
+	);
 	const duplicateHistoryIndexes = $derived(duplicateTransactionIndexes(historyRows));
 	const historyPageCount = $derived(Math.max(1, Math.ceil(historyRows.length / HISTORY_PAGE_SIZE)));
 	const displayedHistoryRows = $derived(
@@ -253,6 +257,22 @@
 		if (!Number.isFinite(percent)) return;
 		Object.assign(target, { [field]: percent / 100 });
 		formIssues = [];
+	}
+	function applyHistoricalIncomeEstimate(): void {
+		if (
+			!draft ||
+			editingLocked ||
+			!draft.inputs.history_complete ||
+			historicalIncomeEstimate.status !== 'ready'
+		) {
+			return;
+		}
+		draft.inputs.assumptions.monthly_variable_income_cents =
+			historicalIncomeEstimate.monthlyIncomeCents;
+		draft.inputs.assumptions.income_variability_pct =
+			historicalIncomeEstimate.variability;
+		formIssues = [];
+		saveMessage = `Applied ${historicalIncomeEstimate.months} complete months of variable-income history to the assumptions draft. Review and save to use it.`;
 	}
 
 	function updateInteger<T extends object>(target: T, field: keyof T, event: Event): void {
@@ -889,11 +909,13 @@
 		<div class="editor-layout">
 			<nav class="section-index" aria-label="Financial data sections">
 				<p>Data ledger</p>
-				{#each SECTIONS as item (item.id)}
-					<a class:active={section === item.id} href={`${resolve('/data')}?section=${item.id}#${item.id}`} aria-current={section === item.id ? 'page' : undefined}>
-						<strong>{item.label}</strong><span>{item.note}</span>
-					</a>
-				{/each}
+				<a class:active={section === 'cash'} href={resolve('/data?section=cash#cash')} aria-current={section === 'cash' ? 'page' : undefined}><strong>Cash</strong><span>Opening cash</span></a>
+				<a class:active={section === 'income'} href={resolve('/data?section=income#income')} aria-current={section === 'income' ? 'page' : undefined}><strong>Income</strong><span>Model source</span></a>
+				<a class:active={section === 'history'} href={resolve('/data?section=history#history')} aria-current={section === 'history' ? 'page' : undefined}><strong>History</strong><span>CSV &amp; review</span></a>
+				<a class:active={section === 'assumptions'} href={resolve('/data?section=assumptions#assumptions')} aria-current={section === 'assumptions' ? 'page' : undefined}><strong>Assumptions</strong><span>Variability</span></a>
+				<a class:active={section === 'credit'} href={resolve('/data?section=credit#credit')} aria-current={section === 'credit' ? 'page' : undefined}><strong>Credit</strong><span>Actual accounts</span></a>
+				<a class:active={section === 'investments'} href={resolve('/data?section=investments#investments')} aria-current={section === 'investments' ? 'page' : undefined}><strong>Investments</strong><span>Lots &amp; returns</span></a>
+				<a class:active={section === 'policy'} href={resolve('/data?section=policy#policy')} aria-current={section === 'policy' ? 'page' : undefined}><strong>Policy</strong><span>Funding rules</span></a>
 				<div class="index-note"><strong>Manual only</strong><span>CSV and direct entry are supported. Ginseng never connects to your bank.</span></div>
 			</nav>
 
@@ -995,8 +1017,48 @@
 						</section>
 					{:else if section === 'assumptions'}
 						<section id="assumptions" class="form-section" aria-labelledby="assumptions-title">
-							<header class="section-heading"><div><p class="eyebrow">Explicit prospective assumptions</p><h1 id="assumptions-title">Income, spending, and variability</h1><p>These inputs are stored as decimal rates and shown here as percentages. They are used only after you choose Assumptions on Income.</p></div><a class="button button--quiet" href={`${resolve('/data')}?section=income#income`}>Choose model source</a></header>
+							<header class="section-heading"><div><p class="eyebrow">Explicit prospective assumptions</p><h1 id="assumptions-title">Income, spending, and variability</h1><p>These inputs are stored as decimal rates and shown here as percentages. They are used only after you choose Assumptions on Income.</p></div><a class="button button--quiet" href={resolve('/data?section=income#income')}>Choose model source</a></header>
 							<div class="assumption-band"><p><strong>Current source: {draft.inputs.mode}</strong> {draft.inputs.mode === 'assumptions' ? 'These values will drive the personal forecast after you save.' : 'These values are retained but not selected as the active model source.'}</p></div>
+							<section class="input-group" aria-labelledby="historical-income-title">
+								<header>
+									<p class="eyebrow">Observed history → prospective assumption</p>
+									<h2 id="historical-income-title">Estimate variable income from history</h2>
+									<p>Use classified variable-income transactions instead of guessing. Ginseng includes zero-income months, excludes fixed income, and uses only complete calendar months inside your declared coverage.</p>
+								</header>
+								<div class="income-estimator-grid">
+									<label class="field">
+										<span>History window</span>
+										<select bind:value={incomeHistoryWindow}>
+											<option value={3}>Up to 3 complete months</option>
+											<option value={6}>Up to 6 complete months</option>
+											<option value={12}>Up to 12 complete months</option>
+											<option value="all">All complete months</option>
+										</select>
+										<small>Uses the most recent complete months available.</small>
+									</label>
+									{#if !draft.inputs.history_complete}
+										<div class="estimator-status">
+											<strong>Complete coverage is required.</strong>
+											<p>Set the coverage dates and confirm completeness on History before deriving an assumption.</p>
+											<a href={resolve('/data?section=history#history')}>Review history coverage</a>
+										</div>
+									{:else if historicalIncomeEstimate.status === 'unavailable'}
+										<div class="estimator-status">
+											<strong>Not enough usable history.</strong>
+											<p>{historicalIncomeEstimate.message}</p>
+											<a href={resolve('/data?section=history#history')}>Review classified history</a>
+										</div>
+									{:else}
+										<div class="income-estimate">
+											<div><span>Monthly average</span><strong class="numeric">{readableCents(historicalIncomeEstimate.monthlyIncomeCents)}</strong></div>
+											<div><span>Monthly variability</span><strong>{displayPercent(historicalIncomeEstimate.variability)}%</strong></div>
+											<div><span>Observed window</span><strong>{historicalIncomeEstimate.months} months</strong></div>
+											<p><time datetime={historicalIncomeEstimate.periodStart}>{historicalIncomeEstimate.periodStart}</time> through <time datetime={historicalIncomeEstimate.periodEnd}>{historicalIncomeEstimate.periodEnd}</time>. {#if historicalIncomeEstimate.uncappedVariability > 2}The stored variability is capped at the model limit of 200%.{/if}</p>
+											<button type="button" class="button button--primary" onclick={applyHistoricalIncomeEstimate} disabled={editingLocked}>Apply to assumptions</button>
+										</div>
+									{/if}
+								</div>
+							</section>
 							<section class="input-group" aria-labelledby="monthly-inputs-title"><header><p class="eyebrow">Monthly cash flow</p><h2 id="monthly-inputs-title">Variable income and spending</h2><p>Known recurring events stay on Events. Monthly assumptions are rates spread across forecast days at an average 30.44 days per month, not scheduled deposits or bills.</p></header><div class="field-grid field-grid--three"><label class="field"><span>Variable income (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_variable_income_cents} required /><small>Nonnegative</small></label><label class="field"><span>Essential variable spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_essential_spending_cents} required /><small>Nonnegative</small></label><label class="field"><span>Discretionary spending (USD/month)</span><CurrencyInput class="numeric" inputmode="decimal" pattern={String.raw`[0-9]+(?:\.[0-9]{1,2})?`} bind:value={draft.inputs.assumptions.monthly_discretionary_spending_cents} required /><small>Nonnegative</small></label></div></section>
 							<section class="input-group" aria-labelledby="variability-title"><header><p class="eyebrow">Variability and persistence</p><h2 id="variability-title">How cash-flow changes cluster</h2><p>Correlations link underlying daily shocks, not the resulting dollar amounts or returns. Variability is a percentage from 0% to 200%; persistence controls how long favorable or unfavorable shocks last.</p></header><div class="field-grid field-grid--four"><label class="field"><span>Income variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.income_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'income_variability_pct', event)} /></label><label class="field"><span>Spending variability (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.spending_variability_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'spending_variability_pct', event)} /></label><label class="field"><span>Persistence (days)</span><input type="number" min="1" max="30" step="1" value={draft.inputs.assumptions.persistence_days} required oninput={(event) => draft && updateInteger(draft.inputs.assumptions, 'persistence_days', event)} /></label><label class="field"><span>Income / spending shock correlation</span><input type="number" min="-0.95" max="0.95" step="0.01" value={draft.inputs.assumptions.income_spending_correlation} required oninput={(event) => draft && updateNumber(draft.inputs.assumptions, 'income_spending_correlation', event)} /></label></div></section>
 							<section class="input-group input-group--market" aria-labelledby="market-title"><header><p class="eyebrow">Market link</p><h2 id="market-title">Optional market assumptions</h2><p>Enable only when a market-sensitive income or spending relationship is meaningful for your plan. These prospective paths preserve your annual return and volatility inputs over a 365-day horizon; they are not observed returns. Holdings and actual returns stay under Investments.</p></header><label class="check-card"><input type="checkbox" bind:checked={draft.inputs.assumptions.market_assumptions_enabled} /><span><strong>Include market assumptions in the model</strong><small>Disabled values are retained but not used.</small></span></label><div class="field-grid field-grid--three"><label class="field"><span>Expected annual return (%)</span><input type="number" min="-99" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.expected_annual_return_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'expected_annual_return_pct', event)} /></label><label class="field"><span>Annual return volatility (%)</span><input type="number" min="0" max="200" step="0.1" value={displayPercent(draft.inputs.assumptions.annual_return_volatility_pct)} required oninput={(event) => draft && updatePercent(draft.inputs.assumptions, 'annual_return_volatility_pct', event)} /></label><label class="field"><span>Income / market shock correlation</span><input type="number" min="-0.95" max="0.95" step="0.01" value={draft.inputs.assumptions.income_market_correlation} required oninput={(event) => draft && updateNumber(draft.inputs.assumptions, 'income_market_correlation', event)} /></label></div></section>
@@ -1374,6 +1436,17 @@
 	.input-group { max-width: 82rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
 	.input-group header { display: grid; gap: 0.25rem; max-width: 64ch; }
 	.input-group--market { padding-bottom: 0.2rem; }
+	.income-estimator-grid { display: grid; grid-template-columns: minmax(14rem, 0.34fr) minmax(0, 1fr); gap: 1rem; align-items: start; max-width: 76rem; margin-top: 1rem; }
+	.estimator-status { display: grid; gap: 0.3rem; min-height: 5.25rem; padding: 0.75rem 0.85rem; border-left: 3px solid var(--warning); background: var(--paper-soft); color: var(--ink-soft); font-size: 0.76rem; line-height: 1.45; }
+	.estimator-status strong { color: var(--ink); }
+	.estimator-status p { margin: 0; }
+	.estimator-status a { width: fit-content; color: var(--cobalt-deep); font-weight: 750; }
+	.income-estimate { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--rule); background: var(--rule); }
+	.income-estimate > div { display: grid; gap: 0.25rem; padding: 0.75rem; background: var(--paper-soft); }
+	.income-estimate span { color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase; }
+	.income-estimate strong { color: var(--ink); font-size: 1rem; font-variant-numeric: tabular-nums; }
+	.income-estimate p { grid-column: 1 / -1; margin: 0; padding: 0.7rem 0.75rem; background: var(--paper); color: var(--ink-soft); font-size: 0.72rem; line-height: 1.4; }
+	.income-estimate .button { grid-column: 1 / -1; justify-self: start; margin: 0.75rem; }
 	.record-stack { display: grid; gap: 1px; max-width: 84rem; margin-top: 1rem; border: 1px solid var(--rule); background: var(--rule); }
 	.record { display: grid; gap: 0.8rem; padding: 1rem; background: var(--paper); }
 	.record > header, .list-heading, .subsection-heading, .export-panel { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
@@ -1431,7 +1504,7 @@
 		.ledger-row > button { justify-self: start; }
 		.ledger-row .field::before { content: attr(data-label); color: var(--ink-soft); font-size: 0.72rem; font-weight: 700; }
 	}
-	@media (max-width: 56rem) { .editor-layout { grid-template-columns: 1fr; }.section-index { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0.55rem; border-right: 0; border-bottom: 1px solid var(--rule); }.section-index > p, .index-note { display: none; }.section-index a { min-height: 2.75rem; padding: 0.4rem; }.section-index a span { display: none; }.section-index a strong { font-size: 0.75rem; }.form-section { min-height: auto; padding: 1rem 0.75rem 6.5rem; }.mode-grid, .field-grid--three { grid-template-columns: 1fr; }.linked-data, .return-review, .export-panel, .save-bar { align-items: stretch; flex-direction: column; }.toolbar-summary { display: none; }.data-toolbar { flex-wrap: wrap; }.toolbar-identity { flex: 1 1 auto; }.toolbar-state { margin-left: auto; }.save-actions { width: 100%; }.save-actions .button { flex: 1 1 12rem; }.record > header, .subsection-heading, .list-heading { align-items: stretch; flex-direction: column; } }
-	@media (max-width: 34rem) { .section-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }.field-grid--four, .return-map { grid-template-columns: 1fr; }.section-stats { grid-template-columns: 1fr; }.event-strip { grid-template-columns: 1fr; }.toolbar-identity span { display: none; }.mode-card { min-height: 8rem; }.data-toolbar { padding: 0.55rem 0.7rem; }.notice, .confirmation { align-items: stretch; flex-direction: column; } }
+	@media (max-width: 56rem) { .editor-layout { grid-template-columns: 1fr; }.section-index { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0.55rem; border-right: 0; border-bottom: 1px solid var(--rule); }.section-index > p, .index-note { display: none; }.section-index a { min-height: 2.75rem; padding: 0.4rem; }.section-index a span { display: none; }.section-index a strong { font-size: 0.75rem; }.form-section { min-height: auto; padding: 1rem 0.75rem 6.5rem; }.mode-grid, .field-grid--three, .income-estimator-grid { grid-template-columns: 1fr; } }
+	@media (max-width: 34rem) { .section-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }.field-grid--four, .return-map { grid-template-columns: 1fr; }.section-stats, .income-estimate { grid-template-columns: 1fr; }.event-strip { grid-template-columns: 1fr; }.toolbar-identity span { display: none; }.mode-card { min-height: 8rem; }.data-toolbar { padding: 0.55rem 0.7rem; }.notice, .confirmation { align-items: stretch; flex-direction: column; } }
 	@media (prefers-reduced-motion: reduce) { .button, .text-button, .file-button { transition: none; } }
 </style>
