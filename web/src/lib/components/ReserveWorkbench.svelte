@@ -116,8 +116,8 @@
 							<p class="label">Policy sensitivity</p>
 							<h2 id="reserve-buffer-curve-title">Buffer drives reserve</h2>
 						</div>
-						<span>Every point uses the same forecast and shows the cash reserve needed when the untouched amount changes.</span>
 					</div>
+					<p class="section-description">Required reserve at different operating buffers, using the same forecast.</p>
 					<ReserveBufferCurve
 						points={response.reserve_buffer_curve}
 						operatingBuffer={response.operating_buffer}
@@ -186,6 +186,13 @@
 </div>
 
 <style>
+	.section-description {
+		margin: -0.35rem 0 1rem;
+		color: var(--ink-soft);
+		font-size: 0.73rem;
+		line-height: 1.4;
+	}
+
 	.reserve-workbench { min-height: calc(100dvh - 3.25rem); background: var(--paper); color: var(--ink); }
 	.reserve-workbench--preview { box-shadow: inset 3px 0 var(--cobalt); }
 	.view-toolbar { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:3.35rem; padding:0.3rem 1rem; border-bottom:1px solid var(--rule); background:var(--paper); }
