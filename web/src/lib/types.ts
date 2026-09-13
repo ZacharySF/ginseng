@@ -1,4 +1,4 @@
-// Types for the frozen POST /scenario contract (Ginseng spec section 20-34).
+// Types for the POST /scenario contract and its model diagnostics.
 // Field names are snake_case and must match the engine's JSON exactly —
 // the frontend never renames, derives, or computes a financial number.
 
@@ -20,6 +20,8 @@ export interface ScenarioRequest {
 	overdraft_apr?: number;
 	buffer_tolerance_dollar_days?: number | null;
 	capital_gains_rate?: number;
+	tail_deficit_limit?: number | null;
+	drought_view?: { probability: number; window_days?: number; income_fraction?: number } | null;
 }
 
 export interface Severity {
@@ -54,6 +56,7 @@ export interface CashPaths {
 export interface ShortfallDistribution {
 	bin_edges: number[];
 	counts: number[];
+	probabilities?: number[];
 }
 
 // Funding plans (spec sections 38-45, 60), serialized by
@@ -61,11 +64,17 @@ export interface ShortfallDistribution {
 export interface Plan {
 	id: string;
 	label: string;
+	evaluation_horizon_days: number;
+	evaluation_draw_id: string;
 	cash_shortfall_probability: number;
 	avg_cash_deficit_when_short: number;
 	new_debt: number;
 	interest_exposure: number;
 	investment_sold: number;
+	withdrawal_tax_reserve?: number;
+	withdrawal_penalty_reserve?: number;
+	withdrawal_net_cash?: number;
+	withdrawal_accounts?: AccountWithdrawal[];
 	realized_gain_loss: number;
 	deferred_spending: number;
 	feasible: boolean;
@@ -106,8 +115,58 @@ export interface OptimalPlan {
 	expected_cost: number;
 	cash_shortfall_probability: number;
 	implied_liquidity_price: number | null;
+	// Whether this plan's evaluated costs vary across the simulated futures.
 	cost_is_path_dependent: boolean;
 	solver_status: string;
+	solver_method?: 'clarabel' | 'highs_constraint_generation';
+	evaluation_horizon_days: number;
+	evaluation_draw_id: string;
+	evaluation_paths: number;
+	cost_coverage_target: number;
+	buffer_breach_probability: number;
+	dollar_days_below_buffer: number;
+	buffer_tolerance_dollar_days: number;
+	buffer_constraint_binding: boolean;
+	evaluation_weight_hash: string;
+	tail_deficit: number;
+	tail_deficit_limit: number | null;
+	implied_credit_price: number | null;
+	credit_constraint_binding: boolean;
+	objective_kind: 'cvar' | 'expected';
+	withdrawal_accounts?: AccountWithdrawal[];
+	withdrawal_allocations?: { key: string; gross: number }[];
+	withdrawal_net_cash?: number;
+	withdrawal_tax_reserve?: number;
+	withdrawal_penalty_reserve?: number;
+}
+
+export interface AccountWithdrawal {
+	account_type: 'taxable' | 'traditional' | 'roth';
+	gross: number;
+	tax_reserve: number;
+	penalty_reserve: number;
+	net_cash: number;
+}
+
+export interface AccountLiquidity {
+	accounts: (AccountWithdrawal & { balance: number; excluded_balance: number })[];
+	total_net_accessible: number;
+	roth_contribution_basis: number;
+	unclassified_retirement_balance: number;
+	assumptions_version: string;
+	availability_delay_days: number;
+	assumptions: { label: string; value: string; source: string; url: string | null }[];
+	scope: string;
+	tie_break: string;
+}
+
+export interface OptimizerStatus {
+	code: 'optimal' | 'optimal_inaccurate' | 'not_needed' | 'invalid_input'
+		| 'no_funding_levers' | 'resource_limit' | 'cvxpy_unavailable' | 'solver_unavailable'
+		| 'solver_timeout' | 'solver_limit' | 'solver_error' | 'infeasible' | 'unbounded' | 'invalid_solution';
+	message: string;
+	paths: number;
+	time_limit_seconds: number;
 }
 
 export interface ScenarioResponse {
@@ -136,6 +195,56 @@ export interface ScenarioResponse {
 	sensitivity_verdict: string | null;
 	wrong_way_risk: WrongWayRisk | null;
 	optimal_plan: OptimalPlan | null;
+	optimizer_status: OptimizerStatus;
+	provenance: Record<string, string>;
+	model_card: ModelCard;
+	stress: StressReport;
+	baseline_summary: ScenarioSummary;
+	unstressed_summary: ScenarioSummary;
+	immediate_cash_coverage_ratio: number | null;
+	recommendation_status: string;
+	excluded_obligations: string[];
+	account_liquidity?: AccountLiquidity;
+}
+
+export interface ScenarioSummary {
+	required_liquidity_reserve: number;
+	funding_gap: number;
+	severity: Severity;
+	coverage_at_current_funding: number;
+}
+
+export interface StressReport {
+	status: 'inactive' | 'active' | 'unsupported';
+	label: string;
+	message?: string;
+	definition?: string;
+	baseline_probability?: number;
+	target_probability?: number;
+	achieved_probability?: number;
+	constraint_residual?: number;
+	ens_overall: number;
+	ens_tail: number;
+	max_weight: number;
+	recommendation_supported: boolean;
+	support_policy: string;
+}
+
+export interface ModelCard {
+	version: string;
+	evidence_statement: string;
+	source: string;
+	history_start: string;
+	history_end: string;
+	history_days: number;
+	simulation_paths: number;
+	purpose: string;
+	target: string;
+	prohibited_uses: string[];
+	assumptions: Record<string, unknown>;
+	limitations: string[];
+	recommendation_gates: string[];
+	guidance: { name: string; url: string; use: string };
 }
 
 

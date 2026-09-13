@@ -81,9 +81,17 @@
 			</article>
 		{/each}
 	</div>
+	<p class="sale-assumptions">Named sale plans use taxable accounts at today’s prices. Spendable proceeds exclude the assumed lot-specific tax reserve and arrive after settlement and transfer. Sale gain/loss compares proceeds with purchase cost; losses create no cash rebate. The optimizer above also considers traditional and Roth accounts.</p>
 {/if}
 
 <style>
+	.sale-assumptions {
+		margin-top: 0.75rem;
+		color: var(--ink-muted);
+		font-size: 0.75rem;
+		line-height: 1.5;
+	}
+
 	.plans-empty,
 	.recommendation-line,
 	.plan-list {
@@ -281,4 +289,16 @@
 			justify-content: start;
 		}
 	}
+	/* Cobalt ledger skin */
+	.plans-empty, .recommendation-line, .plan-list { border-color: var(--rule); }
+	.plans-empty { background: var(--paper-soft); color: var(--ink); }
+	.plans-empty span, .recommendation-line > span, .plan-row header p { color: var(--ink-muted); }
+	.recommendation-line { background: var(--paper-deep); }
+	.recommendation-line p, .plan-metrics span, .plan-index, .plan-state { color: var(--ink-muted); }
+	.recommendation-line strong, .plan-index { color: var(--cobalt); }
+	.plan-list { background: var(--rule); }
+	.plan-row { background: var(--paper); }
+	.plan-row.recommended { background: var(--paper-soft); box-shadow: inset 3px 0 var(--cobalt); }
+	.plan-row h3, .plan-metrics strong { color: var(--ink); }
+	.plan-state { background: var(--cobalt); color: var(--on-accent); }
 </style>

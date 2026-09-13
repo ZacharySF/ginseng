@@ -23,7 +23,13 @@ from ginseng.funding import (
     plan_evaluation_horizon,
 )
 from ginseng.metrics import compute_scenario_metrics
-from ginseng.optimizer import optimize_funding
+from ginseng.optimizer import (
+    SOLVER_TIME_LIMIT_SECONDS,
+    OptimalPlan,
+    OptimizationFailure,
+    OptimizationFailureReason,
+    optimize_funding,
+)
 from ginseng.policy import FundingPolicy, recommend, to_contract
 from ginseng.simulate import DrawBundle, PathBundle
 from ginseng.state import FinancialState, Obligation
@@ -58,6 +64,51 @@ class ShortfallDistribution(BaseModel):
     bin_edges: list[float]
     counts: list[int]
 
+    probabilities: list[float] = Field(default_factory=list)
+
+
+class OptimizerStatus(BaseModel):
+    code: OptimizationFailureReason | str
+    message: str
+    paths: int
+    time_limit_seconds: float
+
+
+def optimizer_status(
+    result: OptimalPlan | OptimizationFailure | None, paths: int
+) -> OptimizerStatus:
+    if result is None:
+        code = "not_needed"
+        message = "Current cash covers the scenario's required reserve; no additional funding is needed."
+    elif isinstance(result, OptimalPlan):
+        code = result.solver_status
+        message = (
+            "Optimized funding mix ready."
+            if code == "optimal"
+            else "An approximate solution passed the numerical checks."
+        )
+    else:
+        code = result.reason
+        messages = {
+            "invalid_input": "The scenario contains inputs the optimizer cannot evaluate.",
+            "no_funding_levers": "No available credit, investments, or reducible spending can fund this scenario.",
+            "resource_limit": f"This {paths:,}-path scenario exceeds the optimizer's size limit. Try a shorter forecast window.",
+            "cvxpy_unavailable": "The optimization library is unavailable on this server.",
+            "solver_unavailable": "The optimization solver is unavailable on this server.",
+            "solver_timeout": f"Optimization timed out after {SOLVER_TIME_LIMIT_SECONDS:g} seconds at {paths:,} paths. Try again or shorten the forecast window.",
+            "solver_limit": "The solver reached a time or iteration limit before finding an acceptable solution.",
+            "solver_error": "The solver could not finish this scenario. Try again or adjust the scenario.",
+            "infeasible": "No funding mix meets the selected deficit limits with the available resources.",
+            "unbounded": "The solver could not establish a bounded funding solution.",
+            "invalid_solution": "The solver result failed numerical checks and cannot be shown.",
+        }
+        message = messages[code]
+    return OptimizerStatus(
+        code=code,
+        message=message,
+        paths=paths,
+        time_limit_seconds=SOLVER_TIME_LIMIT_SECONDS,
+    )
 
 class ScenarioResponse(BaseModel):
     """The shared financial-output contract consumed by demo and personal UI."""
@@ -87,6 +138,16 @@ class ScenarioResponse(BaseModel):
     sensitivity_verdict: str | None = None
     wrong_way_risk: dict[str, Any] | None = None
     optimal_plan: dict[str, Any] | None = None
+    optimizer_status: OptimizerStatus
+    provenance: dict[str, Any] = Field(default_factory=dict)
+    model_card: dict[str, Any] = Field(default_factory=dict)
+    stress: dict[str, Any] = Field(default_factory=dict)
+    baseline_summary: dict[str, Any] = Field(default_factory=dict)
+    unstressed_summary: dict[str, Any] = Field(default_factory=dict)
+    immediate_cash_coverage_ratio: float | None = None
+    recommendation_status: str = "available"
+    excluded_obligations: list[str] = Field(default_factory=list)
+    account_liquidity: dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -183,6 +244,7 @@ def evaluate_scenario(
     recommendation: dict[str, Any] | None = None
     optimal_plan: dict[str, Any] | None = None
     optimizer_reason: str | None = None
+    optimizer_result: OptimalPlan | OptimizationFailure | None = None
     resolved_funding_policy = replace(
         funding_policy,
         capital_gains_rate=capital_gains_rate,
@@ -222,7 +284,7 @@ def evaluate_scenario(
             include_optimizer=include_optimizer,
         )
         if optimizer_reason is None:
-            optimal = optimize_funding(
+            optimizer_result = optimize_funding(
                 state,
                 bundle,
                 obligations,
@@ -234,10 +296,12 @@ def evaluate_scenario(
                 funding_config=funding_config,
                 funding_policy=resolved_funding_policy,
             )
-            if optimal is None:
-                optimizer_reason = "The funding optimizer did not produce a feasible solver result."
-            else:
-                optimal_plan = asdict(optimal)
+            if isinstance(optimizer_result, OptimizationFailure):
+                optimizer_reason = optimizer_status(
+                    optimizer_result, bundle.n_paths
+                ).message
+            elif isinstance(optimizer_result, OptimalPlan):
+                optimal_plan = asdict(optimizer_result)
 
     cash_paths = dict(computed.cash_paths)
     if deterministic:
@@ -275,6 +339,7 @@ def evaluate_scenario(
             sensitivity_verdict=sensitivity_verdict,
             wrong_way_risk=computed.wrong_way_risk,
             optimal_plan=optimal_plan,
+            optimizer_status=optimizer_status(optimizer_result, bundle.n_paths),
         ),
         optimizer_reason=optimizer_reason,
     )

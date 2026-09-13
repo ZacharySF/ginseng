@@ -2,14 +2,14 @@
 	import { resolve } from '$app/paths';
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import PlanTable from '$lib/components/PlanTable.svelte';
-	import type { ScenarioResponse } from '$lib/types';
+	import type { ScenarioResponse, ScenarioSummary } from '$lib/types';
 	import type { ScenarioChange } from '$lib/finance';
 
 	type ModelMode = 'scheduled' | 'assumptions' | 'history' | 'demo';
 
 	interface Props {
 		response: ScenarioResponse;
-		baseline?: ScenarioResponse | null;
+		baseline?: ScenarioResponse | ScenarioSummary | null;
 		comparisonLabel?: string;
 		source: 'personal' | 'demo';
 		modelMode: ModelMode;
@@ -43,6 +43,9 @@
 	const comparisonHeading = $derived(isPreview ? 'What-if comparison' : 'Saved plan comparison');
 	const capitalInputMissing = $derived(source === 'personal' && !hasCreditAccounts && !hasHoldings);
 	const fundingTitle = $derived(response.funding_gap > 0 ? 'Ways to close the reserve gap' : 'Your modeled reserve is covered');
+	function baselineFunding(value: ScenarioResponse | ScenarioSummary): number {
+		return 'immediate_funding' in value ? value.immediate_funding : response.immediate_funding;
+	}
 
 </script>
 
@@ -146,7 +149,7 @@
 			{#if showComparison && baseline}
 				<section>
 					<p class="label">{comparisonHeading} · {comparisonLabel}</p>
-					<div class="comparison"><span>Available cash</span><strong class="numeric">{formatCurrency(baseline.immediate_funding)} → {formatCurrency(response.immediate_funding)}</strong></div>
+					<div class="comparison"><span>Available cash</span><strong class="numeric">{formatCurrency(baselineFunding(baseline))} → {formatCurrency(response.immediate_funding)}</strong></div>
 					<div class="comparison"><span>Reserve</span><strong class="numeric">{formatCurrency(baseline.required_liquidity_reserve)} → {formatCurrency(response.required_liquidity_reserve)}</strong></div>
 					<div class="comparison"><span>{deterministic ? 'Known gap' : 'Shortfall chance'}</span><strong>{deterministic ? `${formatCurrency(baseline.funding_gap)} → ${formatCurrency(response.funding_gap)}` : `${formatPercent(baseline.severity.cash_shortfall_probability)} → ${formatPercent(response.severity.cash_shortfall_probability)}`}</strong></div>
 				</section>

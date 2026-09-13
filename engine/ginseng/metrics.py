@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 import numpy as np
+from ginseng.risk import probabilities, quantile
 
 from ginseng.simulate import (
     DrawBundle,
@@ -31,9 +32,9 @@ def required_liquidity_per_path(cash_matrix: np.ndarray, operating_buffer: float
     return np.maximum(0.0, np.max(operating_buffer - cash_matrix, axis=1))
 
 
-def required_liquidity_reserve(required_per_path: np.ndarray, coverage_target: float) -> float:
+def required_liquidity_reserve(required_per_path: np.ndarray, coverage_target: float, weights: np.ndarray | None = None) -> float:
     """`RLR_q = Q_q(R)` (spec 24)."""
-    return float(np.quantile(required_per_path, coverage_target))
+    return quantile(required_per_path, coverage_target, weights)
 
 
 def funding_gap(reserve: float, immediate_funding: float) -> float:
@@ -41,30 +42,35 @@ def funding_gap(reserve: float, immediate_funding: float) -> float:
     return max(0.0, reserve - immediate_funding)
 
 
-def coverage_at_funding(required_per_path: np.ndarray, funding: float) -> float:
+def coverage_at_funding(required_per_path: np.ndarray, funding: float, weights: np.ndarray | None = None) -> float:
     """Probability that `funding` dollars of immediate funding would have
     been enough to keep every simulated path above the operating buffer."""
-    return float(np.mean(required_per_path <= funding))
+    w = probabilities(len(required_per_path), weights)
+    covered = required_per_path <= funding
+    if np.all(covered[w > 0]):
+        return 1.0
+    return float(np.clip(np.dot(w, covered), 0, 1))
 
 
 def severity_metrics(
-    cash_matrix: np.ndarray, immediate_funding: float, operating_buffer: float
+    cash_matrix: np.ndarray, immediate_funding: float, operating_buffer: float, weights: np.ndarray | None = None
 ) -> dict:
     """Spec 27: cash-shortfall probability (hard zero floor), average
     deficit conditional on being short, and dollar-days below the operating
     buffer."""
     available_cash = immediate_funding + cash_matrix  # B_{j,t}
     min_cash_per_path = np.min(available_cash, axis=1)
-    cash_shortfall_probability = float(np.mean(min_cash_per_path < 0.0))
+    w = probabilities(len(cash_matrix), weights)
+    cash_shortfall_probability = float(w[min_cash_per_path < 0.0].sum())
 
     max_deficit_per_path = np.maximum(0.0, -min_cash_per_path)  # H_j (spec 27.2)
     short_mask = max_deficit_per_path > 0.0
     avg_cash_deficit_when_short = (
-        float(np.mean(max_deficit_per_path[short_mask])) if np.any(short_mask) else 0.0
+        float(np.dot(w, max_deficit_per_path) / cash_shortfall_probability) if cash_shortfall_probability > 0 else 0.0
     )
 
     below_buffer = np.maximum(0.0, operating_buffer - available_cash)
-    dollar_days_below_buffer = float(np.mean(np.sum(below_buffer, axis=1)))  # mean of D_j (spec 27.4)
+    dollar_days_below_buffer = float(np.dot(w, np.sum(below_buffer, axis=1)))
 
     return {
         "cash_shortfall_probability": cash_shortfall_probability,
@@ -74,7 +80,7 @@ def severity_metrics(
 
 
 def coverage_curve(
-    required_per_path: np.ndarray, immediate_funding: float, n_points: int = 41
+    required_per_path: np.ndarray, immediate_funding: float, n_points: int = 41, weights: np.ndarray | None = None
 ) -> list[dict]:
     """Liquidity coverage curve (spec 32): immediate funding on the x-axis,
     probability of staying above the operating buffer on the y-axis."""
@@ -82,13 +88,13 @@ def coverage_curve(
     upper = max(max_required, immediate_funding, 1.0) * 1.2
     grid = np.linspace(0.0, upper, n_points)
     return [
-        {"funding": float(f), "coverage": coverage_at_funding(required_per_path, float(f))}
+        {"funding": float(f), "coverage": coverage_at_funding(required_per_path, float(f), weights)}
         for f in grid
     ]
 
 
 def reserve_buffer_curve(
-    cash_matrix: np.ndarray, coverage_target: float, active_buffer: float, n_points: int = 41
+    cash_matrix: np.ndarray, coverage_target: float, active_buffer: float, n_points: int = 41, weights: np.ndarray | None = None
 ) -> list[dict]:
     """Reserve-vs-buffer curve (spec 69): operating buffer on the x-axis,
     required liquidity reserve on the y-axis, swept over the same cash
@@ -101,7 +107,7 @@ def reserve_buffer_curve(
         {
             "operating_buffer": float(buffer),
             "required_liquidity_reserve": required_liquidity_reserve(
-                required_liquidity_per_path(cash_matrix, float(buffer)), coverage_target
+                required_liquidity_per_path(cash_matrix, float(buffer)), coverage_target, weights
             ),
         }
         for buffer in grid
@@ -114,6 +120,7 @@ def wrong_way_risk(
     immediate_funding: float,
     operating_buffer: float,
     initial_portfolio_value: float,
+    weights: np.ndarray | None = None,
 ) -> dict:
     """Spec 8.4: whether the portfolio underperforms in exactly the paths
     where cash runs short - the conditioning that makes liquidating into a
@@ -131,10 +138,12 @@ def wrong_way_risk(
         (portfolio_value_matrix[:, -1] - initial_portfolio_value)
         / max(initial_portfolio_value, 1e-9)
     )
-    avg_all = float(terminal_return.mean())
-    avg_forced = float(terminal_return[forced_mask].mean()) if forced_mask.any() else None
+    w = probabilities(len(cash_matrix), weights)
+    forced_mass = float(w[forced_mask].sum())
+    avg_all = float(np.dot(w, terminal_return))
+    avg_forced = float(np.dot(w[forced_mask], terminal_return[forced_mask]) / forced_mass) if forced_mass > 0 else None
     return {
-        "fraction_forced_to_sell": float(forced_mask.mean()),
+        "fraction_forced_to_sell": forced_mass,
         "portfolio_return_all_paths": avg_all,
         "portfolio_return_when_forced": avg_forced,
         "wrong_way_risk_present": bool(avg_forced is not None and avg_forced < avg_all),
@@ -142,23 +151,23 @@ def wrong_way_risk(
 
 
 def shortfall_distribution(
-    cash_matrix: np.ndarray, immediate_funding: float, n_bins: int = 30
+    cash_matrix: np.ndarray, immediate_funding: float, n_bins: int = 30, weights: np.ndarray | None = None
 ) -> dict:
     """Distribution of path-minimum cash positions (spec 34)."""
     available_cash = immediate_funding + cash_matrix
     min_cash_per_path = np.min(available_cash, axis=1)
     counts, edges = np.histogram(min_cash_per_path, bins=n_bins)
-    return {"bin_edges": edges.tolist(), "counts": counts.tolist()}
+    mass, _ = np.histogram(min_cash_per_path, bins=edges, weights=probabilities(len(cash_matrix), weights))
+    return {"bin_edges": edges.tolist(), "counts": counts.tolist(), "probabilities": mass.tolist()}
 
 
-def percentile_cash_paths(cash_matrix: np.ndarray, immediate_funding: float) -> dict:
+def percentile_cash_paths(cash_matrix: np.ndarray, immediate_funding: float, weights: np.ndarray | None = None) -> dict:
     """Per-day p10/p50/p90 of simulated available cash `B_{j,t}`, for the
     coverage-curve and cash-path charts."""
     available_cash = immediate_funding + cash_matrix
     return {
-        "p10": np.percentile(available_cash, 10, axis=0).tolist(),
-        "p50": np.percentile(available_cash, 50, axis=0).tolist(),
-        "p90": np.percentile(available_cash, 90, axis=0).tolist(),
+        f"p{int(q * 100)}": [quantile(column, q, weights) for column in available_cash.T]
+        for q in (0.1, 0.5, 0.9)
     }
 
 
@@ -183,6 +192,7 @@ def compute_scenario_metrics(
     obligations: Sequence[Obligation],
     coverage_target: float,
     operating_buffer: float,
+    weights: np.ndarray | None = None,
 ) -> ScenarioMetrics:
     """Compute every metric in the `/scenario` contract for one draw bundle
     and one set of obligations. Paired plan comparisons reuse the same
@@ -190,13 +200,13 @@ def compute_scenario_metrics(
     matrix = _compute_cash_paths(state, bundle, obligations)
     required_per_path = required_liquidity_per_path(matrix, operating_buffer)
     immediate_funding = state.immediate_funding
-    reserve = required_liquidity_reserve(required_per_path, coverage_target)
+    reserve = required_liquidity_reserve(required_per_path, coverage_target, weights)
 
     pv_matrix = portfolio_value_paths(state, bundle)
     wwr = (
         wrong_way_risk(
             matrix, pv_matrix, immediate_funding,
-            operating_buffer, state.marketable_backup_capital,
+            operating_buffer, state.marketable_backup_capital, weights,
         )
         if pv_matrix is not None
         else None
@@ -210,7 +220,7 @@ def compute_scenario_metrics(
     )
     paths = {
         "days": list(range(1, bundle.horizon_days + 1)),
-        **percentile_cash_paths(matrix, immediate_funding),
+        **percentile_cash_paths(matrix, immediate_funding, weights),
         "known_income": known_income.tolist(),
         "known_obligations": known_obligations.tolist(),
     }
@@ -218,11 +228,11 @@ def compute_scenario_metrics(
     return ScenarioMetrics(
         required_liquidity_reserve=reserve,
         funding_gap=funding_gap(reserve, immediate_funding),
-        coverage_at_current_funding=coverage_at_funding(required_per_path, immediate_funding),
-        severity=severity_metrics(matrix, immediate_funding, operating_buffer),
-        coverage_curve=coverage_curve(required_per_path, immediate_funding),
-        reserve_buffer_curve=reserve_buffer_curve(matrix, coverage_target, operating_buffer),
+        coverage_at_current_funding=coverage_at_funding(required_per_path, immediate_funding, weights),
+        severity=severity_metrics(matrix, immediate_funding, operating_buffer, weights),
+        coverage_curve=coverage_curve(required_per_path, immediate_funding, weights=weights),
+        reserve_buffer_curve=reserve_buffer_curve(matrix, coverage_target, operating_buffer, weights=weights),
         cash_paths=paths,
-        shortfall_distribution=shortfall_distribution(matrix, immediate_funding),
+        shortfall_distribution=shortfall_distribution(matrix, immediate_funding, weights=weights),
         wrong_way_risk=wwr,
     )

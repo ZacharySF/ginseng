@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteDate } from 'svelte/reactivity';
 	import { formatCurrency } from '$lib/format';
 	import type { CashPaths } from '$lib/types';
 
@@ -105,7 +106,7 @@
 		const day = layout.days[index];
 		let dateLabel = `Day ${day}`;
 		if (asOf && /^\d{4}-\d{2}-\d{2}$/.test(asOf)) {
-			const date = new Date(`${asOf}T00:00:00Z`);
+			const date = new SvelteDate(`${asOf}T00:00:00Z`);
 			if (!Number.isNaN(date.valueOf())) {
 				date.setUTCDate(date.getUTCDate() + day - 1);
 				dateLabel = new Intl.DateTimeFormat('en-US', {
@@ -445,4 +446,5 @@
 			margin: 0.35rem 0 0;
 		}
 	}
+
 </style>

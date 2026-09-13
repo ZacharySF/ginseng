@@ -477,7 +477,7 @@
 		background: rgb(255 255 255 / 11%);
 		border: 1px solid rgb(255 255 255 / 40%);
 		border-radius: 0.2rem;
-		color: var(--paper);
+		color: var(--on-brand);
 		font-family: var(--font-mono);
 		font-size: 0.62rem;
 		font-weight: 700;
@@ -498,7 +498,7 @@
 	.send-action:active { transform: scale(0.97); }
 
 	.chat-launcher:focus-visible,
-	.icon-button:focus-visible { outline-color: var(--paper); }
+	.icon-button:focus-visible { outline-color: var(--cobalt-bright); }
 
 	.chat-dialog {
 		position: fixed;
@@ -529,8 +529,8 @@
 		justify-content: space-between;
 		gap: 1rem;
 		padding: 0.85rem;
-		background: var(--cobalt);
-		color: var(--paper);
+		background: var(--brand-blue);
+		color: var(--on-brand);
 	}
 
 	.chat-title-block { min-width: 0; }
@@ -563,7 +563,7 @@
 		background: transparent;
 		border: 1px solid rgb(255 255 255 / 64%);
 		border-radius: 0.2rem;
-		color: var(--paper);
+		color: var(--on-brand);
 		font-size: 1.5rem;
 		line-height: 1;
 	}
@@ -657,10 +657,10 @@
 	}
 
 	.user-message .message-copy {
-		background: var(--cobalt);
+		background: var(--brand-blue);
 		border-color: var(--cobalt);
 		border-radius: 0.65rem 0.65rem 0.15rem 0.65rem;
-		color: var(--paper);
+		color: var(--on-brand);
 	}
 
 	.revision-note { margin: 0; color: var(--ink-soft); }
@@ -735,8 +735,8 @@
 
 	.secondary-action { background: var(--paper); color: var(--ink); }
 	.secondary-action:hover:not(:disabled) { background: var(--paper-soft); }
-	.send-action { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
-	.send-action:hover:not(:disabled) { background: var(--cobalt-bright); }
+	.send-action { background: var(--brand-blue); border-color: var(--cobalt); color: var(--on-brand); }
+	.send-action:hover:not(:disabled) { background: var(--cobalt-deep); }
 	.secondary-action:disabled,
 	.send-action:disabled { cursor: not-allowed; opacity: 0.55; }
 

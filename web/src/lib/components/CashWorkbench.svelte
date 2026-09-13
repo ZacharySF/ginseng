@@ -1,10 +1,19 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { formatCurrency, formatPercent } from '$lib/format';
 	import CashPathChart from '$lib/components/CashPathChart.svelte';
 	import { humanDate } from '$lib/forecast-presentation';
 	import type { ScenarioResponse } from '$lib/types';
 
 	type ModelMode = 'scheduled' | 'assumptions' | 'history' | 'demo';
+	type WorkbenchHref =
+		| '/future'
+		| '/liquidity'
+		| '/plans'
+		| '/data'
+		| '/demo/future'
+		| '/demo/liquidity'
+		| '/demo/plans';
 
 	interface ChartEvent {
 		id: string;
@@ -22,10 +31,10 @@
 		horizonDays: number;
 		modelMode: ModelMode;
 		onHorizonChange?: ((horizon: 14 | 30 | 60) => void | Promise<void>) | undefined;
-		eventsHref: string;
-		reserveHref: string;
-		fundingHref: string;
-		dataHref?: string;
+		eventsHref: WorkbenchHref;
+		reserveHref: WorkbenchHref;
+		fundingHref: WorkbenchHref;
+		dataHref?: WorkbenchHref;
 		paths?: number | null;
 		isPreview?: boolean;
 		updating?: boolean;
@@ -97,8 +106,8 @@
 			{/if}
 		</p>
 		<div class="toolbar-actions">
-			<a href={eventsHref}>Events</a>
-			<a href={reserveHref}>Reserve</a>
+			<a href={resolve(eventsHref)}>Events</a>
+			<a href={resolve(reserveHref)}>Reserve</a>
 		</div>
 	</header>
 
@@ -117,6 +126,12 @@
 					{#if !deterministic && response.estimate_band}
 						<p class="estimate-readout">Model estimate range <strong class="numeric">{formatCurrency(response.estimate_band.low)}–{formatCurrency(response.estimate_band.high)}</strong></p>
 					{/if}
+					{#if response.optimal_plan && response.stress?.status !== 'unsupported'}
+						<p class="estimate-readout">Optimized funding cost · average <strong>{formatCurrency(response.optimal_plan.expected_cost)}</strong> / worst-tail average <strong>{formatCurrency(response.optimal_plan.cvar_cost)}</strong> · <a href={resolve('/plans')}>View funding mix</a></p>
+					{/if}
+					{#if response.stress?.status === 'active'}<p class="estimate-readout">Stress assumption active — not an estimated probability. <a href={resolve('/liquidity')}>Inspect weights</a></p>{/if}
+					{#if response.stress?.status === 'unsupported'}<p class="estimate-readout">Stress not applied: this view has no supporting futures. These figures use baseline weights.</p>{/if}
+					{#if response.excluded_obligations?.length}<p class="estimate-readout">{response.excluded_obligations.length} scheduled events fall after this chart window. Their dates have been preserved.</p>{/if}
 				</div>
 				<div class="chart-side">
 					<p class="source-note">{source === 'personal' ? 'Based on your saved inputs' : 'Separate from personal data'}</p>
@@ -139,7 +154,7 @@
 			<section class="inspector-block">
 				<div class="inspector-heading">
 					<p class="inspector-label">Scheduled cash events</p>
-					<a href={eventsHref}>Edit</a>
+					<a href={resolve(eventsHref)}>Edit</a>
 				</div>
 				{#if scheduledEvents.length > 0}
 					<ul class="event-watchlist">
@@ -160,7 +175,7 @@
 			<section class="inspector-block policy-readout">
 				<div class="inspector-heading">
 					<p class="inspector-label">Active guardrails</p>
-					<a href={reserveHref}>Adjust</a>
+					<a href={resolve(reserveHref)}>Adjust</a>
 				</div>
 				<div><span>Operating buffer</span><strong class="numeric">{formatCurrency(response.operating_buffer)}</strong></div>
 				<div><span>Coverage target</span><strong>{deterministic ? 'Stored policy' : formatPercent(response.coverage_target)}</strong></div>
@@ -170,19 +185,21 @@
 			<section class="inspector-block capital-readout">
 				<p class="inspector-label">Capital position</p>
 				<div><span>Available cash</span><strong class="numeric">{formatCurrency(response.immediate_funding)}</strong></div>
+				{#if response.immediate_cash_coverage_ratio != null}<div><span>Cash / required reserve</span><strong>{formatPercent(response.immediate_cash_coverage_ratio)}</strong></div>{/if}
 				<div><span>Marketable capital</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
 				<div><span>Restricted capital</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
-				<p>Only available cash funds the reserve. Other capital remains a separate funding decision.</p>
+				{#if response.account_liquidity}<div><span>Net investment access</span><strong class="numeric">{formatCurrency(response.account_liquidity.total_net_accessible)}</strong></div>{/if}
+				<p>Only available cash funds the reserve. Other capital requires a funding decision. {#if response.account_liquidity}<a href={resolve('/plans')}>See account assumptions</a>.{/if}</p>
 			</section>
 
 			<section class:funding-readout--risk={response.funding_gap > 0} class="inspector-block funding-readout">
 				<p class="inspector-label">Gap to reserve</p>
 				<p class="numeric">{formatCurrency(response.funding_gap)}</p>
-				<a href={fundingHref}>{response.funding_gap > 0 ? 'Review funding routes' : 'Review funding position'}</a>
+				<a href={resolve(fundingHref)}>{response.funding_gap > 0 ? 'Review funding routes' : 'Review funding position'}</a>
 			</section>
 
 			{#if source === 'personal'}
-				<a class="data-link" href={dataHref}>Review source data</a>
+				<a class="data-link" href={resolve(dataHref)}>Review source data</a>
 			{/if}
 
 			<details class="source-detail">

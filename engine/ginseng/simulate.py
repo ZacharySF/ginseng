@@ -152,6 +152,8 @@ def _fallback_block_length(z: np.ndarray) -> float:
 def _estimate_mean_block_length(z: np.ndarray) -> tuple[int, bool]:
     """Return the usable mean block length and whether the data estimate
     exceeded Ginseng's supported [7, 28]-day window."""
+    if len(z) < 2 or np.ptp(z) == 0:
+        return 14, False
     try:
         from arch.bootstrap import optimal_block_length
 
@@ -330,13 +332,24 @@ def portfolio_value_paths(
         return bundle.portfolio_values[:, : bundle.horizon_days]
 
     initial_value = state.marketable_backup_capital
+    if state.asset_daily_returns and initial_value > 0:
+        from ginseng.portfolio import aligned_asset_returns
+        aligned = aligned_asset_returns(state)
+        if aligned is not None:
+            _, history = aligned
+            values = np.array([h.market_value for h in state.taxable_portfolio])
+            return np.sum(values * np.cumprod(1 + history[bundle.index_matrix], axis=1), axis=2)
     if not state.portfolio_daily_returns or initial_value <= 0.0:
         return None
     joint = _joint_history(state)
     returns_by_date = dict(state.portfolio_daily_returns)
+    if len(returns_by_date) != len(state.portfolio_daily_returns) or any(ts.date() not in returns_by_date for ts in joint.index):
+        return None
     market_history = np.array(
-        [returns_by_date.get(ts.date(), 0.0) for ts in joint.index]
+        [returns_by_date[ts.date()] for ts in joint.index]
     )
+    if not np.all(np.isfinite(market_history)) or np.any(market_history <= -1):
+        return None
     daily_returns = market_history[bundle.index_matrix]
     return initial_value * np.cumprod(1.0 + daily_returns, axis=1)
 

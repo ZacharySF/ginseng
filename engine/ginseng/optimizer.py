@@ -3,58 +3,82 @@
 The model evaluates every supplied bootstrap path under common random numbers.
 Buffer-shortfall and overdraft auxiliaries are created only for path-days that
 can incur those costs under the control bounds. Provably zero terms are omitted,
-never paths or their probability weights. Requests whose evaluation bundle or
-complete exact tax-lot partition exceeds the resource bounds fail closed with
-``None``.
+never paths or their probability weights. Requests whose evaluation bundle
+exceeds ``MAX_SCENARIO_DAYS`` return an explicit resource-limit failure.
+Above 20,000 scenario-days, a HiGHS master LP adds supporting planes for the
+same costs and constraints. Every candidate is evaluated on every path;
+acceptance requires full-path feasibility and a bounded objective gap.
 
 The default Telser tolerance is a *mean* dollar-day limit:
 ``operating_buffer * evaluation_horizon_days * policy shortfall probability``.
 It allows the same aggregate buffer erosion as fully missing the operating
 buffer on the policy's permitted fraction of forecast days, and is independent
 of the number of bootstrap paths.
+
+Withdrawals execute today at recorded prices, then become available after
+settlement and transfer, net of the assumed tax and penalty reserve. Taxable
+lots use their holding periods; traditional IRA withdrawals price ordinary
+income plus the early penalty; Roth access is capped at remaining regular
+contributions. Future returns never reprice an executed sale.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
-from time import monotonic
-from typing import Sequence
+from typing import Literal, Sequence
 
 import numpy as np
 from scipy.sparse import csr_matrix
 
 from ginseng.funding import (
     FundingConfig,
-    LiquidationBasisSegment,
     _next_charge_payment_offset,
     _select_primary_credit_account,
     extend_draw_bundle,
-    liquidation_basis_segments,
-    liquidation_cost_basis,
     settlement_forecast_day,
 )
 from ginseng.policy import FundingPolicy
+from ginseng.risk import probabilities, quantile, cvar, weight_hash
 from ginseng.simulate import (
     DrawBundle,
     PathBundle,
     cash_paths,
     discretionary_resampled_paths,
-    portfolio_value_paths,
 )
 from ginseng.state import FinancialState, Obligation
+from ginseng.withdrawals import (
+    AccountWithdrawal, WithdrawalAllocation, WithdrawalAssumptions,
+    LONG_TERM_CAPITAL_GAINS_RATE, withdrawal_units, quote_withdrawals, allocate_net_cash,
+)
 
 # Keep the worst-case LP within an interactive request's memory/time envelope.
 # This covers the UI's 14/30/60-day horizons at up to 3,000 paths; larger
 # evaluations omit the optional optimizer, never substitute fewer paths.
 MAX_SCENARIO_DAYS = 200_000
-# Every branch must be solved before an optimum is returned, so this bound
-# fails closed instead of silently searching only the first tax lots.
-MAX_LIQUIDATION_SEGMENTS = 256
-SOLVER_TIME_LIMIT_SECONDS = 3.0
+SOLVER_TIME_LIMIT_SECONDS = 10.0
+# Larger LPs use full-path supporting planes to avoid a path-day-sized KKT solve.
+CONSTRAINT_GENERATION_THRESHOLD = 20_000
 _NUMERICAL_TOLERANCE = 1e-6
+# Express the LP in thousands of dollars to keep retirement-sized withdrawals
+# and small probability-weighted losses on a better-conditioned numeric scale.
+# Both objective and dollar constraints use this same scale, so dual prices
+# retain their original dollars-per-dollar units.
+_DOLLAR_SCALE = 1000.0
 _OPTIMAL_STATUSES = frozenset(("optimal", "optimal_inaccurate"))
 _INFEASIBLE_STATUSES = frozenset(("infeasible",))
+
+OptimizationFailureReason = Literal[
+    "invalid_input", "no_funding_levers", "resource_limit", "cvxpy_unavailable",
+    "solver_unavailable", "solver_timeout", "solver_limit", "solver_error",
+    "infeasible", "unbounded", "invalid_solution",
+]
+
+
+@dataclass(frozen=True)
+class OptimizationFailure:
+    reason: OptimizationFailureReason
+
 
 @dataclass(frozen=True)
 class OptimalPlan:
@@ -68,6 +92,26 @@ class OptimalPlan:
     implied_liquidity_price: float | None
     cost_is_path_dependent: bool
     solver_status: str
+    evaluation_horizon_days: int
+    evaluation_draw_id: str
+    evaluation_paths: int
+    cost_coverage_target: float
+    buffer_breach_probability: float
+    dollar_days_below_buffer: float
+    buffer_tolerance_dollar_days: float
+    buffer_constraint_binding: bool
+    evaluation_weight_hash: str = ""
+    tail_deficit: float = 0.0
+    tail_deficit_limit: float | None = None
+    implied_credit_price: float | None = None
+    credit_constraint_binding: bool = False
+    objective_kind: str = "cvar"
+    withdrawal_accounts: tuple[AccountWithdrawal, ...] = ()
+    withdrawal_allocations: tuple[WithdrawalAllocation, ...] = ()
+    withdrawal_net_cash: float = 0.0
+    withdrawal_tax_reserve: float = 0.0
+    withdrawal_penalty_reserve: float = 0.0
+    solver_method: str = "clarabel"
 
 
 def _finite_nonnegative(value: float) -> bool:
@@ -98,23 +142,61 @@ def _bounded_solution(value: object, lower: float, upper: float) -> float | None
     return float(np.clip(result, lower, upper))
 
 
-def _empirical_cvar(path_cost: np.ndarray, coverage_target: float) -> float | None:
-    """Return the equally weighted upper-tail mean represented by the LP."""
-    if path_cost.ndim != 1 or path_cost.size == 0 or not np.all(np.isfinite(path_cost)):
-        return None
-    if coverage_target == 1.0:
-        return float(np.max(path_cost))
+def _trim_redundant_liquidation(
+    balances: np.ndarray,
+    liquidation: float,
+    settlement_column: int,
+    operating_buffer: float,
+    buffer_tolerance: float,
+    weights: np.ndarray | None = None,
+    tail_deficit_limit: float | None = None,
+    q: float = 0.95,
+) -> float:
+    """Remove surplus from a sale with zero tax cost, holding other levers fixed.
 
-    tail_weight = (1.0 - coverage_target) * path_cost.size
-    if not isfinite(tail_weight) or tail_weight <= 0.0:
-        return None
-    ordered_costs = np.sort(path_cost)[::-1]
-    whole_paths = min(path_cost.size, int(np.floor(tail_weight)))
-    fractional_path = tail_weight - whole_paths
-    tail_total = float(np.sum(ordered_costs[:whole_paths]))
-    if fractional_path > 0.0 and whole_paths < path_cost.size:
-        tail_total += fractional_path * float(ordered_costs[whole_paths])
-    return tail_total / tail_weight
+    With no assumed tax benefit, multiple sale amounts can have the same
+    objective. Reduce proceeds only where every post-settlement balance
+    remains nonnegative and the mean buffer dollar-day constraint holds.
+    This preserves every path's cost without an invented penalty weight or
+    a second solver run. It does not claim a global minimum-sale solution.
+    """
+    if liquidation <= 0.0:
+        return liquidation
+    settled = balances[:, settlement_column:]
+    removable = min(
+        liquidation, max(0.0, float(np.min(settled)) - _NUMERICAL_TOLERANCE)
+    )
+    if removable <= 0.0:
+        return liquidation
+
+    w = probabilities(len(balances), weights)
+    fixed_shortfall = np.maximum(0.0, operating_buffer - balances[:, :settlement_column]).sum(axis=1)
+
+    def fits_buffer(reduction: float) -> bool:
+        shortfall = fixed_shortfall + np.maximum(
+            0.0, operating_buffer - settled + reduction
+        ).sum(axis=1)
+        if np.dot(w, shortfall) > buffer_tolerance:
+            return False
+        if tail_deficit_limit is not None:
+            adjusted = balances.copy()
+            adjusted[:, settlement_column:] -= reduction
+            deficits = np.maximum(0.0, operating_buffer - adjusted.min(axis=1))
+            if cvar(deficits, q, w) > tail_deficit_limit:
+                return False
+        return True
+
+    if fits_buffer(removable):
+        return liquidation - removable
+
+    lower, upper = 0.0, removable
+    for _ in range(40):
+        middle = (lower + upper) / 2.0
+        if fits_buffer(middle):
+            lower = middle
+        else:
+            upper = middle
+    return liquidation - lower
 
 
 def optimize_funding(
@@ -125,11 +207,16 @@ def optimize_funding(
     operating_buffer: float = 1000.0,
     overdraft_apr: float = 0.2999,
     buffer_tolerance_dollar_days: float | None = None,
-    capital_gains_rate: float = 0.15,
+    capital_gains_rate: float = LONG_TERM_CAPITAL_GAINS_RATE,
     funding_config: FundingConfig | None = None,
     funding_policy: FundingPolicy | None = None,
-) -> OptimalPlan | None:
-    """Return the bounded CLARABEL CVaR-optimal funding mix, if it solves.
+    *,
+    weights: np.ndarray | None = None,
+    tail_deficit_limit: float | None = None,
+    objective_kind: Literal["cvar", "expected"] = "cvar",
+    time_limit_seconds: float = SOLVER_TIME_LIMIT_SECONDS,
+) -> OptimalPlan | OptimizationFailure:
+    """Return the bounded scenario CVaR-optimal funding mix, if it solves.
 
     The credit leg uses only the funding module's primary card and respects
     both that account's available credit and the supplied policy's utilization
@@ -138,120 +225,76 @@ def optimize_funding(
     basis. A branch that cannot be solved or checked invalidates the optional
     result rather than allowing a partial search to be marketed as optimal.
 
-    Material payment and settlement events extend the supplied draw bundle by
-    the same mechanism used for ordinary funding-plan evaluation. A funding
-    decision may not assume discretionary cuts after the visible decision
-    horizon. ``coverage_target == 1`` is the empirical worst-case objective;
-    other targets use the Rockafellar-Uryasev CVaR formulation.
+    ``coverage_target == 1`` is the empirical worst-case objective. Other
+    targets in ``[0, 1)`` use the Rockafellar-Uryasev CVaR formulation.
+    Returns an ``OptimizationFailure`` with a stable reason when unavailable,
+    infeasible, resource-limited, or rejected by the numerical checks.
     """
     q = float(coverage_target)
     if not isfinite(q) or q < 0.0 or q > 1.0:
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(operating_buffer)):
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(overdraft_apr)):
-        return None
+        return OptimizationFailure("invalid_input")
     if not _finite_nonnegative(float(capital_gains_rate)):
-        return None
+        return OptimizationFailure("invalid_input")
     if buffer_tolerance_dollar_days is not None and not _finite_nonnegative(
         float(buffer_tolerance_dollar_days)
     ):
-        return None
+        return OptimizationFailure("invalid_input")
     if bundle.n_paths <= 0 or bundle.horizon_days <= 0:
-        return None
-    if not state.credit_accounts and not state.taxable_portfolio:
-        return None
-
+        return OptimizationFailure("invalid_input")
+    if (tail_deficit_limit is not None and not _finite_nonnegative(tail_deficit_limit)) or objective_kind not in ("cvar", "expected"):
+        return OptimizationFailure("invalid_input")
+    if not isfinite(time_limit_seconds) or time_limit_seconds <= 0:
+        return OptimizationFailure("invalid_input")
+    try:
+        w = probabilities(bundle.n_paths, weights)
+    except ValueError:
+        return OptimizationFailure("invalid_input")
+    resolved_funding_config = funding_config or FundingConfig()
     resolved_funding_policy = funding_policy or FundingPolicy()
     max_cash_shortfall_probability = float(
         resolved_funding_policy.max_cash_shortfall_probability
     )
-    max_credit_utilization = float(resolved_funding_policy.max_credit_utilization)
+    max_credit_utilization = (
+        float(resolved_funding_policy.max_credit_utilization)
+        if funding_policy is not None
+        else 1.0
+    )
     if (
         not isfinite(max_cash_shortfall_probability)
         or not 0.0 <= max_cash_shortfall_probability <= 1.0
         or not isfinite(max_credit_utilization)
         or not 0.0 <= max_credit_utilization <= 1.0
     ):
-        return None
-
-    resolved_funding_config = funding_config or FundingConfig()
+        return OptimizationFailure("invalid_input")
     primary_account = _select_primary_credit_account(state)
-    available_credit = 0.0
-    if primary_account is not None:
-        credit_limit = float(primary_account.credit_limit)
-        current_balance = float(primary_account.current_balance)
-        raw_available_credit = float(primary_account.available_credit)
-        if (
-            not _finite_nonnegative(credit_limit)
-            or not _finite_nonnegative(current_balance)
-            or not _finite_nonnegative(raw_available_credit)
-        ):
-            return None
-        utilization_capacity = max(
-            0.0,
-            credit_limit * max_credit_utilization - current_balance,
-        )
-        available_credit = min(raw_available_credit, utilization_capacity)
-
-    initial_market_value = float(state.marketable_backup_capital)
-    if not _finite_nonnegative(initial_market_value):
-        return None
-
-    if initial_market_value > 0.0:
-        liquidation_segments = liquidation_basis_segments(
-            state.taxable_portfolio,
-            resolved_funding_config.lot_selection,
-            resolved_funding_config.specific_lot_ids,
-            max_segments=MAX_LIQUIDATION_SEGMENTS,
-        )
-        if not liquidation_segments:
-            return None
-        if abs(liquidation_segments[-1].upper_proceeds - initial_market_value) > _bound_tolerance(
-            liquidation_segments[-1].upper_proceeds,
-            initial_market_value,
-        ):
-            return None
-    else:
-        liquidation_segments = (
-            LiquidationBasisSegment(
-                lower_proceeds=0.0,
-                upper_proceeds=0.0,
-                cost_basis_intercept=0.0,
-                cost_basis_slope=0.0,
+    available_credit = (
+        min(
+            float(primary_account.available_credit),
+            max(
+                0.0,
+                float(primary_account.credit_limit) * max_credit_utilization
+                - float(primary_account.current_balance),
             ),
         )
-    if any(
-        not all(
-            isfinite(value)
-            for value in (
-                segment.lower_proceeds,
-                segment.upper_proceeds,
-                segment.cost_basis_intercept,
-                segment.cost_basis_slope,
-            )
-        )
-        or segment.lower_proceeds < 0.0
-        or segment.upper_proceeds < segment.lower_proceeds
-        for segment in liquidation_segments
-    ):
-        return None
-    if (
-        abs(liquidation_segments[0].lower_proceeds)
-        > _bound_tolerance(0.0, liquidation_segments[0].lower_proceeds)
-        or any(
-            abs(previous.upper_proceeds - following.lower_proceeds)
-            > _bound_tolerance(
-                previous.upper_proceeds,
-                following.lower_proceeds,
-            )
-            for previous, following in zip(
-                liquidation_segments,
-                liquidation_segments[1:],
-            )
-        )
-    ):
-        return None
+        if primary_account is not None
+        else 0.0
+    )
+    try:
+        tax_assumptions = WithdrawalAssumptions(long_term_rate=capital_gains_rate)
+        units = withdrawal_units(state, tax_assumptions)
+    except ValueError:
+        return OptimizationFailure("invalid_input")
+    # A zero-capacity dummy keeps the LP shape valid when no account is available.
+    capacities = np.array([u.capacity for u in units] or [0.0])
+    net_rates = np.array([u.net_per_dollar for u in units] or [0.0])
+    charge_rates = np.array([u.tax_per_dollar + u.penalty_per_dollar for u in units] or [0.0])
+    initial_market_value = float(capacities.sum())
+    if not _finite_nonnegative(available_credit) or not _finite_nonnegative(initial_market_value):
+        return OptimizationFailure("invalid_input")
 
     credit_due_day = 0
     interest_per_credit_dollar = 0.0
@@ -272,7 +315,7 @@ def optimize_funding(
             )
             interest_per_credit_dollar = primary_account.purchase_apr / 365.0 * elapsed_days
             if not _finite_nonnegative(interest_per_credit_dollar):
-                return None
+                return OptimizationFailure("invalid_input")
 
     settlement_day = settlement_forecast_day(
         state.as_of,
@@ -292,24 +335,20 @@ def optimize_funding(
         else latest_material_day + resolved_funding_config.trailing_days
     )
     if bundle.n_paths * evaluation_horizon > MAX_SCENARIO_DAYS:
-        return None
-    try:
-        evaluation_bundle = extend_draw_bundle(bundle, evaluation_horizon)
-    except ValueError:
-        return None
+        return OptimizationFailure("resource_limit")
+    evaluation_bundle = extend_draw_bundle(bundle, evaluation_horizon)
 
     try:
         import cvxpy as cp
     except ImportError:
-        return None
+        return OptimizationFailure("cvxpy_unavailable")
     if cp.CLARABEL not in cp.installed_solvers():
-        return None
+        return OptimizationFailure("solver_unavailable")
 
     baseline_cash = cash_paths(state, evaluation_bundle, obligations)
     discretionary_savings = np.cumsum(
         discretionary_resampled_paths(state, evaluation_bundle), axis=1
     )
-    portfolio_values = portfolio_value_paths(state, evaluation_bundle)
     n_paths, horizon_days = baseline_cash.shape
     # A funding decision may be evaluated through a later repayment date, but
     # it must not pay for that debt by assuming discretionary cuts beyond the
@@ -324,14 +363,11 @@ def optimize_funding(
         or n_paths != bundle.n_paths
         or horizon_days != evaluation_horizon
     ):
-        return None
+        return OptimizationFailure("invalid_input")
     if not np.all(np.isfinite(baseline_cash)) or not np.all(np.isfinite(discretionary_savings)):
-        return None
-    if portfolio_values is not None and (
-        portfolio_values.shape != baseline_cash.shape or not np.all(np.isfinite(portfolio_values))
-    ):
-        return None
-
+        return OptimizationFailure("invalid_input")
+    if available_credit == 0.0 and initial_market_value == 0.0 and not np.any(discretionary_savings > 0.0):
+        return OptimizationFailure("no_funding_levers")
     credit_effect_daily = np.zeros(horizon_days, dtype=float)
     if available_credit > 0.0:
         credit_effect_daily[0] = 1.0
@@ -341,21 +377,11 @@ def optimize_funding(
 
     settlement_column = settlement_day - 1
     liquidation_effect = np.zeros((n_paths, horizon_days), dtype=float)
-    settlement_scale = np.zeros(n_paths, dtype=float)
-    cost_is_path_dependent = portfolio_values is not None
-    if initial_market_value > 0.0:
-        if portfolio_values is not None:
-            settlement_scale = portfolio_values[:, settlement_column] / initial_market_value
-            liquidation_effect[:, settlement_column:] = settlement_scale[:, np.newaxis]
-        else:
-            settlement_scale.fill(1.0)
-            liquidation_effect[:, settlement_column:] = 1.0
-    if not np.all(np.isfinite(liquidation_effect)) or not np.all(np.isfinite(settlement_scale)):
-        return None
+    liquidation_effect[:, settlement_column:] = 1.0
 
-    deferred_cost_per_fraction = float(np.mean(discretionary_savings[:, -1]))
+    deferred_cost_per_fraction = float(np.dot(w, discretionary_savings[:, -1]))
     if not isfinite(deferred_cost_per_fraction):
-        return None
+        return OptimizationFailure("invalid_input")
     if buffer_tolerance_dollar_days is None:
         buffer_tolerance = (
             operating_buffer * horizon_days * max_cash_shortfall_probability
@@ -364,15 +390,10 @@ def optimize_funding(
         buffer_tolerance = float(buffer_tolerance_dollar_days)
 
     credit = cp.Variable(nonneg=True)
-    liquidation = cp.Variable(nonneg=True)
+    withdrawals = cp.Variable(len(capacities), nonneg=True)
+    withdrawal_cash = net_rates @ withdrawals
     deferral_fraction = cp.Variable(nonneg=True)
     eta = cp.Variable()
-    # CVXPY permits repeated solves of one immutable problem through Parameter
-    # values: https://www.cvxpy.org/api_reference/cvxpy.problems.html
-    segment_lower = cp.Parameter(nonneg=True)
-    segment_upper = cp.Parameter(nonneg=True)
-    segment_basis_intercept = cp.Parameter()
-    segment_basis_slope = cp.Parameter()
 
     # Drop only hinge terms that are provably zero throughout the control
     # bounds. All paths remain in the objective and its probability weights.
@@ -381,22 +402,21 @@ def optimize_funding(
         float(state.immediate_funding)
         + baseline_cash
         + np.minimum(0.0, available_credit * credit_effect_matrix)
-        + np.minimum(0.0, initial_market_value * liquidation_effect)
         + np.minimum(0.0, discretionary_savings)
     )
 
     def selected_balance(rows: np.ndarray, columns: np.ndarray):
         return (
-            float(state.immediate_funding) + baseline_cash[rows, columns]
+            (float(state.immediate_funding) + baseline_cash[rows, columns]) / _DOLLAR_SCALE
             + credit * credit_effect[columns]
-            + liquidation * liquidation_effect[rows, columns]
-            + deferral_fraction * discretionary_savings[rows, columns]
+            + withdrawal_cash * liquidation_effect[rows, columns]
+            + deferral_fraction * discretionary_savings[rows, columns] / _DOLLAR_SCALE
         )
 
+    credit_constraint = credit <= available_credit / _DOLLAR_SCALE
     constraints = [
-        credit <= available_credit,
-        liquidation >= segment_lower,
-        liquidation <= segment_upper,
+        credit_constraint,
+        withdrawals <= capacities / _DOLLAR_SCALE,
         deferral_fraction <= 1.0,
     ]
     buffer_rows, buffer_columns = np.nonzero(minimum_balance < operating_buffer)
@@ -404,11 +424,23 @@ def optimize_funding(
     if buffer_rows.size:
         buffer_shortfall = cp.Variable(buffer_rows.size, nonneg=True)
         constraints.append(
-            buffer_shortfall >= operating_buffer - selected_balance(buffer_rows, buffer_columns)
+            buffer_shortfall >= operating_buffer / _DOLLAR_SCALE - selected_balance(buffer_rows, buffer_columns)
         )
-        buffer_total = cp.sum(buffer_shortfall)
-    buffer_constraint = buffer_total / n_paths <= buffer_tolerance
+        buffer_total = w[buffer_rows] @ buffer_shortfall
+    buffer_constraint = buffer_total <= buffer_tolerance / _DOLLAR_SCALE
     constraints.append(buffer_constraint)
+
+    if tail_deficit_limit is not None:
+        worst_buffer_deficit = cp.Variable(n_paths, nonneg=True)
+        if buffer_rows.size:
+            constraints.append(worst_buffer_deficit[buffer_rows] >= operating_buffer / _DOLLAR_SCALE - selected_balance(buffer_rows, buffer_columns))
+        if q == 1:
+            constraints.append(worst_buffer_deficit[w > 0] <= tail_deficit_limit / _DOLLAR_SCALE)
+        else:
+            deficit_eta = cp.Variable()
+            deficit_excess = cp.Variable(n_paths, nonneg=True)
+            constraints.append(deficit_excess >= worst_buffer_deficit - deficit_eta)
+            constraints.append(deficit_eta + w @ deficit_excess / (1 - q) <= tail_deficit_limit / _DOLLAR_SCALE)
 
     overdraft_rows, overdraft_columns = np.nonzero(minimum_balance < 0.0)
     overdraft_cost = cp.Constant(np.zeros(n_paths))
@@ -420,174 +452,216 @@ def optimize_funding(
             shape=(n_paths, overdraft_rows.size),
         )
         overdraft_cost = (overdraft_apr / 365.0) * (per_path_sum @ overdraft)
-    tax_cost = capital_gains_rate * cp.pos(
-        cp.multiply(settlement_scale, liquidation)
-        - segment_basis_intercept
-        - segment_basis_slope * liquidation
-    )
-    path_cost = (
-        interest_per_credit_dollar * credit
-        + deferred_cost_per_fraction * deferral_fraction
-        + tax_cost
-        + overdraft_cost
-    )
+    # CVaR(X + a) = CVaR(X) + a when a is the same in every future.
+    # Keep deterministic withdrawal charges and interest outside the path
+    # epigraph. This is the same objective with much sparser constraints.
+    common_cost = interest_per_credit_dollar * credit + charge_rates @ withdrawals
+    path_cost = discretionary_savings[:, -1] * deferral_fraction / _DOLLAR_SCALE + overdraft_cost
 
     if q == 1.0:
-        constraints.append(eta >= path_cost)
-        objective = eta
+        constraints.append(eta >= path_cost[w > 0])
+        objective = common_cost + eta
     else:
         cvar_excess = cp.Variable(n_paths, nonneg=True)
         constraints.append(cvar_excess >= path_cost - eta)
-        objective = eta + cp.sum(cvar_excess) / ((1.0 - q) * n_paths)
+        objective = common_cost + eta + w @ cvar_excess / (1.0 - q)
+
+    if objective_kind == "expected":
+        objective = common_cost + w @ path_cost
 
     problem = cp.Problem(cp.Minimize(objective), constraints)
-    # The deadline covers the complete partition, never each branch in isolation.
-    deadline = monotonic() + SOLVER_TIME_LIMIT_SECONDS
-    best_plan: OptimalPlan | None = None
-    for segment in liquidation_segments:
-        segment_lower.value = segment.lower_proceeds
-        segment_upper.value = segment.upper_proceeds
-        segment_basis_intercept.value = segment.cost_basis_intercept
-        segment_basis_slope.value = segment.cost_basis_slope
-        remaining_seconds = deadline - monotonic()
-        if remaining_seconds <= 0.0:
-            return None
+    solver_method = "clarabel"
+    if n_paths * horizon_days > CONSTRAINT_GENERATION_THRESHOLD:
+        from ginseng.funding_cuts import solve_funding_cuts, CutSolveFailure
+        try:
+            solution = solve_funding_cuts(
+                (float(state.immediate_funding) + baseline_cash) / _DOLLAR_SCALE,
+                discretionary_savings / _DOLLAR_SCALE, credit_effect, liquidation_effect[0],
+                capacities / _DOLLAR_SCALE, net_rates, charge_rates,
+                available_credit / _DOLLAR_SCALE, interest_per_credit_dollar, overdraft_apr / 365.0,
+                operating_buffer / _DOLLAR_SCALE, buffer_tolerance / _DOLLAR_SCALE,
+                None if tail_deficit_limit is None else tail_deficit_limit / _DOLLAR_SCALE,
+                q, w, time_limit_seconds, objective_kind,
+            )
+        except CutSolveFailure as failure:
+            return OptimizationFailure(str(failure))
+        credit.value = solution.credit
+        withdrawals.value = solution.withdrawals
+        deferral_fraction.value = solution.deferral
+        eta.value = solution.stochastic_var
+        objective_value = solution.cost
+        buffer_dual_value = solution.buffer_dual
+        credit_dual_value = solution.credit_dual
+        status = "optimal"
+        solver_method = "highs_constraint_generation"
+    else:
         try:
             problem.solve(
                 solver=cp.CLARABEL,
                 verbose=False,
-                time_limit=remaining_seconds,
-                warm_start=True,
+                time_limit=time_limit_seconds,
+                tol_gap_abs=1e-10,
+                tol_feas=1e-10,
             )
         except cp.error.SolverError:
-            return None
-        if monotonic() > deadline:
-            return None
+            return OptimizationFailure("solver_error")
 
         status = str(problem.status or "")
-        if status in _INFEASIBLE_STATUSES:
-            continue
+        if status == cp.USER_LIMIT:
+            solve_time = getattr(problem.solver_stats, "solve_time", None)
+            reason = (
+                "solver_timeout"
+                if solve_time is not None and solve_time >= time_limit_seconds
+                else "solver_limit"
+            )
+            return OptimizationFailure(reason)
+        if status in (cp.INFEASIBLE, cp.INFEASIBLE_INACCURATE):
+            return OptimizationFailure("infeasible")
+        if status in (cp.UNBOUNDED, cp.UNBOUNDED_INACCURATE):
+            return OptimizationFailure("unbounded")
         if status not in _OPTIMAL_STATUSES:
-            return None
+            return OptimizationFailure("solver_error")
 
-        credit_value = _bounded_solution(credit.value, 0.0, available_credit)
-        liquidation_value = _bounded_solution(
-            liquidation.value,
-            segment.lower_proceeds,
-            segment.upper_proceeds,
-        )
-        deferral_value = _bounded_solution(deferral_fraction.value, 0.0, 1.0)
-        eta_value = _scalar_value(eta.value)
-        objective_value = _scalar_value(problem.value)
-        if (
-            credit_value is None
-            or liquidation_value is None
-            or deferral_value is None
-            or eta_value is None
-            or objective_value is None
-        ):
-            return None
+        objective_value = problem.value
+        buffer_dual_value = buffer_constraint.dual_value
+        credit_dual_value = credit_constraint.dual_value
 
-        exact_basis = liquidation_cost_basis(
-            state.taxable_portfolio,
-            liquidation_value,
-            resolved_funding_config.lot_selection,
-            resolved_funding_config.specific_lot_ids,
-        )
-        modeled_basis = (
-            segment.cost_basis_intercept
-            + segment.cost_basis_slope * liquidation_value
-        )
-        if (
-            not isfinite(exact_basis)
-            or not isfinite(modeled_basis)
-            or abs(exact_basis - modeled_basis)
-            > _bound_tolerance(exact_basis, modeled_basis)
-        ):
-            return None
+    credit_value = _bounded_solution(None if credit.value is None else credit.value * _DOLLAR_SCALE, 0.0, available_credit)
+    withdrawal_values = np.asarray(withdrawals.value, dtype=float) * _DOLLAR_SCALE if withdrawals.value is not None else np.array([])
+    deferral_value = _bounded_solution(deferral_fraction.value, 0.0, 1.0)
+    eta_value = _scalar_value(None if eta.value is None else eta.value * _DOLLAR_SCALE)
+    cvar_value = _scalar_value(None if objective_value is None else objective_value * _DOLLAR_SCALE)
+    if (
+        credit_value is None
+        or withdrawal_values.shape != capacities.shape
+        or not np.all(np.isfinite(withdrawal_values))
+        or deferral_value is None
+        or eta_value is None
+        or cvar_value is None
+    ):
+        return OptimizationFailure("invalid_solution")
+    if np.any(withdrawal_values < -_NUMERICAL_TOLERANCE) or np.any(withdrawal_values > capacities + _NUMERICAL_TOLERANCE * np.maximum(1, capacities)):
+        return OptimizationFailure("invalid_solution")
+    withdrawal_values = np.clip(withdrawal_values, 0, capacities)
+    quote = quote_withdrawals(state, tuple(WithdrawalAllocation(u.key, float(x)) for u, x in zip(units, withdrawal_values)), tax_assumptions)
+    if deferred_cost_per_fraction == 0.0:
+        # A free auxiliary choice cannot imply reducing nonexistent spending.
+        deferral_value = 0.0
 
-        adjusted_balance_value = (
-            float(state.immediate_funding)
-            + baseline_cash
-            + credit_value * credit_effect_matrix
-            + liquidation_value * liquidation_effect
-            + deferral_value * discretionary_savings
-        )
-        if not np.all(np.isfinite(adjusted_balance_value)):
-            return None
+    adjusted_balance_value = (
+        float(state.immediate_funding)
+        + baseline_cash
+        + credit_value * credit_effect_matrix
+        + quote.net_cash * liquidation_effect
+        + deferral_value * discretionary_savings
+    )
+    if not np.all(np.isfinite(adjusted_balance_value)):
+        return OptimizationFailure("invalid_solution")
 
-        actual_buffer_shortfall = float(
-            np.maximum(0.0, operating_buffer - adjusted_balance_value).sum() / n_paths
+    free_withdrawal = float(sum(x for u, x in zip(units, withdrawal_values) if u.tax_per_dollar + u.penalty_per_dollar == 0))
+    net_target = quote.net_cash
+    if free_withdrawal > 0:
+        trimmed = _trim_redundant_liquidation(
+            adjusted_balance_value, free_withdrawal, settlement_column,
+            operating_buffer, buffer_tolerance,
+            w, tail_deficit_limit, q,
         )
-        buffer_feasibility_tolerance = _NUMERICAL_TOLERANCE * max(
-            1.0,
-            abs(buffer_tolerance),
-        )
-        if actual_buffer_shortfall > buffer_tolerance + buffer_feasibility_tolerance:
-            return None
+        net_target -= free_withdrawal - trimmed
+    # Resolve equal-cost allocations deterministically, preserving retirement
+    # funds when an equally cheap taxable sale provides the same net cash.
+    try:
+        quote = quote_withdrawals(state, allocate_net_cash(units, max(0.0, net_target)), tax_assumptions)
+    except ValueError:
+        return OptimizationFailure("invalid_solution")
+    adjusted_balance_value = (float(state.immediate_funding) + baseline_cash
+        + credit_value * credit_effect_matrix + quote.net_cash * liquidation_effect
+        + deferral_value * discretionary_savings)
 
-        actual_overdraft_cost = (overdraft_apr / 365.0) * np.maximum(
-            0.0,
-            -adjusted_balance_value,
-        ).sum(axis=1)
-        tax_cost_value = capital_gains_rate * np.maximum(
-            0.0,
-            settlement_scale * liquidation_value - exact_basis,
-        )
-        path_cost_value = (
-            interest_per_credit_dollar * credit_value
-            + deferred_cost_per_fraction * deferral_value
-            + tax_cost_value
-            + actual_overdraft_cost
-        )
-        cvar_value = _empirical_cvar(path_cost_value, q)
-        if cvar_value is None or not np.all(np.isfinite(path_cost_value)):
-            return None
-        if abs(objective_value - cvar_value) > _bound_tolerance(
-            objective_value,
-            cvar_value,
-        ):
-            return None
-        if q == 1.0:
-            maximum_path_cost = float(np.max(path_cost_value))
-            if eta_value < maximum_path_cost - _bound_tolerance(
-                eta_value,
-                maximum_path_cost,
-            ):
-                return None
+    actual_buffer_shortfall = float(
+        np.dot(w, np.maximum(0.0, operating_buffer - adjusted_balance_value).sum(axis=1))
+    )
+    buffer_feasibility_tolerance = _NUMERICAL_TOLERANCE * max(1.0, abs(buffer_tolerance))
+    if actual_buffer_shortfall > buffer_tolerance + buffer_feasibility_tolerance:
+        return OptimizationFailure("invalid_solution")
+    actual_tail_deficit = cvar(np.maximum(0.0, operating_buffer - adjusted_balance_value.min(axis=1)), q, w)
+    if tail_deficit_limit is not None and actual_tail_deficit > tail_deficit_limit + _NUMERICAL_TOLERANCE * max(1.0, tail_deficit_limit):
+        return OptimizationFailure("invalid_solution")
 
-        expected_cost = float(np.mean(path_cost_value))
-        cash_shortfall_probability = float(
-            np.mean(np.any(adjusted_balance_value < 0.0, axis=1))
+    actual_overdraft_cost = (overdraft_apr / 365.0) * np.maximum(
+        0.0, -adjusted_balance_value
+    ).sum(axis=1)
+    withdrawal_cost_value = quote.tax_reserve + quote.penalty_reserve
+    path_cost_value = (
+        interest_per_credit_dollar * credit_value
+        + discretionary_savings[:, -1] * deferral_value
+        + withdrawal_cost_value
+        + actual_overdraft_cost
+    )
+    if not np.all(np.isfinite(path_cost_value)):
+        return OptimizationFailure("invalid_solution")
+    if q == 1.0:
+        maximum_path_cost = float(np.max(path_cost_value[w > 0]))
+        eta_value += interest_per_credit_dollar * credit_value + withdrawal_cost_value
+        eta_feasibility_tolerance = _NUMERICAL_TOLERANCE * max(
+            1.0, abs(eta_value), abs(maximum_path_cost)
         )
-        if (
-            not isfinite(expected_cost)
-            or not isfinite(cash_shortfall_probability)
-            or expected_cost < -_NUMERICAL_TOLERANCE
-        ):
-            return None
+        if eta_value < maximum_path_cost - eta_feasibility_tolerance:
+            return OptimizationFailure("invalid_solution")
 
-        dual_value = _scalar_value(buffer_constraint.dual_value)
-        if dual_value is None:
-            implied_liquidity_price = None
-        elif dual_value < -_NUMERICAL_TOLERANCE:
-            return None
-        else:
-            implied_liquidity_price = max(0.0, dual_value)
+    expected_cost = float(np.dot(w, path_cost_value))
+    # Report observed variation in this plan's costs, including cash-flow
+    # risk without market history. Market data alone cannot make this true.
+    cost_is_path_dependent = bool(
+        np.ptp(path_cost_value)
+        > _NUMERICAL_TOLERANCE * max(1.0, float(np.max(np.abs(path_cost_value))))
+    )
+    cash_shortfall_probability = float(
+        np.dot(w, np.any(adjusted_balance_value < 0.0, axis=1))
+    )
+    if not isfinite(expected_cost) or not isfinite(cash_shortfall_probability):
+        return OptimizationFailure("invalid_solution")
 
-        candidate = OptimalPlan(
-            credit_draw=credit_value,
-            liquidation_amount=liquidation_value,
-            deferral_fraction=deferral_value,
-            cvar_cost=cvar_value,
-            var_cost=eta_value,
-            expected_cost=expected_cost,
-            cash_shortfall_probability=cash_shortfall_probability,
-            implied_liquidity_price=implied_liquidity_price,
-            cost_is_path_dependent=cost_is_path_dependent,
-            solver_status=status,
-        )
-        if best_plan is None or candidate.cvar_cost < best_plan.cvar_cost:
-            best_plan = candidate
+    dual_value = _scalar_value(buffer_dual_value)
+    if dual_value is None:
+        implied_liquidity_price = None
+    elif dual_value < -_NUMERICAL_TOLERANCE:
+        return OptimizationFailure("invalid_solution")
+    else:
+        implied_liquidity_price = max(0.0, dual_value)
+    credit_dual = _scalar_value(credit_dual_value)
+    if credit_dual is not None and credit_dual < -_NUMERICAL_TOLERANCE:
+        return OptimizationFailure("invalid_solution")
+    implied_credit_price = max(0.0, credit_dual) if credit_dual is not None else None
 
-    return best_plan
+    return OptimalPlan(
+        credit_draw=credit_value,
+        liquidation_amount=quote.gross,
+        deferral_fraction=deferral_value,
+        cvar_cost=cvar(path_cost_value, q, w),
+        var_cost=quantile(path_cost_value, q, w),
+        expected_cost=expected_cost,
+        cash_shortfall_probability=cash_shortfall_probability,
+        implied_liquidity_price=implied_liquidity_price,
+        cost_is_path_dependent=cost_is_path_dependent,
+        solver_status=status,
+        evaluation_horizon_days=evaluation_bundle.horizon_days,
+        evaluation_draw_id=evaluation_bundle.bootstrap_draw_id,
+        evaluation_paths=n_paths,
+        cost_coverage_target=q,
+        buffer_breach_probability=float(np.dot(w, np.any(adjusted_balance_value < operating_buffer, axis=1))),
+        dollar_days_below_buffer=actual_buffer_shortfall,
+        buffer_tolerance_dollar_days=buffer_tolerance,
+        buffer_constraint_binding=abs(buffer_tolerance - actual_buffer_shortfall) <= buffer_feasibility_tolerance,
+        evaluation_weight_hash=weight_hash(w),
+        tail_deficit=actual_tail_deficit,
+        tail_deficit_limit=tail_deficit_limit,
+        implied_credit_price=implied_credit_price,
+        credit_constraint_binding=abs(available_credit - credit_value) <= _bound_tolerance(0, available_credit),
+        objective_kind=objective_kind,
+        withdrawal_accounts=quote.accounts,
+        withdrawal_allocations=quote.allocations,
+        withdrawal_net_cash=quote.net_cash,
+        withdrawal_tax_reserve=quote.tax_reserve,
+        withdrawal_penalty_reserve=quote.penalty_reserve,
+        solver_method=solver_method,
+    )

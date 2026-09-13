@@ -39,6 +39,10 @@ SCENARIO_BODY_FIELDS = {
     "sensitivity_verdict",
     "wrong_way_risk",
     "optimal_plan",
+    "optimizer_status",
+    "provenance", "model_card", "stress", "baseline_summary", "unstressed_summary",
+    "immediate_cash_coverage_ratio", "recommendation_status", "excluded_obligations",
+    "account_liquidity",
 }
 
 REPAIR_SCHEDULE = [
@@ -55,6 +59,35 @@ REPAIR_SCHEDULE = [
         "due_in_days": 17,
     },
 ]
+
+
+def test_scenario_funding_results_share_one_complete_evaluation():
+    # Call the endpoint calculation directly so this numerical contract
+    # also runs independently of the HTTP authentication/test-client layer.
+    from ginseng.api import ScenarioRequest, scenario
+
+    body = scenario(
+        ScenarioRequest(paths=120, obligations=REPAIR_SCHEDULE), None
+    ).model_dump()
+
+    assert len(body["plans"]) == 4
+    evaluations = {
+        (plan["evaluation_horizon_days"], plan["evaluation_draw_id"])
+        for plan in body["plans"]
+    }
+    assert len(evaluations) == 1
+    horizon, draw_id = evaluations.pop()
+    assert horizon == 38
+    assert re.fullmatch(r"[0-9a-f]{64}", draw_id)
+    # The public chart remains the requested 30 days, with its own draw id.
+    assert len(body["cash_paths"]["days"]) == 30
+    assert draw_id != body["bootstrap_draw_id"]
+    optimal = body["optimal_plan"]
+    assert optimal is not None
+    assert optimal["evaluation_horizon_days"] == horizon
+    assert optimal["evaluation_draw_id"] == draw_id
+    assert optimal["evaluation_paths"] == 120
+    assert body["optimizer_status"]["code"] == "optimal"
 
 FLOAT_FIELDS = (
     "immediate_funding",
@@ -191,7 +224,7 @@ def test_scenario_array_lengths_match_horizon_days_and_histogram_bins():
         assert all(a <= b for a, b in zip(cash[lower], cash[upper]))
 
     distribution = body["shortfall_distribution"]
-    assert set(distribution) == {"bin_edges", "counts"}
+    assert set(distribution) == {"bin_edges", "counts", "probabilities"}
     counts = distribution["counts"]
     edges = distribution["bin_edges"]
     assert len(counts) == 30  # frozen histogram bins

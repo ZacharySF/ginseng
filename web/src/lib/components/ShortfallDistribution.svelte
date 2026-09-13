@@ -15,7 +15,9 @@
 	const MARGIN = { top: 16, right: 20, bottom: 32, left: 20 };
 
 	const layout = $derived.by(() => {
-		const { bin_edges: edges, counts } = distribution;
+		const { bin_edges: edges } = distribution;
+		const weighted = distribution.probabilities?.length === distribution.counts.length;
+		const counts = weighted ? distribution.probabilities! : distribution.counts;
 		if (edges.length < 2 || counts.length === 0) return null;
 
 		const plotWidth = WIDTH - MARGIN.left - MARGIN.right;
@@ -23,7 +25,7 @@
 		const low = edges[0];
 		const high = edges[edges.length - 1];
 		const span = Math.max(1, high - low);
-		const maxCount = Math.max(1, ...counts);
+		const maxCount = Math.max(1e-9, ...counts);
 		const xAt = (value: number) => MARGIN.left + ((value - low) / span) * plotWidth;
 		const yAt = (value: number) => MARGIN.top + plotHeight - (value / maxCount) * plotHeight;
 		const zeroVisible = low <= 0 && high >= 0;
@@ -40,7 +42,7 @@
 					width: Math.max(1, end - start - barGap),
 					height: Math.max(0, HEIGHT - MARGIN.bottom - yAt(count)),
 					negative: edges[index + 1] <= 0,
-					label: `${formatCurrency(edges[index])} to ${formatCurrency(edges[index + 1])}: ${count} paths`
+					label: `${formatCurrency(edges[index])} to ${formatCurrency(edges[index + 1])}: ${weighted ? `${(count * 100).toFixed(1)}% probability` : `${count} paths`}`
 				};
 			}),
 			zeroX: zeroVisible ? xAt(0) : null,
@@ -56,7 +58,7 @@
 		<div class="chart-frame" bind:clientWidth={containerWidth} bind:clientHeight={containerHeight}>
 			<svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-labelledby="shortfall-distribution-title shortfall-distribution-description">
 				<title id="shortfall-distribution-title">Distribution of minimum cash positions</title>
-				<desc id="shortfall-distribution-description">Each bar counts modeled paths by their lowest available-cash position. Red bars remain below the zero-cash floor.</desc>
+				<desc id="shortfall-distribution-description">Each bar shows probability by the lowest available-cash position, using the active scenario weights. Red bars remain below the zero-cash floor.</desc>
 				{#each layout.bars as bar (bar.label)}
 					<rect x={bar.x} y={bar.y} width={bar.width} height={bar.height} class:negative={bar.negative} class="bar"><title>{bar.label}</title></rect>
 				{/each}

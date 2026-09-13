@@ -275,10 +275,10 @@
 	.current-line { stroke: var(--ink); }
 	.reserve-dot { fill: var(--negative); }
 	.line-label { fill: var(--ink-soft); }
-	.estimate-band { fill: rgb(36 72 255 / 14%); }
+	.estimate-band { fill: var(--chart-band); }
 	.swatch-curve { background: var(--cobalt); }
 	.swatch-target { background: var(--warning); }
 	.swatch-current { background: var(--ink); }
 	.swatch-reserve { background: var(--negative); }
-	.swatch-band { background: rgb(36 72 255 / 30%); }
+	.swatch-band { background: var(--chart-band-key); }
 </style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/auth.svelte';
@@ -188,6 +189,7 @@
 			<span class="header-mark" aria-hidden="true"><img src="/brand/ginseng-avatar-reversed.svg" alt="" /></span>
 			<p class="header-kicker">Liquidity workspace</p>
 		</div>
+		<ThemeToggle />
 		{#if authStore.status === 'signed-in' && authStore.user}
 			<div class="header-account">
 				<span class="header-email">{authStore.user.email}</span>
@@ -492,7 +494,7 @@
 		cursor: pointer;
 	}
 
-	.text-button:hover { color: var(--cobalt-deep); }
+	.text-button:hover { color: var(--link); }
 	.text-button:disabled {
 		cursor: not-allowed;
 		opacity: 0.5;
@@ -634,7 +636,7 @@
 	.steps li.current span.step-badge {
 		background: var(--cobalt);
 		border-color: var(--cobalt);
-		color: var(--paper);
+		color: var(--on-accent);
 	}
 
 	.steps li.done { color: var(--ink-soft); }
@@ -807,7 +809,7 @@
 		border: 1px solid var(--cobalt);
 	}
 
-	.button.primary { background: var(--cobalt); color: var(--paper); }
+	.button.primary { background: var(--cobalt); color: var(--on-accent); }
 	.button.primary:hover:not(:disabled) { background: var(--cobalt-bright); }
 	.button.primary:active:not(:disabled) { transform: scale(0.98); }
 	.button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -854,7 +856,7 @@
 	.sample-chip {
 		padding: 0.2rem 0.45rem;
 		background: var(--warning);
-		color: var(--paper);
+		color: var(--on-accent);
 		font-family: var(--font-mono);
 		font-size: 0.6rem;
 		font-weight: 700;
