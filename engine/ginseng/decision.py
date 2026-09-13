@@ -10,6 +10,7 @@ from ginseng.optimizer import OptimalPlan, OptimizationFailure, optimize_funding
 from ginseng.risk import cvar, quantile, weight_hash
 from ginseng.simulate import draw_bundle
 from ginseng.stress import scenario_weights
+from ginseng.withdrawals import WithdrawalAssumptions
 
 ANALYSIS_BUDGET_SECONDS = 40.0
 
@@ -17,7 +18,7 @@ ANALYSIS_BUDGET_SECONDS = 40.0
 def loss_metrics(evaluation, state, q, weights, tax_rate, overdraft_apr) -> dict:
     balances = state.immediate_funding + evaluation.cash_matrix
     result = evaluation.result
-    cost = (result.interest_exposure + max(0.0, result.realized_gain_loss) * tax_rate
+    cost = (result.interest_exposure + result.withdrawal_tax_reserve + result.withdrawal_penalty_reserve
             + evaluation.spending_reduction + (overdraft_apr / 365) * np.maximum(0.0, -balances).sum(axis=1))
     worst_deficit = np.maximum(0.0, state.operating_buffer - balances.min(axis=1))
     return {
@@ -34,7 +35,9 @@ def frozen_plan_evaluation(state, bundle, obligations, plan, weights, q, tax_rat
     spec = PlanSpec("optimized", "Optimized", PlanKind.HYBRID,
                     credit_account_id=account.account_id if account else None,
                     credit_draw=plan.credit_draw, liquidation_target=plan.liquidation_amount,
-                    lot_selection="proportional", discretionary_reduction_fraction=plan.deferral_fraction)
+                    withdrawal_allocations=plan.withdrawal_allocations,
+                    withdrawal_assumptions=WithdrawalAssumptions(long_term_rate=tax_rate),
+                    discretionary_reduction_fraction=plan.deferral_fraction)
     evaluated = evaluate_plan_paths(state, bundle, obligations, spec, weights)
     return loss_metrics(evaluated, state, q, weights, tax_rate, overdraft_apr)
 
@@ -60,7 +63,7 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
         "status": "ready", "evaluation_horizon_days": bundle.horizon_days,
         "evaluation_draw_id": bundle.bootstrap_draw_id, "evaluation_weight_hash": weight_hash(weights),
         "paths": bundle.n_paths, "anchors": anchors, "frontier": [], "shadow_checks": [], "holdout": None,
-        "loss_definition": "Interest + assumed positive-gain tax cost + discretionary spending forgone + overdraft dollar-days priced at the assumed APR. Sale principal is not a cost.",
+        "loss_definition": "Interest + account-specific tax and early-withdrawal penalty reserves + discretionary spending forgone + overdraft dollar-days priced at the assumed APR. Withdrawals add only net spendable cash; principal is not a cost.",
         "risk_definition": "Tail buffer deficit averages each path's largest dollar deficit in the worst (1-q) fraction of deficits. This need not select the same futures as the cost tail. At q=1 it is the largest modeled deficit.",
         "budget_seconds": ANALYSIS_BUDGET_SECONDS,
     }

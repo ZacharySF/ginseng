@@ -46,7 +46,8 @@
 					<div><small>Average modeled cost</small><strong class="analysis-value">{formatCurrency(p.expected_cost)}</strong></div>
 					<div><small>Actual tail deficit</small><strong class="analysis-value">{formatCurrency(p.tail_deficit)}</strong></div>
 				</div>
-				<p>Borrow {formatCurrency(p.credit_draw)}, sell {formatCurrency(p.liquidation_amount)}, reduce discretionary spending by {formatPercent(p.deferral_fraction)}.</p>
+				<p>Borrow {formatCurrency(p.credit_draw)}, withdraw {formatCurrency(p.liquidation_amount)} gross from investments, reduce discretionary spending by {formatPercent(p.deferral_fraction)}.</p>
+				{#if p.withdrawal_net_cash !== undefined}<p>Spendable withdrawal cash: {formatCurrency(p.withdrawal_net_cash)}. {p.withdrawal_accounts?.filter(a => a.gross > .005).map(a => `${a.account_type === 'roth' ? 'Roth contributions' : a.account_type === 'traditional' ? 'Traditional IRA' : 'Taxable brokerage'}: ${formatCurrency(a.gross)} gross → ${formatCurrency(a.net_cash)} spendable`).join('; ')}.</p>{/if}
 				<p>Buffer breach frequency: {formatPercent(p.buffer_breach_probability)}. The deficit limit controls severity, not a promise of zero breaches.</p>
 				<button type="button" onclick={() => scenarioStore.setTailDeficitLimit(selected.limit)}>Use this deficit limit</button>
 			{/if}

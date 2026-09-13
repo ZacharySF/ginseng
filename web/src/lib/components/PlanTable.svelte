@@ -19,7 +19,9 @@
 		{ label: 'Avg. deficit', read: (plan) => formatCurrency(plan.avg_cash_deficit_when_short) },
 		{ label: 'New debt', read: (plan) => formatCurrency(plan.new_debt) },
 		{ label: 'Interest', read: (plan) => formatCurrency(plan.interest_exposure) },
-		{ label: 'Sold', read: (plan) => formatCurrency(plan.investment_sold) },
+		{ label: 'Sold · gross', read: (plan) => formatCurrency(plan.investment_sold) },
+		{ label: 'Spendable proceeds', read: (plan) => plan.withdrawal_net_cash === undefined ? 'Unavailable' : formatCurrency(plan.withdrawal_net_cash) },
+		{ label: 'Tax reserve', read: (plan) => plan.withdrawal_tax_reserve === undefined ? 'Unavailable' : formatCurrency(plan.withdrawal_tax_reserve) },
 		{ label: 'Sale gain/loss', read: (plan) => formatSignedCurrency(plan.realized_gain_loss) },
 		{ label: 'Deferred', read: (plan) => formatCurrency(plan.deferred_spending) }
 	];
@@ -64,7 +66,7 @@
 			</article>
 		{/each}
 	</div>
-	<p class="sale-assumptions">Sales use today’s prices. Proceeds become spendable after settlement and transfer. Sale gain/loss compares proceeds with purchase cost; tax savings from losses are excluded.</p>
+	<p class="sale-assumptions">Named sale plans use taxable accounts at today’s prices. Spendable proceeds exclude the assumed lot-specific tax reserve and arrive after settlement and transfer. Sale gain/loss compares proceeds with purchase cost; losses create no cash rebate. The optimizer above also considers traditional and Roth accounts.</p>
 {/if}
 
 <style>

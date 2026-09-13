@@ -314,7 +314,13 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
         retirement_price * float(rng.uniform(0.7, 1.0)),
         AS_OF - timedelta(days=int(rng.integers(400, HISTORY_DAYS))),
     )
-    holdings.append(Holding("TARGET2055", "retirement", retirement_price, (retirement_lot,)))
+    # Split the existing retirement balance by tax wrapper, not instrument.
+    # No extra random draw changes the cash persona or its historical paths.
+    for wrapper, fraction in (("traditional", 0.7), ("roth", 0.3)):
+        lot = TaxLot(f"{wrapper}-lot-1", retirement_lot.symbol,
+                     retirement_lot.quantity * fraction, retirement_lot.cost_basis_per_share,
+                     retirement_lot.purchase_date)
+        holdings.append(Holding("TARGET2055", wrapper, retirement_price, (lot,)))
 
     # --- Opening balance: calibrates immediate funding to the section 36
     # generation target while remaining a transaction-ledger entry, not a
@@ -413,6 +419,7 @@ def generate_persona(seed: int = DEFAULT_SEED) -> FinancialState:
             AssetReturnHistory(holding.symbol, tuple((d, float(r)) for d, r in zip(dates, asset_returns[:, i])))
             for i, holding in enumerate(taxable)
         ),
+        roth_contribution_basis=1200.0,  # synthetic remaining regular contributions, not lot basis
     )
 
 

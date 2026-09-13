@@ -14,6 +14,7 @@
 	// An older engine cannot supply the risk-limit details required by this panel.
 	const plan = $derived(status ? response?.optimal_plan : null);
 	const count = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+	const accountNames = { taxable: 'Taxable brokerage', traditional: 'Traditional IRA', roth: 'Roth IRA contributions' };
 	function cost(value: number) {
 		return formatCurrency(Math.abs(value) < 0.005 ? 0 : value);
 	}
@@ -62,9 +63,18 @@
 
 		<div class="mix-grid" aria-label="Proposed funding amounts">
 			<div><span>Use credit</span><strong class="numeric">{formatCurrency(plan.credit_draw)}</strong></div>
-			<div><span>Sell investments</span><strong class="numeric">{formatCurrency(plan.liquidation_amount)}</strong></div>
+			<div><span>Withdraw investments · gross</span><strong class="numeric">{formatCurrency(plan.liquidation_amount)}</strong></div>
 			<div><span>Reduce discretionary spending</span><strong>{formatPercent(plan.deferral_fraction)}</strong></div>
 		</div>
+		{#if plan.withdrawal_accounts?.length}
+			<div class="withdrawal-breakdown">
+				<h3>Where the spendable cash comes from</h3>
+				<div class="withdrawal-table"><table><thead><tr><th>Account</th><th>Gross</th><th>Tax reserve</th><th>Penalty reserve</th><th>Spendable</th></tr></thead>
+					<tbody>{#each plan.withdrawal_accounts as account}<tr><td>{accountNames[account.account_type]}</td><td>{formatCurrency(account.gross)}</td><td>{formatCurrency(account.tax_reserve)}</td><td>{formatCurrency(account.penalty_reserve)}</td><td>{formatCurrency(account.net_cash)}</td></tr>{/each}</tbody>
+				</table></div>
+				<p>Only the spendable amount enters the cash forecast. The tax and penalty reserve stays earmarked. Rates and account limits are listed below.</p>
+			</div>
+		{/if}
 
 		<div class="risk-section">
 			<h3>Risk with this mix</h3>
@@ -83,7 +93,7 @@
 
 		<details>
 			<summary>Cost assumptions and buffer sensitivity</summary>
-			<p>Cost includes interest, estimated tax on gains, spending reductions valued dollar for dollar, and overdraft costs. The amount sold is not counted as a cost: a $0 modeled cost can still require selling investments.</p>
+			<p>Cost includes interest, account-specific taxes and early-withdrawal penalties, spending reductions valued dollar for dollar, and overdraft costs. Withdrawal principal is not counted as a cost: a $0 modeled cost can still require selling investments.</p>
 			<p>{plan.cost_is_path_dependent ? 'Evaluated costs differ across the modeled futures.' : 'Evaluated costs are effectively the same across the modeled futures.'}</p>
 			{#if !plan.buffer_constraint_binding}
 				<p><strong>Buffer limit: not binding.</strong> This mix has room within the average deficit limit.</p>
@@ -131,6 +141,12 @@
 	.mix-grid span, .risk-grid span, .buffer-limit span { color: var(--ink-muted); font-size: 0.83rem; }
 	.mix-grid strong { font-size: 1.3rem; }
 	.risk-section { padding: 1.1rem 1.2rem; }
+	.withdrawal-breakdown { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--rule); }
+	.withdrawal-table { max-width: 100%; overflow-x: auto; }
+	.withdrawal-table table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+	.withdrawal-table th, .withdrawal-table td { text-align: left; padding: .65rem; border: 1px solid var(--rule); }
+	.withdrawal-table th { background: var(--paper-soft); }
+	.withdrawal-breakdown p { margin-top: .65rem; color: var(--ink-muted); font-size: .8rem; line-height: 1.5; }
 	.risk-grid { gap: 1.2rem; margin-bottom: 1rem; }
 	.risk-grid > div, .buffer-limit > div { display: grid; gap: 0.3rem; }
 	.risk-grid strong { font-size: 1.35rem; }

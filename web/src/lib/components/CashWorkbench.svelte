@@ -299,9 +299,10 @@
 				<p class="inspector-label">Capital position</p>
 				<div><span>Available cash</span><strong class="numeric">{formatCurrency(response.immediate_funding)}</strong></div>
 				{#if response.immediate_cash_coverage_ratio != null}<div><span>Cash / required reserve</span><strong>{formatPercent(response.immediate_cash_coverage_ratio)}</strong></div>{/if}
-				<div><span>Marketable backup</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
-				<div><span>Restricted capital</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
-				<p>Only available cash counts toward the reserve. Selling marketable assets is a separate funding action.</p>
+				<div><span>Taxable investments</span><strong class="numeric">{formatCurrency(response.marketable_backup_capital)}</strong></div>
+				<div><span>Retirement account value</span><strong class="numeric">{formatCurrency(response.restricted_capital)}</strong></div>
+				{#if response.account_liquidity}<div><span>Net investment access</span><strong class="numeric">{formatCurrency(response.account_liquidity.total_net_accessible)}</strong></div>{/if}
+				<p>Only available cash counts toward the reserve. Investment access requires a withdrawal, an availability delay, and any tax or penalty reserve. <a href={resolve('/plans')}>See account assumptions</a>.</p>
 			</section>
 
 			<section class:funding-readout--risk={response.funding_gap > 0} class="inspector-block funding-readout">

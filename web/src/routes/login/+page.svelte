@@ -66,7 +66,7 @@
 
 <div class="auth-screen" {@attach parallax()}>
 	<section class="auth-hero">
-		<canvas class="hero-field" {@attach dotField()}></canvas>
+		<canvas class="hero-field" aria-hidden="true" {@attach dotField({ stockTrace: true })}></canvas>
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-kicker" href={resolve('/welcome')} aria-label="Ginseng home, liquidity workspace">Liquidity workspace</a>
 			<h1>Ginseng</h1>
@@ -80,6 +80,7 @@
 
 	<section class="auth-panel">
 		<div class="auth-card">
+			<h2 class="auth-brand">Ginseng</h2>
 			<div class="auth-mode" role="group" aria-label="Choose sign in or create account">
 				<button
 					type="button"
@@ -267,6 +268,16 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		border: 1px solid var(--control-border);
+	}
+
+	.auth-brand {
+		margin: 0 0 0.35rem;
+		color: #111;
+		text-align: center;
+		font-size: clamp(2.2rem, 3.5vw, 3rem);
+		font-weight: 800;
+		line-height: 1.1;
+		letter-spacing: -0.035em;
 	}
 
 	.auth-mode button {

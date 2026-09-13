@@ -9,7 +9,7 @@ never a weighted numeric score (spec 42, 45).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import asdict, dataclass, replace
 from typing import Callable, Sequence
 
 from ginseng.funding import PlanResult
@@ -30,6 +30,7 @@ _OBJECTIVES: tuple[tuple[str, Callable[[PlanResult], float]], ...] = (
     ("new_debt", lambda r: r.new_debt),
     ("interest_exposure", lambda r: r.interest_exposure),
     ("investment_sold", lambda r: r.investment_sold),
+    ("withdrawal_charges", lambda r: r.withdrawal_tax_reserve + r.withdrawal_penalty_reserve),
     ("taxable_event_size", lambda r: abs(r.realized_gain_loss)),
     ("deferred_spending", lambda r: r.deferred_spending),
 )
@@ -295,6 +296,10 @@ def to_contract(
                 "new_debt": result.new_debt,
                 "interest_exposure": result.interest_exposure,
                 "investment_sold": result.investment_sold,
+                "withdrawal_tax_reserve": result.withdrawal_tax_reserve,
+                "withdrawal_penalty_reserve": result.withdrawal_penalty_reserve,
+                "withdrawal_net_cash": result.withdrawal_net_cash,
+                "withdrawal_accounts": [asdict(row) for row in result.withdrawal_accounts],
                 "realized_gain_loss": result.realized_gain_loss,
                 "deferred_spending": result.deferred_spending,
                 "feasible": result.feasible,

@@ -54,6 +54,7 @@ from ginseng.provenance import fingerprint, model_card
 from ginseng.calibration import walk_forward
 from ginseng.decision import funding_analysis
 from ginseng.portfolio import portfolio_lab
+from ginseng.withdrawals import WithdrawalAssumptions, LONG_TERM_CAPITAL_GAINS_RATE, account_liquidity
 from ginseng.optimizer import (
     SOLVER_TIME_LIMIT_SECONDS,
     OptimalPlan,
@@ -127,7 +128,7 @@ class ScenarioRequest(BaseModel):
     obligations: list[ObligationRequest] = Field(default_factory=list, max_length=DEMO_MAX_OBLIGATIONS)
     overdraft_apr: float = Field(default=0.2999, ge=0, le=10)
     buffer_tolerance_dollar_days: float | None = Field(default=None, ge=0, allow_inf_nan=False)
-    capital_gains_rate: float = Field(default=0.15, ge=0, le=1)
+    capital_gains_rate: float = Field(default=LONG_TERM_CAPITAL_GAINS_RATE, ge=0, le=1)
     tail_deficit_limit: float | None = Field(default=None, ge=0, le=1_000_000)
     drought_view: DroughtViewRequest | None = None
 
@@ -238,6 +239,7 @@ class ScenarioResponse(BaseModel):
     immediate_cash_coverage_ratio: float | None = None
     recommendation_status: str = "available"
     excluded_obligations: list[str] = Field(default_factory=list)
+    account_liquidity: dict[str, Any] = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):
@@ -581,6 +583,10 @@ def scenario(
         config = {**_optimizer_parameters(request), "funding": asdict(FundingConfig()), "policy": asdict(FundingPolicy()),
                   "horizon_days": request.horizon_days, "mean_block_length": bundle.mean_block_length,
                   "quantile_method": "inverse empirical CDF", "tail_ties": "proportional fractional mass"}
+        withdrawal_assumptions = WithdrawalAssumptions(long_term_rate=request.capital_gains_rate)
+        accounts = account_liquidity(persona, withdrawal_assumptions)
+        config["withdrawals"] = {"version": accounts["assumptions_version"], **asdict(withdrawal_assumptions),
+                                 "roth_earnings_and_conversions": "excluded", "tax_reserve_timing": "set aside at availability"}
         hashes = fingerprint(persona, bundle, obligations, weights, view, config, matrix)
         band = uncertainty.estimate_band(
             persona,
@@ -606,7 +612,7 @@ def scenario(
         current_tail_deficit = cvar(np.maximum(0, request.operating_buffer - (persona.immediate_funding + matrix).min(axis=1)), request.coverage_target, weights)
         needs_tail_protection = request.tail_deficit_limit is not None and current_tail_deficit > request.tail_deficit_limit
         if computed.funding_gap > 0 or needs_tail_protection:
-            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig())
+            specs = build_candidates(persona, obligations, computed.funding_gap, FundingConfig(), withdrawal_assumptions)
             evaluation_bundle = optimizer_comparison_bundle(persona, bundle, specs)
             results = [evaluate_plan(persona, evaluation_bundle, obligations, spec, weights) for spec in specs]
             recommendation = recommend(results, FundingPolicy())
@@ -667,6 +673,7 @@ def scenario(
             immediate_cash_coverage_ratio=persona.immediate_funding / computed.required_liquidity_reserve if computed.required_liquidity_reserve > 0 else None,
             recommendation_status=recommendation_status,
             excluded_obligations=[item.id for item in obligations if item.due_in_days > request.horizon_days],
+            account_liquidity=accounts,
         )
     finally:
         _SCENARIO_GATE.release()
@@ -696,7 +703,8 @@ def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdenti
         if stress["status"] == "unsupported":
             return {"status": "unavailable", "reason": "The requested stress has no supporting scenarios."}
         computed = compute_scenario_metrics(persona, bundle, obligations, request.coverage_target, request.operating_buffer, weights)
-        specs = build_candidates(persona, obligations, computed.funding_gap)
+        specs = build_candidates(persona, obligations, computed.funding_gap,
+                                 withdrawal_assumptions=WithdrawalAssumptions(long_term_rate=request.capital_gains_rate))
         evaluation = optimizer_comparison_bundle(persona, bundle, specs)
         return funding_analysis(persona, evaluation, obligations, specs, weights, view, _optimizer_parameters(request))
     finally:

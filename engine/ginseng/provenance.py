@@ -12,7 +12,7 @@ import numpy as np
 
 from ginseng.risk import weight_hash
 
-MODEL_VERSION = "0.2.0"
+MODEL_VERSION = "0.3.0"
 EVIDENCE_STATEMENT = "More simulations improve numerical precision. They do not create more historical evidence."
 
 
@@ -71,7 +71,8 @@ def model_card(state, bundle, config, stress, hashes) -> dict:
             "Non-overlapping historical windows may still be dependent; intervals assume independent windows.",
             "Market, cash-flow, and asset histories in this demo are synthetic, including their dependence.",
             "Sales execute at recorded prices; settlement plus transfer uses a three-calendar-day approximation, not a trading calendar.",
-            "Estimated positive-gain tax costs are assumptions, not tax bills; losses produce no immediate rebate.",
+            "Taxable gains use lot holding periods. Traditional IRA withdrawals assume ordinary income plus an early penalty; Roth access is capped at remaining regular contributions.",
+            "Tax and penalty reserves are earmarked from proceeds, not actual withholding or final tax bills. Losses create no rebate; Roth earnings, conversions and unclassified retirement accounts are excluded.",
             "Funding controls are chosen today and held fixed across futures; this is not an adaptive trading policy.",
             "The credit model bridges cash using the primary card's purchase APR and statement timing; real cash advances may have different fees and terms.",
             "A daily two-state Gaussian income fit could learn payday versus non-payday, rather than droughts; regime switching is not fitted.",

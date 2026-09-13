@@ -42,6 +42,7 @@ SCENARIO_BODY_FIELDS = {
     "optimizer_status",
     "provenance", "model_card", "stress", "baseline_summary", "unstressed_summary",
     "immediate_cash_coverage_ratio", "recommendation_status", "excluded_obligations",
+    "account_liquidity",
 }
 
 REPAIR_SCHEDULE = [

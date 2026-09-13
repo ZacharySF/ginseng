@@ -136,8 +136,9 @@ class TaxLot:
 class Holding:
     """An aggregated position in one symbol, held in one account.
 
-    `account` is `"taxable"` for marketable backup capital (spec 8.2) or
-    `"retirement"` for restricted capital (spec 8.3).
+    `account` identifies the tax wrapper: "taxable", "traditional", or
+    "roth". The legacy "retirement" value remains restricted until its
+    tax wrapper is known; it is never silently treated as a traditional IRA.
     """
 
     symbol: str
@@ -212,6 +213,10 @@ class FinancialState:
     # features rather than fabricating a flat market.
     portfolio_daily_returns: tuple[tuple[date, float], ...] = ()
     asset_daily_returns: tuple[AssetReturnHistory, ...] = ()
+    # Remaining regular Roth IRA contributions across the owner's Roth IRAs,
+    # after prior distributions. This is NOT investment-lot cost basis.
+    # Unknown basis defaults to zero accessible contributions.
+    roth_contribution_basis: float = 0.0
 
     # ---- Funding classes (spec section 8): always derived ----
 
@@ -228,7 +233,15 @@ class FinancialState:
     @property
     def restricted_capital(self) -> float:
         """Spec 8.3: retirement/restricted holdings at current market value."""
-        return sum(h.market_value for h in self.holdings if h.account == "retirement")
+        return sum(h.market_value for h in self.holdings if h.account in ("retirement", "traditional", "roth"))
+
+    @property
+    def traditional_capital(self) -> float:
+        return sum(h.market_value for h in self.holdings if h.account == "traditional")
+
+    @property
+    def roth_capital(self) -> float:
+        return sum(h.market_value for h in self.holdings if h.account == "roth")
 
     # ---- Derived views over the ledger (spec section 7, 10) ----
 

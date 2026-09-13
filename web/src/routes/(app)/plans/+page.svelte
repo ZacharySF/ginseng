@@ -7,6 +7,7 @@
 	import FundingLimits from '$lib/components/FundingLimits.svelte';
 	import FundingAnalysisPanel from '$lib/components/FundingAnalysisPanel.svelte';
 	import PortfolioAnalysisPanel from '$lib/components/PortfolioAnalysisPanel.svelte';
+	import AccountLiquidityPanel from '$lib/components/AccountLiquidityPanel.svelte';
 
 	onMount(() => {
 		scenarioStore.ensureLoaded();
@@ -31,6 +32,7 @@
 		<div class="funding-layout">
 			<section class="plan-console" aria-label="Funding plan comparison">
 				<OptimalPlanPanel response={s} onRetry={() => scenarioStore.refresh()} onLoadExample={() => scenarioStore.loadRepairExample()} />
+				{#if s.account_liquidity}<AccountLiquidityPanel data={s.account_liquidity} />{/if}
 				{#if s.plans.length > 0}<h2 class="named-plans-heading">Compare named funding plans</h2>{/if}
 				<PlanTable plans={s.plans} recommendation={s.recommendation} />
 				<FundingAnalysisPanel />

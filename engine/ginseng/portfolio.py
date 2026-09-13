@@ -11,6 +11,7 @@ from scipy.optimize import linprog
 
 from ginseng.risk import probabilities
 from ginseng.simulate import _joint_history, cash_paths
+from ginseng.withdrawals import is_long_term, LONG_TERM_CAPITAL_GAINS_RATE, ORDINARY_INCOME_RATE
 
 
 def aligned_asset_returns(state) -> tuple[list[str], np.ndarray] | None:
@@ -56,11 +57,7 @@ def lot_catalog(holdings, as_of: date, long_rate: float, short_rate: float) -> l
         for lot in holding.tax_lots:
             if holding.current_price <= 0 or lot.quantity <= 0:
                 continue
-            try:
-                anniversary = lot.purchase_date.replace(year=lot.purchase_date.year + 1)
-            except ValueError:  # February 29 anniversary in a non-leap year
-                anniversary = date(lot.purchase_date.year + 1, 2, 28)
-            rate = long_rate if as_of > anniversary else short_rate
+            rate = long_rate if is_long_term(lot.purchase_date, as_of) else short_rate
             gain_fraction = 1 - lot.cost_basis_per_share / holding.current_price
             lots.append({"lot_id": lot.lot_id, "symbol": holding.symbol, "price": holding.current_price,
                          "value": lot.market_value(holding.current_price), "gain_fraction": gain_fraction,
@@ -88,7 +85,7 @@ def sell_only_lp(lots: list[dict], target: float, *, symbol_targets: dict | None
     return np.maximum(0, result.x)
 
 
-def portfolio_lab(state, bundle, obligations, target: float, weights=None, long_rate=0.15, short_rate=0.25) -> dict:
+def portfolio_lab(state, bundle, obligations, target: float, weights=None, long_rate=LONG_TERM_CAPITAL_GAINS_RATE, short_rate=ORDINARY_INCOME_RATE) -> dict:
     aligned = aligned_asset_returns(state)
     if aligned is None:
         return {"status": "unavailable", "message": "Aligned daily returns for every taxable holding are required. Missing returns are not treated as zero."}

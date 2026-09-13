@@ -62,6 +62,21 @@ test('loading hides the previous solution', () => {
 	assert.doesNotMatch(output, /\$1,234|\$45|11%/);
 });
 
+test('shows gross withdrawal separately from its tax reserve, penalty, and spendable cash', () => {
+	const data = response();
+	data.optimal_plan.liquidation_amount = 1000;
+	data.optimal_plan.withdrawal_net_cash = 660;
+	data.optimal_plan.withdrawal_accounts = [
+		{ account_type: 'traditional', gross: 1000, tax_reserve: 240, penalty_reserve: 100, net_cash: 660 },
+		{ account_type: 'roth', gross: 0, tax_reserve: 0, penalty_reserve: 0, net_cash: 0 }
+	];
+	const output = text({ response: data });
+	for (const value of ['Traditional IRA', 'Roth IRA contributions', '$1,000', '$240', '$100', '$660', 'Penalty reserve']) {
+		assert.ok(output.includes(value), value);
+	}
+	assert.match(output, /Only the spendable amount enters the cash forecast/);
+});
+
 test('covered reserve offers a repair example instead of an empty optimizer', () => {
 	const output = text({ response: response({
 		optimal_plan: null,

@@ -71,6 +71,10 @@ export interface Plan {
 	new_debt: number;
 	interest_exposure: number;
 	investment_sold: number;
+	withdrawal_tax_reserve?: number;
+	withdrawal_penalty_reserve?: number;
+	withdrawal_net_cash?: number;
+	withdrawal_accounts?: AccountWithdrawal[];
 	realized_gain_loss: number;
 	deferred_spending: number;
 	feasible: boolean;
@@ -114,6 +118,7 @@ export interface OptimalPlan {
 	// Whether this plan's evaluated costs vary across the simulated futures.
 	cost_is_path_dependent: boolean;
 	solver_status: string;
+	solver_method?: 'clarabel' | 'highs_constraint_generation';
 	evaluation_horizon_days: number;
 	evaluation_draw_id: string;
 	evaluation_paths: number;
@@ -128,6 +133,31 @@ export interface OptimalPlan {
 	implied_credit_price: number | null;
 	credit_constraint_binding: boolean;
 	objective_kind: 'cvar' | 'expected';
+	withdrawal_accounts?: AccountWithdrawal[];
+	withdrawal_allocations?: { key: string; gross: number }[];
+	withdrawal_net_cash?: number;
+	withdrawal_tax_reserve?: number;
+	withdrawal_penalty_reserve?: number;
+}
+
+export interface AccountWithdrawal {
+	account_type: 'taxable' | 'traditional' | 'roth';
+	gross: number;
+	tax_reserve: number;
+	penalty_reserve: number;
+	net_cash: number;
+}
+
+export interface AccountLiquidity {
+	accounts: (AccountWithdrawal & { balance: number; excluded_balance: number })[];
+	total_net_accessible: number;
+	roth_contribution_basis: number;
+	unclassified_retirement_balance: number;
+	assumptions_version: string;
+	availability_delay_days: number;
+	assumptions: { label: string; value: string; source: string; url: string | null }[];
+	scope: string;
+	tie_break: string;
 }
 
 export interface OptimizerStatus {
@@ -174,6 +204,7 @@ export interface ScenarioResponse {
 	immediate_cash_coverage_ratio: number | null;
 	recommendation_status: string;
 	excluded_obligations: string[];
+	account_liquidity?: AccountLiquidity;
 }
 
 export interface ScenarioSummary {

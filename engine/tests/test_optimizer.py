@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import builtins
+from dataclasses import replace
 from datetime import date, timedelta
 from math import isfinite
 from unittest.mock import patch
@@ -256,6 +257,7 @@ def test_coverage_one_uses_a_finite_worst_case_objective():
 def test_optimizer_prices_todays_sale_at_execution(market_return):
     _require_cvxpy()
     holding = _taxable_holding(6_000.0, 4_800.0)
+    holding = replace(holding, tax_lots=(replace(holding.tax_lots[0], purchase_date=AS_OF - timedelta(days=366)),))
     state = _state(holdings=(holding,), market_daily_return=market_return)
     obligation = (Obligation("bill", "Bill", 4_000.0, 5),)
 
@@ -268,10 +270,13 @@ def test_optimizer_prices_todays_sale_at_execution(market_return):
         buffer_tolerance_dollar_days=1e9,
     )
     assert isinstance(plan, OptimalPlan)
-    assert plan.liquidation_amount == pytest.approx(4_000.0, abs=1e-3)
-    # Selling $4,000 realizes an $800 gain at the assumed 1% tax rate.
-    assert plan.expected_cost == pytest.approx(8.0, abs=1e-4)
-    assert plan.cvar_cost == pytest.approx(8.0, abs=1e-4)
+    # The long-term gain is 20% of proceeds. Gross up the sale so the
+    # 1% assumed gain-tax reserve still leaves $4,000 available for the bill.
+    gross = 4_000 / (1 - .2 * .01)
+    assert plan.liquidation_amount == pytest.approx(gross, abs=1e-3)
+    assert plan.withdrawal_net_cash == pytest.approx(4_000, abs=1e-3)
+    assert plan.expected_cost == pytest.approx(gross * .2 * .01, abs=1e-4)
+    assert plan.cvar_cost == pytest.approx(gross * .2 * .01, abs=1e-4)
     assert plan.cost_is_path_dependent is False
 
 
