@@ -117,4 +117,4 @@ bunx supabase test db
 
 ## A note about chat
 
-Sending a message shares your question, recent conversation, and relevant financial context—including the active forecast and unsaved scenario—with Google Gemini. Unsubmitted Data form edits are excluded. Review proposed changes before saving them, and don't send information you're uncomfortable sharing with the model provider.
+Sending a message shares your question, recent conversation, and relevant financial context, including the active forecast and unsaved scenario—with Google Gemini. Unsubmitted Data form edits are excluded. Review proposed changes before saving them, and don't send information you're uncomfortable sharing with the model provider.
