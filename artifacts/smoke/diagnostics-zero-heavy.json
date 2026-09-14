@@ -1,0 +1,63 @@
+{
+  "minimum_flow_quantiles": [
+    -200.0,
+    -100.0,
+    70.0,
+    70.0,
+    70.0
+  ],
+  "minimum_flow_std": 48.47153778224481,
+  "distinct_index_paths": 951,
+  "distinct_requirements": 5,
+  "zero_requirement_fraction": 0.8583984375,
+  "zero_deficit_fraction": 0.998046875,
+  "minimum_day_counts": [
+    881,
+    78,
+    64,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "minimum_tie_convention": "earliest forecast day",
+  "baseline": {
+    "required_liquidity_reserve": 110.0,
+    "cash_shortfall_probability": 0.001953125,
+    "expected_max_cash_deficit": 0.126953125,
+    "avg_cash_deficit_when_short": 65.0,
+    "funding_gap": 10.0
+  },
+  "added_obligation": {
+    "required_liquidity_reserve": 110.0,
+    "cash_shortfall_probability": 0.001953125,
+    "expected_max_cash_deficit": 0.126953125,
+    "avg_cash_deficit_when_short": 65.0,
+    "funding_gap": 10.0
+  },
+  "added_obligation_day": 17,
+  "added_obligation_amount": 100
+}

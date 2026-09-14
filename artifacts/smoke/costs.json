@@ -1,0 +1,656 @@
+[
+  {
+    "case": "canonical",
+    "target": "cash_shortfall_probability",
+    "tolerance": 0.005,
+    "methods": {
+      "legacy_mc": {
+        "case": "canonical",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.00022512598920985084
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00039388899676850997,
+        "seconds_p10": 0.0003893045017321128,
+        "seconds_p90": 0.00040495969515177423,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.00022512598920985084
+      },
+      "mc": {
+        "case": "canonical",
+        "method": "mc",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.00022512598920985084
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00045671350017073564,
+        "seconds_p10": 0.00044110879534855487,
+        "seconds_p90": 0.00048540820280322804,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.00022512598920985084
+      },
+      "sobol": {
+        "case": "canonical",
+        "method": "sobol",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.00022512598920985084
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.0015738934998807963,
+        "seconds_p10": 0.0015268557996023445,
+        "seconds_p90": 0.0016246628998487721,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.00022512598920985084
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.2502640723774146
+  },
+  {
+    "case": "canonical",
+    "target": "expected_max_cash_deficit",
+    "tolerance": 5,
+    "methods": {
+      "legacy_mc": {
+        "case": "canonical",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.856382793049659
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00039388899676850997,
+        "seconds_p10": 0.0003893045017321128,
+        "seconds_p90": 0.00040495969515177423,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.856382793049659
+      },
+      "mc": {
+        "case": "canonical",
+        "method": "mc",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.856382793049659
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00045671350017073564,
+        "seconds_p10": 0.00044110879534855487,
+        "seconds_p90": 0.00048540820280322804,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.856382793049659
+      },
+      "sobol": {
+        "case": "canonical",
+        "method": "sobol",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.856382793049659
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.0015738934998807963,
+        "seconds_p10": 0.0015268557996023445,
+        "seconds_p90": 0.0016246628998487721,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.856382793049659
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.2502640723774146
+  },
+  {
+    "case": "canonical",
+    "target": "required_liquidity_reserve",
+    "tolerance": 50,
+    "methods": {
+      "legacy_mc": {
+        "case": "canonical",
+        "method": "legacy_mc",
+        "n": 1024,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          20.83016411417161,
+          28.891266700538786
+        ],
+        "bias": -3.2694489677043634,
+        "rmse": 21.08518516816359,
+        "sd": 24.052601717162123,
+        "seconds_median": 0.0008283210008812603,
+        "seconds_p10": 0.0008146432970534079,
+        "seconds_p90": 0.0008375264020287432,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 18.752099544671182
+      },
+      "mc": {
+        "case": "canonical",
+        "method": "mc",
+        "n": 1024,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          22.287972420142914,
+          31.76759014099822
+        ],
+        "bias": -5.886050252825385,
+        "rmse": 23.05209973472779,
+        "sd": 25.735933752920932,
+        "seconds_median": 0.0009164589973806869,
+        "seconds_p10": 0.0009007210981508251,
+        "seconds_p90": 0.0009220370964612811,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 18.752099544671182
+      },
+      "sobol": {
+        "case": "canonical",
+        "method": "sobol",
+        "n": 1024,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          29.5674255744044,
+          35.523020939193415
+        ],
+        "bias": 0.9367897472221216,
+        "rmse": 29.582262086061704,
+        "sd": 34.141522229253205,
+        "seconds_median": 0.0020123355025134515,
+        "seconds_p10": 0.001993264295742847,
+        "seconds_p90": 0.002028843301377492,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 18.752099544671182
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.4116217200594379
+  },
+  {
+    "case": "drought-heavy",
+    "target": "cash_shortfall_probability",
+    "tolerance": 0.005,
+    "methods": {
+      "legacy_mc": null,
+      "mc": null,
+      "sobol": null
+    },
+    "reference_resolved_at_tolerance": false,
+    "best_ordinary": null,
+    "cost_speedup": null
+  },
+  {
+    "case": "drought-heavy",
+    "target": "expected_max_cash_deficit",
+    "tolerance": 5,
+    "methods": {
+      "legacy_mc": null,
+      "mc": null,
+      "sobol": null
+    },
+    "reference_resolved_at_tolerance": false,
+    "best_ordinary": null,
+    "cost_speedup": null
+  },
+  {
+    "case": "drought-heavy",
+    "target": "required_liquidity_reserve",
+    "tolerance": 50,
+    "methods": {
+      "legacy_mc": {
+        "case": "drought-heavy",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00032757049848441966,
+        "seconds_p10": 0.00032483750037499705,
+        "seconds_p90": 0.0003301473960164003,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      },
+      "mc": {
+        "case": "drought-heavy",
+        "method": "mc",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00036741700023412704,
+        "seconds_p10": 0.0003637467030785047,
+        "seconds_p90": 0.00038709980217390696,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      },
+      "sobol": {
+        "case": "drought-heavy",
+        "method": "sobol",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.0014934040009393357,
+        "seconds_p10": 0.0014840694020676892,
+        "seconds_p90": 0.0015663651014619973,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.21934486467049855
+  },
+  {
+    "case": "smooth",
+    "target": "integral",
+    "tolerance": 0.0001,
+    "methods": {
+      "mc": null,
+      "sobol": {
+        "case": "smooth",
+        "method": "sobol",
+        "n": 1024,
+        "target": "integral",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          6.56913488215582e-06,
+          6.56913488215582e-06
+        ],
+        "bias": -2.944544899796675e-06,
+        "rmse": 6.56913488215582e-06,
+        "sd": 6.780677294886084e-06,
+        "seconds_median": 0.00020856999981333502,
+        "seconds_p10": 0.00020147109680692665,
+        "seconds_p90": 0.0002170527986891102,
+        "reference_kind": "analytic exact",
+        "reference_uncertainty_95": 0.0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": null,
+    "cost_speedup": null
+  },
+  {
+    "case": "tiny",
+    "target": "cash_shortfall_probability",
+    "tolerance": 0.005,
+    "methods": {
+      "legacy_mc": null,
+      "mc": null,
+      "sobol": {
+        "case": "tiny",
+        "method": "sobol",
+        "n": 1024,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.002751015309800446,
+          0.002751015309800446
+        ],
+        "bias": 0.0004865325553171096,
+        "rmse": 0.002751015309800446,
+        "sd": 0.003126525506559008,
+        "seconds_median": 0.0004835399995499756,
+        "seconds_p10": 0.00046145610394887626,
+        "seconds_p90": 0.0004951827024342493,
+        "reference_kind": "rational exact",
+        "reference_uncertainty_95": 0.0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": null,
+    "cost_speedup": null
+  },
+  {
+    "case": "tiny",
+    "target": "expected_max_cash_deficit",
+    "tolerance": 0.5,
+    "methods": {
+      "legacy_mc": null,
+      "mc": null,
+      "sobol": {
+        "case": "tiny",
+        "method": "sobol",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.443454600037464,
+          0.443454600037464
+        ],
+        "bias": 0.13176194750386827,
+        "rmse": 0.443454600037464,
+        "sd": 0.4889318582166299,
+        "seconds_median": 0.00036927300243405625,
+        "seconds_p10": 0.000362179698277032,
+        "seconds_p90": 0.00037914389758952893,
+        "reference_kind": "rational exact",
+        "reference_uncertainty_95": 0.0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": null,
+    "cost_speedup": null
+  },
+  {
+    "case": "tiny",
+    "target": "required_liquidity_reserve",
+    "tolerance": 5,
+    "methods": {
+      "legacy_mc": {
+        "case": "tiny",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00013978900096844882,
+        "seconds_p10": 0.00013427999583655038,
+        "seconds_p90": 0.00014160269711283036,
+        "reference_kind": "rational exact",
+        "reference_uncertainty_95": 0
+      },
+      "mc": {
+        "case": "tiny",
+        "method": "mc",
+        "n": 1024,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00025146050029434264,
+        "seconds_p10": 0.00024434899896732534,
+        "seconds_p90": 0.00027858219691552223,
+        "reference_kind": "rational exact",
+        "reference_uncertainty_95": 0
+      },
+      "sobol": {
+        "case": "tiny",
+        "method": "sobol",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00036927300243405625,
+        "seconds_p10": 0.000362179698277032,
+        "seconds_p90": 0.00037914389758952893,
+        "reference_kind": "rational exact",
+        "reference_uncertainty_95": 0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.3785519115858245
+  },
+  {
+    "case": "zero-heavy",
+    "target": "cash_shortfall_probability",
+    "tolerance": 0.005,
+    "methods": {
+      "legacy_mc": {
+        "case": "zero-heavy",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0016914558667664816,
+          0.0018246017193581726
+        ],
+        "bias": -6.103515625e-05,
+        "rmse": 0.001692556716780035,
+        "sd": 0.001953125,
+        "seconds_median": 0.00029756400181213394,
+        "seconds_p10": 0.0002892196971515659,
+        "seconds_p90": 0.0003133576996333431,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0006231786152176965
+      },
+      "mc": {
+        "case": "zero-heavy",
+        "method": "mc",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.003478584940225567,
+          0.003987063513701306
+        ],
+        "bias": 0.00189208984375,
+        "rmse": 0.0037510560456077767,
+        "sd": 0.0037399496396731957,
+        "seconds_median": 0.00034537100145826116,
+        "seconds_p10": 0.00033771500020520764,
+        "seconds_p90": 0.000352224797825329,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0006231786152176965
+      },
+      "sobol": {
+        "case": "zero-heavy",
+        "method": "sobol",
+        "n": 256,
+        "target": "cash_shortfall_probability",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.003559711617080626,
+          0.004304719307466267
+        ],
+        "bias": 0.00286865234375,
+        "rmse": 0.003982280854052407,
+        "sd": 0.00318943976924893,
+        "seconds_median": 0.0014697210026497487,
+        "seconds_p10": 0.0014582627998606767,
+        "seconds_p90": 0.0014938576037820893,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0006231786152176965
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.2024629172990371
+  },
+  {
+    "case": "zero-heavy",
+    "target": "expected_max_cash_deficit",
+    "tolerance": 5,
+    "methods": {
+      "legacy_mc": {
+        "case": "zero-heavy",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.05074367600299445,
+          0.07314511239838592
+        ],
+        "bias": -0.023193359375,
+        "rmse": 0.05579294375989472,
+        "sd": 0.05859375,
+        "seconds_median": 0.00029756400181213394,
+        "seconds_p10": 0.0002892196971515659,
+        "seconds_p90": 0.0003133576996333431,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.029487631631962236
+      },
+      "mc": {
+        "case": "zero-heavy",
+        "method": "mc",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.26927631248413386,
+          0.30464943086651664
+        ],
+        "bias": 0.172119140625,
+        "rmse": 0.2859912300699278,
+        "sd": 0.2637321497464726,
+        "seconds_median": 0.00034537100145826116,
+        "seconds_p10": 0.00033771500020520764,
+        "seconds_p90": 0.000352224797825329,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.029487631631962236
+      },
+      "sobol": {
+        "case": "zero-heavy",
+        "method": "sobol",
+        "n": 256,
+        "target": "expected_max_cash_deficit",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.35290980595120897,
+          0.3851005793693774
+        ],
+        "bias": 0.201416015625,
+        "rmse": 0.36817709497511214,
+        "sd": 0.3558763116853242,
+        "seconds_median": 0.0014697210026497487,
+        "seconds_p10": 0.0014582627998606767,
+        "seconds_p90": 0.0014938576037820893,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.029487631631962236
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.2024629172990371
+  },
+  {
+    "case": "zero-heavy",
+    "target": "required_liquidity_reserve",
+    "tolerance": 50,
+    "methods": {
+      "legacy_mc": {
+        "case": "zero-heavy",
+        "method": "legacy_mc",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00029756400181213394,
+        "seconds_p10": 0.0002892196971515659,
+        "seconds_p90": 0.0003133576996333431,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      },
+      "mc": {
+        "case": "zero-heavy",
+        "method": "mc",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.00034537100145826116,
+        "seconds_p10": 0.00033771500020520764,
+        "seconds_p90": 0.000352224797825329,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      },
+      "sobol": {
+        "case": "zero-heavy",
+        "method": "sobol",
+        "n": 256,
+        "target": "required_liquidity_reserve",
+        "replicates": 4,
+        "rmse_reference_interval": [
+          0.0,
+          0.0
+        ],
+        "bias": 0.0,
+        "rmse": 0.0,
+        "sd": 0.0,
+        "seconds_median": 0.0014697210026497487,
+        "seconds_p10": 0.0014582627998606767,
+        "seconds_p90": 0.0014938576037820893,
+        "reference_kind": "independent MC numerical reference",
+        "reference_uncertainty_95": 0.0
+      }
+    },
+    "reference_resolved_at_tolerance": true,
+    "best_ordinary": "legacy_mc",
+    "cost_speedup": 0.2024629172990371
+  }
+]

@@ -158,6 +158,13 @@ def extend_draw_bundle(
             )
         return replace(bundle, horizon_days=target_horizon_days)
 
+    if bundle.sampler != "legacy_mc":
+        if bundle.material_indices is None or target_horizon_days > bundle.material_indices.shape[1]:
+            raise ValueError("Requested horizon exceeds declared material horizon; create a new sampling plan.")
+        indices = bundle.material_indices[:, :target_horizon_days]
+        return replace(bundle, horizon_days=target_horizon_days, index_matrix=indices,
+                       bootstrap_draw_id=hashlib.sha256(np.ascontiguousarray(indices).tobytes()).hexdigest())
+
     extra_days = target_horizon_days - bundle.horizon_days
     n_hist = bundle.history_length
     n_paths = bundle.n_paths
@@ -183,6 +190,8 @@ def extend_draw_bundle(
         np.ascontiguousarray(full_index_matrix, dtype=np.int64).tobytes()
     ).hexdigest()
     return DrawBundle(
+        sampling_metadata=bundle.sampling_metadata,
+        requested_mean_block_length=bundle.requested_mean_block_length,
         seed=bundle.seed,
         horizon_days=target_horizon_days,
         n_paths=n_paths,

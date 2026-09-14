@@ -1,0 +1,103 @@
+"""Installed offline numerical command. JSON stdout, diagnostics stderr."""
+
+import argparse
+import json
+from pathlib import Path
+import sys
+from ginseng.inputs import fixture, load_input
+from ginseng.sampling import prepare_history
+from ginseng.numerical import run_core, manifest, diagnostics
+from ginseng.exact import enumerate_exact
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(prog="ginseng")
+    sub = parser.add_subparsers(dest="command", required=True)
+    sim = sub.add_parser("simulate")
+    source = sim.add_mutually_exclusive_group()
+    source.add_argument(
+        "--fixture",
+        default=None,
+        choices=["canonical", "tiny", "zero-heavy", "drought-heavy"],
+    )
+    source.add_argument("--input", type=Path)
+    sim.add_argument("--sampler", choices=["mc", "sobol", "legacy_mc"], default="mc")
+    sim.add_argument("--paths", type=int, default=2048)
+    sim.add_argument("--seed", type=int, default=42)
+    sim.add_argument("--replicate", type=int, default=0)
+    sim.add_argument("--horizon", type=int)
+    sim.add_argument("--material-horizon", type=int)
+    sim.add_argument("--block-length", type=int)
+    exact = sub.add_parser("exact")
+    exact.add_argument("--fixture", choices=["tiny"], default="tiny")
+    bench = sub.add_parser("benchmark")
+    bench.add_argument("--config", type=Path, required=True)
+    report_parser = sub.add_parser("report")
+    report_parser.add_argument("--input", type=Path, required=True)
+    for p in (sim, exact, bench, report_parser):
+        p.add_argument("--out", type=Path, required=p in (bench, report_parser))
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "simulate":
+            case = (
+                load_input(args.input)
+                if args.input
+                else fixture(args.fixture or "canonical")
+            )
+            requested = (
+                args.block_length
+                if args.block_length is not None
+                else (7 if case.name == "tiny" else None)
+            )
+            prepared = prepare_history(case.state, requested)
+            bundle, x, summary = run_core(
+                case,
+                prepared,
+                args.sampler,
+                args.paths,
+                args.seed,
+                args.horizon,
+                args.material_horizon,
+                args.replicate,
+            )
+            result = dict(
+                summary=summary,
+                manifest=manifest(case, prepared, bundle, summary),
+                diagnostics=diagnostics(case, prepared, bundle, x),
+            )
+        elif args.command == "exact":
+            from ginseng.provenance import digest
+            from ginseng.numerical import environment
+            from dataclasses import asdict
+
+            result = enumerate_exact()
+            result["manifest"] = dict(
+                environment=environment(),
+                input_hash=digest(asdict(fixture("tiny"))),
+                method="independent rational enumeration",
+                block_length=7,
+                horizon=4,
+                result_hash=digest(result),
+            )
+        elif args.command == "benchmark":
+            from ginseng.benchmark import benchmark
+
+            result = benchmark(json.loads(args.config.read_text()), args.out)
+        else:
+            from ginseng.benchmark import report
+
+            result = report(args.input, args.out)
+        payload = json.dumps(result, indent=2, allow_nan=False) + "\n"
+        if args.out and args.command in ("simulate", "exact"):
+            args.out.parent.mkdir(parents=True, exist_ok=True)
+            args.out.write_text(payload)
+        else:
+            sys.stdout.write(payload)
+        return 0
+    except (ValueError, KeyError, TypeError, OSError, OverflowError) as exc:
+        print(f"ginseng: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -163,6 +163,7 @@ def test_scenario_returns_exactly_the_frozen_field_set_with_valid_types():
     assert set(severity) == {
         "cash_shortfall_probability",
         "avg_cash_deficit_when_short",
+        "expected_max_cash_deficit",
         "dollar_days_below_buffer",
     }
     for value in severity.values():

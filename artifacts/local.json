@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "required_liquidity_reserve": 90.0,
+    "cash_shortfall_probability": 0.39208984375,
+    "expected_max_cash_deficit": 20.6689453125,
+    "avg_cash_deficit_when_short": 52.71481942714819,
+    "funding_gap": 60.0
+  },
+  "manifest": {
+    "fixture": "local",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "synthetic_data_seed": null,
+    "opening_cash": 30.0,
+    "buffer": 10.0,
+    "coverage_target": 0.95,
+    "history_length": 3,
+    "block_requested": 7,
+    "block_resolved": 7,
+    "block_clipped": false,
+    "block_resolution": "explicit",
+    "end_of_day": true,
+    "sampler": "sobol",
+    "sampler_version": 1,
+    "mapping_version": 1,
+    "material_horizon": 4,
+    "dimension": 7,
+    "root_seed": 42,
+    "replicate": 0,
+    "domain": 100,
+    "derived_seed": 11786651213743873774,
+    "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+    "bit_generator": "PCG64",
+    "bits": 30,
+    "scramble": "LMS + digital shift",
+    "optimization": null,
+    "stream_layout": "sobol",
+    "visible_horizon": 4,
+    "requested_n": 2048,
+    "actual_n": 2048,
+    "index_hash": "a9dbd443bd41daff4d95f7fa1049a5dd0b2fd6746804fdb8269c996a25a22923",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "a5136ac48fa5bd4a1b3cf54e0e86b05452e62ae1cefef683e867831469e77e8d",
+    "environment": {
+      "python": "3.12.14",
+      "platform": "Linux-7.2.5-x86_64-with-glibc2.42",
+      "cpu": "Intel(R) Core(TM) Ultra 7 256V",
+      "dependencies": {
+        "numpy": "2.5.3",
+        "pandas": "3.0.5",
+        "scipy": "1.18.1",
+        "arch": "8.0.0",
+        "ginseng": "0.1.0"
+      },
+      "threads": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+      },
+      "dtype": "float64",
+      "git_commit": "90e730d26368d35ef0579a85964b546b92aada86",
+      "source_fingerprint": "de4163929faa5be870a7d04b416443c22dbd926c3c84b5fee58741122acab495"
+    }
+  },
+  "diagnostics": {
+    "minimum_flow_quantiles": [
+      -180.0,
+      -80.0,
+      -20.0,
+      10.0,
+      70.0
+    ],
+    "minimum_flow_std": 35.84655931633238,
+    "distinct_index_paths": 54,
+    "distinct_requirements": 11,
+    "zero_requirement_fraction": 0.06005859375,
+    "zero_deficit_fraction": 0.60791015625,
+    "minimum_day_counts": [
+      64,
+      1269,
+      34,
+      681
+    ],
+    "minimum_tie_convention": "earliest forecast day",
+    "baseline": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.39208984375,
+      "expected_max_cash_deficit": 20.6689453125,
+      "avg_cash_deficit_when_short": 52.71481942714819,
+      "funding_gap": 60.0
+    },
+    "added_obligation": {
+      "required_liquidity_reserve": 180.0,
+      "cash_shortfall_probability": 0.98095703125,
+      "expected_max_cash_deficit": 87.5,
+      "avg_cash_deficit_when_short": 89.19860627177701,
+      "funding_gap": 150.0
+    },
+    "added_obligation_day": 4,
+    "added_obligation_amount": 100
+  }
+}

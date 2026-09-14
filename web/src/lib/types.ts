@@ -27,6 +27,7 @@ export interface ScenarioRequest {
 export interface Severity {
 	cash_shortfall_probability: number;
 	avg_cash_deficit_when_short: number;
+	expected_max_cash_deficit: number;
 	dollar_days_below_buffer: number;
 }
 export interface EstimateBand {

@@ -16,7 +16,8 @@
     "severity": {
       "cash_shortfall_probability": 0.21,
       "avg_cash_deficit_when_short": 1140.0,
-      "dollar_days_below_buffer": 8400.0
+      "dollar_days_below_buffer": 8400.0,
+      "expected_max_cash_deficit": 239.39999999999998
     },
     "estimate_band": null,
     "coverage_curve": [

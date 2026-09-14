@@ -48,6 +48,19 @@ class DrawBundle:
     history_length: int
     index_matrix: np.ndarray
     bootstrap_draw_id: str
+    sampler: str = "legacy_mc"
+    material_indices: np.ndarray | None = None
+    sampling_metadata: tuple = ()
+    requested_mean_block_length: int | None = None
+
+    def __post_init__(self):
+        if self.sampler != "legacy_mc":
+            # Immutable bytes backing also prevents callers re-enabling writes.
+            for name in ("index_matrix", "material_indices"):
+                value = getattr(self, name)
+                if value is not None:
+                    owned = np.frombuffer(np.asarray(value, dtype="<i8").tobytes(), dtype="<i8").reshape(value.shape)
+                    object.__setattr__(self, name, owned)
 
 @dataclass(frozen=True)
 class PathBundle:
@@ -225,11 +238,12 @@ def draw_bundle(
         resolved_block_length = int(
             np.clip(mean_block_length, MIN_MEAN_BLOCK_LENGTH, MAX_MEAN_BLOCK_LENGTH)
         )
-        mean_block_length_was_clipped = False
+        mean_block_length_was_clipped = resolved_block_length != mean_block_length
 
     rng = np.random.default_rng(seed)
     index_matrix = _stationary_bootstrap_indices(rng, n_hist, n_paths, horizon_days, resolved_block_length)
     return DrawBundle(
+        requested_mean_block_length=mean_block_length,
         seed=seed,
         horizon_days=horizon_days,
         n_paths=n_paths,
@@ -355,7 +369,8 @@ def portfolio_value_paths(
 
 
 def cash_paths(
-    state: FinancialState, bundle: DrawBundle | PathBundle, obligations: Sequence[Obligation] = ()
+    state: FinancialState, bundle: DrawBundle | PathBundle, obligations: Sequence[Obligation] = (),
+    *, prepared_history: np.ndarray | None = None
 ) -> np.ndarray:
     """`X_{j,t}` cumulative future net cash flow, excluding opening cash."""
     if isinstance(bundle, PathBundle):
@@ -365,10 +380,10 @@ def cash_paths(
             daily_net = daily_net - additional[np.newaxis, :]
         return np.cumsum(daily_net, axis=1)
 
-    joint = _joint_history(state)
-    income = joint["variable_income"].to_numpy()
-    essential = joint["essential_variable_spending"].to_numpy()
-    discretionary = joint["discretionary_spending"].to_numpy()
+    joint = _joint_history(state).to_numpy() if prepared_history is None else prepared_history
+    if joint.shape != (bundle.history_length, 3):
+        raise ValueError("Prepared history does not match bundle.")
+    income, essential, discretionary = joint.T
 
     idx = bundle.index_matrix
     stochastic_daily = income[idx] - essential[idx] - discretionary[idx]

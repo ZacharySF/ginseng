@@ -1,0 +1,88 @@
+{
+  "minimum_flow_quantiles": [
+    -1411.0827270771126,
+    -347.79681599618965,
+    74.78626298994013,
+    389.77910474448396,
+    768.2206292098437
+  ],
+  "minimum_flow_std": 259.4011177559695,
+  "distinct_index_paths": 1012,
+  "distinct_requirements": 615,
+  "zero_requirement_fraction": 0.0,
+  "zero_deficit_fraction": 1.0,
+  "minimum_day_counts": [
+    666,
+    113,
+    50,
+    28,
+    34,
+    14,
+    16,
+    8,
+    3,
+    5,
+    1,
+    3,
+    1,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0,
+    0,
+    49,
+    31,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "minimum_tie_convention": "earliest forecast day",
+  "baseline": {
+    "required_liquidity_reserve": 1350.2911645974489,
+    "cash_shortfall_probability": 0.0,
+    "expected_max_cash_deficit": 0.0,
+    "avg_cash_deficit_when_short": 0.0,
+    "funding_gap": 0.0
+  },
+  "added_obligation": {
+    "required_liquidity_reserve": 1391.916707699073,
+    "cash_shortfall_probability": 0.0,
+    "expected_max_cash_deficit": 0.0,
+    "avg_cash_deficit_when_short": 0.0,
+    "funding_gap": 0.0
+  },
+  "added_obligation_day": 17,
+  "added_obligation_amount": 100,
+  "canonical_staged_repair": {
+    "required_liquidity_reserve": 5770.357154571893,
+    "cash_shortfall_probability": 0.3173828125,
+    "expected_max_cash_deficit": 320.4905886311311,
+    "avg_cash_deficit_when_short": 1009.7918854100869,
+    "funding_gap": 2768.615379699274
+  },
+  "canonical_staged_repair_events": [
+    {
+      "id": "repair-deposit",
+      "label": "Emergency vehicle repair deposit",
+      "amount": 1500.0,
+      "due_in_days": 3,
+      "transaction_type": "future_obligation",
+      "recurrence_days": null
+    },
+    {
+      "id": "repair-balance",
+      "label": "Emergency vehicle repair balance",
+      "amount": 3000.0,
+      "due_in_days": 17,
+      "transaction_type": "future_obligation",
+      "recurrence_days": null
+    }
+  ]
+}

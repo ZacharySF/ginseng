@@ -1,0 +1,2122 @@
+[
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0015973440022207797,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.59765625,
+      "expected_max_cash_deficit": 765.625,
+      "avg_cash_deficit_when_short": 1281.045751633987,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "7bf3247b910dfc502c0c1f957605f64488d2d1ba941dfb24421b7e3e60de0306",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "32faebf02681560a82ed9d6eb8ee003ecf00a3330159832ab704b57dcb5fe9d2"
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0016423589986516163,
+    "estimates": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "cf38470b0e22e30e6ac3a382dc8b6ee3b24d4b38d740ba2f037c8b7c43f01b0b",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "423dcd8438d469346ec7dd14a6d83eb4a844d086cc6092ece637981741663c74"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.0008406170018133707,
+    "estimates": {
+      "required_liquidity_reserve": 1357.707360765364,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "27b49fb0824d5aeacc397ed16f5c2bcfde8aab67e1e9d5a1874bb59c5b93ae7b",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "d9c96b70ff6dc8e696c7b1d67878b6a5550f66f28088d1464507f172231f89b2"
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.001583372002642136,
+    "estimates": {
+      "required_liquidity_reserve": 1435.744952169433,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "52afaa88f8a12f8b127d59ae6ff610c1c2eed7f9000bb88cd9d9656772e16a1e",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "eac598244722f3ad01e75dfda45965f4ff0fd7b4a822c8dc255046a926021bcd"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.00028841499442933127,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.37890625,
+      "expected_max_cash_deficit": 19.8046875,
+      "avg_cash_deficit_when_short": 52.2680412371134,
+      "funding_gap": 60.0
+    },
+    "index_hash": "06c3902d202eed4af07802ad76e8eff047247b77c766769b6f8ab773c2769407",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "df5c1d2bb563d1643c0ea4e28edee2ab4ee20b60c1b61de3b8defbdddd28f2aa",
+    "reserve_cdf": {
+      "80": 0.681640625,
+      "90": 0.970703125,
+      "130": 0.9716796875
+    }
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.00021229700359981507,
+    "estimates": {
+      "integral": 1.6660507166784817
+    }
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.00019901799532817677,
+    "estimates": {
+      "integral": 1.6659706511721992
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0014763240033062175,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.00390625,
+      "expected_max_cash_deficit": 0.1171875,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "62487e5c2ffc6a70cbee1e085fe98d904e99b5f19d309fafd56052c8061ce61e",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "233e0d944f232777ede9cb696893fa3edf70487fbfe96a69a767613cfbe184fe"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.00021235000167507678,
+    "estimates": {
+      "integral": 1.6659746713059758
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.00039537800330435857,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.58203125,
+      "expected_max_cash_deficit": 742.578125,
+      "avg_cash_deficit_when_short": 1275.8389261744967,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "384137696fb1a82ca25970d6b1a2c9e975d74b6e5159411c1aeab763f467861f",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "b702bd5589d12669502397d06b324954d07e520ff59570fc7a82d450485d7c59"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.0003544189967215061,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "5be16efb2ba2355992418f8defb68e387ff96bb64dd0973208f9b88c6189b1ac",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "32040f97516d9a3b63ebf560336edd1c0cbb1c0d01a08a7f40d1364b98013f5e"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.00039587999344803393,
+    "estimates": {
+      "required_liquidity_reserve": 1457.8955217807911,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "c2c7ced2ca490b1b6ba72fd3111592a9e66a20fb1cb0d58b6a9c3891d0bebe34",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "4b25e268e8d79c25486d398c90cd8b868d79e25caf52e6d7f396add3a9e16258"
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.00043881799501832575,
+    "estimates": {
+      "required_liquidity_reserve": 1404.26599358342,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "0e21ec81ad05cd3a3943a04b553f7f1c5d19a8bf7bcd8cb158cce2ec30e2d9d2",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "5104e9cc3050038e3b63a7c7e8611866d183ce51b99153cc8b67180f25d0225c"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0014927270021871664,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.59375,
+      "expected_max_cash_deficit": 784.6875,
+      "avg_cash_deficit_when_short": 1321.578947368421,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "ad918aace9ca136657aaaff17be90932e12ef71a271e55b9be5b53450afac283",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "2dd5d23e724d178398d8bf7731da18b8ec8ff9c92dadc0581e95781e6922af8a"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.0008076619997154921,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "ec239f448afac1f4534e741b1a978ede9867102f04e49901171d01dfe5f59b45",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "4a5c98671a59b1a4f0f01cab3aa0bc7acd1be2abc5421a1f0d1034539cb33426"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.0007421289992635138,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.6201171875,
+      "expected_max_cash_deficit": 785.05859375,
+      "avg_cash_deficit_when_short": 1265.984251968504,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "7b6bd7816b1dc2dd6fd0211a73e6ba8bbc2a11580651a9700e9ce62d7ff90824",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "a0c715116f6752133ed6df4cba1953f369101477b17699d4cc25a49f515ff7e2"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0019171620006090961,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.583984375,
+      "expected_max_cash_deficit": 767.9296875,
+      "avg_cash_deficit_when_short": 1314.9832775919733,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "ebdf5c9e7df2597ab85705c4e8d759cee16f1417c40322eac80c0cd02c188a49",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "4e9ffc04d7730274bed0277e1f14f8a52757e1be2ead4cf94b118f44efadf3cb"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.00032506499701412395,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.609375,
+      "expected_max_cash_deficit": 833.4375,
+      "avg_cash_deficit_when_short": 1367.6923076923076,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "08689583fc8529f9fa9e2c775af263d4fd965f49f5b17ed20673bfb4ebf16327",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "a75503e63681051fc083aa63ef1dfa7911c024f92b00d6a20d71f966e69b28ff"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.00019440599862718955,
+    "estimates": {
+      "integral": 1.6663851562923053
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.0008510879997629672,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5830078125,
+      "expected_max_cash_deficit": 777.36328125,
+      "avg_cash_deficit_when_short": 1333.3668341708542,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "f5a2097d27ff95090c0e5a0ba1fa9c12223e650df602c68fa4949c1480a291f1",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "d16c361ba3586375fa519cbad8a89855d647b805edac6d803e068ca0dcdbe498"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 4.987699503544718e-05,
+    "estimates": {
+      "integral": 1.665250209037539
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.0009154049985227175,
+    "estimates": {
+      "required_liquidity_reserve": 1314.6475468984734,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "86d69b2cd89703e39593a386124547507e856958cc881d3021807aadde0416ef",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "eb7d9e2746194ef5df828cebe1e11e8b7e846d9001a200f02af4a3ffb6a27558"
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0003740290048881434,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.40234375,
+      "expected_max_cash_deficit": 20.9375,
+      "avg_cash_deficit_when_short": 52.03883495145631,
+      "funding_gap": 60.0
+    },
+    "index_hash": "4c14bf734215a17f1d13f915a7db8c68178b91334d175f0e6559720bb8877a09",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "de386488f3e232c424fcf32a89d9b32af2434124621ab56d75a7a9039c583178",
+    "reserve_cdf": {
+      "80": 0.66796875,
+      "90": 0.9765625,
+      "130": 0.9765625
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0003247400018153712,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.58984375,
+      "expected_max_cash_deficit": 769.21875,
+      "avg_cash_deficit_when_short": 1304.1059602649007,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "2bd5403a64fa68f7b85bd7a42416bcec4ada0a3128d04100e08fbc6b0bab149d",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "92a364da8eae811b26976c2e66cbb17d7162a928d3951c5f44973dd4cde65ab6"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0018770630049402826,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.001953125,
+      "expected_max_cash_deficit": 0.05859375,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "c297a26da9a1194f8baf7c2c9581f5b76ed6f014e9404cb8709e36efb42b6606",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "8f9a0ba297a82aa9898107ff10ad6bca271847942790fe4a4b9055982d97b24c"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0019519150009728037,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.6005859375,
+      "expected_max_cash_deficit": 787.24609375,
+      "avg_cash_deficit_when_short": 1310.7967479674796,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "18c3717acc505e27f6da531ea7e1aa4f8f2b09a71fe810b48ef884b982835705",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "b3d82704e6a8d7e72e15f64a951f830dbe481890941b1d29a88e25e3daa0eea1"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.0004088509958819486,
+    "estimates": {
+      "required_liquidity_reserve": 1357.707360765364,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "1af3b63b802b1712e9518e38657ea17dbd05ac8097c2ef5a09e08f37407c1cf3",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "0982171440b1766e59485476acdf2f6f8ed65bb1607ffa6fa70ad19a3c8df411"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.0018718150022323243,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0029296875,
+      "expected_max_cash_deficit": 0.224609375,
+      "avg_cash_deficit_when_short": 76.66666666666667,
+      "funding_gap": 10.0
+    },
+    "index_hash": "163206be54225651b8ec13f9a866d045a35917a0cc32b62a7cd9c69fd5e8d45b",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "a686fc02307be84cde78ac6c7c05a0e6db676de71806c765af7b794ab851ca39"
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.00024538500292692333,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.400390625,
+      "expected_max_cash_deficit": 21.796875,
+      "avg_cash_deficit_when_short": 54.4390243902439,
+      "funding_gap": 60.0
+    },
+    "index_hash": "33824a291f5d5bd549481b897cb7cd098c7690c88adccd4788b12d138d68cfa0",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "21ce7ee49f8c572d3729164e2fff12701c45b0ec15510b1822483047d4873e55",
+    "reserve_cdf": {
+      "80": 0.6494140625,
+      "90": 0.9541015625,
+      "130": 0.95703125
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0003813359944615513,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.37890625,
+      "expected_max_cash_deficit": 20.1171875,
+      "avg_cash_deficit_when_short": 53.09278350515464,
+      "funding_gap": 60.0
+    },
+    "index_hash": "20da5f3fbf94c7294d7dcb1e9cff14da4714049e549b6b4d731f1040a165458c",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "8809312bd58c96d49a0203c9ef31fa873041d920e3b31e205ff0038be2b16f10",
+    "reserve_cdf": {
+      "80": 0.6640625,
+      "90": 0.96484375,
+      "130": 0.96484375
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.00015527500363532454,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.41015625,
+      "expected_max_cash_deficit": 21.796875,
+      "avg_cash_deficit_when_short": 53.142857142857146,
+      "funding_gap": 60.0
+    },
+    "index_hash": "2723fd58ea9bc41a46db39ec962abffb8de01e38d1e861bddff0b4125f4b6804",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "8e336e796e6ebf99ae0b904d3e159325ace33fec85a6554cfebd3255ac7391e7",
+    "reserve_cdf": {
+      "80": 0.65625,
+      "90": 0.9609375,
+      "130": 0.9609375
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0015013720039860345,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.00390625,
+      "expected_max_cash_deficit": 0.1171875,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "443cdbc8d5d9bc32a16fc48889da5bd1b4705503bf42fa779bb1982ee0408f51",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "436408db354fd47b8117c8886d8d2d369d8a31f9380c5618acc7b4fdce109b84"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.0008360210049431771,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.580078125,
+      "expected_max_cash_deficit": 750.9375,
+      "avg_cash_deficit_when_short": 1294.5454545454545,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "4713ec8e5cbc76e0f9289e20e1db6443f5683d71e8c55099d1b174d4193d742a",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "2f1769e464e35870685c8a71be500c9b38ef978b79153a599df5c8ff856d2203"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.00020994499936932698,
+    "estimates": {
+      "integral": 1.665979717847153
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.0006998449971433729,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.001953125,
+      "expected_max_cash_deficit": 0.126953125,
+      "avg_cash_deficit_when_short": 65.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "224f4aa69cc50a48e395a717d5d18c9f6ee28fba2edac5c5e71865abf4aba77d",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "47b50fb3bc3f1df706762b66f96c5d591058f6607302ade3667e02260bb6c2a5"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.0008355530007975176,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5654296875,
+      "expected_max_cash_deficit": 694.9609375,
+      "avg_cash_deficit_when_short": 1229.084628670121,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "9886be4ac2aa268021d44e9f14ee6924e467e35340dd7fe099e6b7d838a5a2f7",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "43a17bb20d78e8dd745ddd4266f0020b3680af1cb4b8430316438e323df0204d"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 3.243399987695739e-05,
+    "estimates": {
+      "integral": 1.6534649262867742
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.0007207980015664361,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.6103515625,
+      "expected_max_cash_deficit": 811.5625,
+      "avg_cash_deficit_when_short": 1329.664,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "ec1bdc0996f1c8493fdad944d7763fa04eb8e09d87e202fa8d46d4379f97929e",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "c3c1d179a5f7b18cf80ab582259d325a78744fa40ad963b8a03f984a8d7696c4"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.0007902960060164332,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0009765625,
+      "expected_max_cash_deficit": 0.029296875,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "9a0c2c2b5c9a4fdc90fcf119bc370b092264d51d9c76f0b94dc57fc041f86247",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "85699a104a2814d962bb93175999e09c848b87ea7f107eebb5e158dd0b598808"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.00024728199787205085,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.369140625,
+      "expected_max_cash_deficit": 19.62890625,
+      "avg_cash_deficit_when_short": 53.17460317460318,
+      "funding_gap": 60.0
+    },
+    "index_hash": "21a2f348e2658125a3a7d55164a08de61d9d0e9e8fd2094064154e3f79714c70",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "b072541a6bf0c2e05ff031ca6f65db7cc8d5d3726cb2a415c8705e98db4a9d84",
+    "reserve_cdf": {
+      "80": 0.673828125,
+      "90": 0.970703125,
+      "130": 0.97265625
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.00033517699921503663,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "82a764d7e8b49233d05e81028e306f713cb6017ef2f13e3c7854e4dd996e68ab",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "cc7a99a5cf10fa42bfc555275cce16fad822c57b2116c495a01ad643d9741b2a"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.00029911200545029715,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.00390625,
+      "expected_max_cash_deficit": 0.1171875,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "ce199b0eea3f626f120e9e99fc2465b953c047d5aacd4b01fd02548f04b92434",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "22f4cd1636295ebd9295fd0bd58817b89bdb25faa74e74c9da4c2ac548b48025"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.00019477099704090506,
+    "estimates": {
+      "integral": 1.6659179228868508
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0014803590020164847,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5859375,
+      "expected_max_cash_deficit": 757.265625,
+      "avg_cash_deficit_when_short": 1292.4,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "1b69d912d63e03325e91d23fe690c61ce2fcb953dd3329c282c88e0b8c9a886c",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "dcb52a1d377881280823e6b56c2c2911fd3cbc8a8628106aa37c9e626b7aabac"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.00029601599817397073,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "0b6c36a238948e068a9be6e009b2e25c72501cb7b874c8684e385886db8550aa",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "55d08742d8cb93f1045740f3873b241e000282dabc5855841dda03f356d3ea7a"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.00028630699671339244,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "55efa4f1cf4cdcc649f5bb923a0992abd5b9b3369fb63512f635f2d3ca2e4f21",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "4f73e1d01ef46faf3a52a32d9f654cd671b1121b2351d6568a8574f4aa2a8ed3"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.0008096359961200505,
+    "estimates": {
+      "required_liquidity_reserve": 1354.3764772476075,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "3fafc08644c6ab16372755dfb97fe88c671ac84b8d349680f29e595277cddf74",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "878adca9c1d942bf56ed5d9016f6ea1143560dbbe72f583e1acb7f8028ed1ec8"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.00038819300243631005,
+    "estimates": {
+      "required_liquidity_reserve": 1374.7433028223081,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "ea37f32073bfb670025c460d6c37344a1254bd5fddaa61abafb5749a69d1705c",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "22a7e2f842b8e1c1159d940a91f2a4557bdedc3201b5871e13d489cf73395f74"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.001456181998946704,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0078125,
+      "expected_max_cash_deficit": 0.78125,
+      "avg_cash_deficit_when_short": 100.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "4eac03718f4e800495e3b4dcde9eb5f28179f2dfc6ff57dc60a904a857909734",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "79da5d4cf603828d0a69b26aa48cbe73759fdb8af33c19b5e6189cf68e1e8e52"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.0003436370025156066,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.00390625,
+      "expected_max_cash_deficit": 0.390625,
+      "avg_cash_deficit_when_short": 100.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "84afc1e597c78b5c0d4d7d25ace363aebe553b7d3828b1387aa6592b3d64c3de",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "d93ba4ad30d8e7741de6ea211083f70e805bb23ea4b4e0e0ca8b3358974f5176"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.0001370899990433827,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.34375,
+      "expected_max_cash_deficit": 18.125,
+      "avg_cash_deficit_when_short": 52.72727272727273,
+      "funding_gap": 60.0
+    },
+    "index_hash": "0310f6ff0fa48f6a057f03ee3b5d30c7d31b5cb44069c24e9254d980e1b3c729",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "18f84626993f2f6233fd659d385c9e36e758beed57c172968bb3d0bb51b91497",
+    "reserve_cdf": {
+      "80": 0.70703125,
+      "90": 0.96875,
+      "130": 0.96875
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.00022840899328002706,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.4052734375,
+      "expected_max_cash_deficit": 21.42578125,
+      "avg_cash_deficit_when_short": 52.86746987951807,
+      "funding_gap": 60.0
+    },
+    "index_hash": "ef0b839d6e544aa1e97b25db9e5ea1f75dfae2349db4b6cccd54f0466f4a555a",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "c634e20c908b1005afe47b8f4bd0a11c3bd6fbb9d601da5537b0af1b557319a3",
+    "reserve_cdf": {
+      "80": 0.634765625,
+      "90": 0.96875,
+      "130": 0.9697265625
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0015107590006664395,
+    "estimates": {
+      "required_liquidity_reserve": 1291.3152349898496,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "4c48b9020ebf272fd64143fd2d5336721693ee7c8d7686dbe0fa39d5a2e6c565",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "21345e30f67e84bfe6de1b27950f20de06717433e0834d0de471b03e36975fa3"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.0008059219981078058,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.001953125,
+      "expected_max_cash_deficit": 0.126953125,
+      "avg_cash_deficit_when_short": 65.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "a2fbf181f35285297064810643dfe26a4b85a35bd8fe0cbb1d9540d6ce34fd47",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "28d93de3861066984b5a58623553aef7f7cb3c8f63b92a0911f9ec07e839221c"
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.0003611779975472018,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.39453125,
+      "expected_max_cash_deficit": 21.25,
+      "avg_cash_deficit_when_short": 53.86138613861386,
+      "funding_gap": 60.0
+    },
+    "index_hash": "d40cb0f910e249cb5921ecef661180a60c2549b3426532ab1f133e735ee0a488",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "34d997fd60e5b766eddd7804cdb79e758f2b9dcc2d566d3005645b137067df51",
+    "reserve_cdf": {
+      "80": 0.6640625,
+      "90": 0.95703125,
+      "130": 0.95703125
+    }
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 2.9843999072909355e-05,
+    "estimates": {
+      "integral": 1.6515730236249841
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.002029158000368625,
+    "estimates": {
+      "required_liquidity_reserve": 1319.128303429971,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "17c896ee66ae53966e01170ab089e95c535437cec7a1c3a1ba2b02b26818ead5",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "0d53a61c56c78e182237fe82b06107b86d5faa1b454ec74598ab74786ee215cc"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0008303150025312789,
+    "estimates": {
+      "required_liquidity_reserve": 1317.6009722843328,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "875d1c6f0034b6a1e2b079ca61098075d1be58effb821c708b89302a4b963f95",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "ab57c480af22f6e24ac683194d225c50a74615e58ee5e35da957f8ce0c053bf0"
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.00013976099580759183,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3828125,
+      "expected_max_cash_deficit": 20.0,
+      "avg_cash_deficit_when_short": 52.244897959183675,
+      "funding_gap": 60.0
+    },
+    "index_hash": "d1479e518d215b901630a2e2de08fea21e345f8e3b5505296d14c88e65d7b87b",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "2afae98601872a89bcc897426c19b6685b863e7274dda6ac9c359c243ea4833d",
+    "reserve_cdf": {
+      "80": 0.6484375,
+      "90": 0.98046875,
+      "130": 0.98046875
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.0019965620012953877,
+    "estimates": {
+      "required_liquidity_reserve": 1401.5424353544495,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "8ad762f60c73e778cb2f7961e364cb578ed132a7a94c536e71f891b1fe0bf62f",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "b47da82aae027bdcaa2f7331ce99ff4c4210130fcf4ba21834d8ebf001cace4e"
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0001398170061293058,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.37890625,
+      "expected_max_cash_deficit": 19.6484375,
+      "avg_cash_deficit_when_short": 51.855670103092784,
+      "funding_gap": 60.0
+    },
+    "index_hash": "c01f88b06e8ba2f2e49329b4c211ae442f6e63a369811031ad445bcac0a88294",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "ae04d8e6ecc077049366c2a7b57f978997b81d9f2ee660edbcdedf2b416572f1",
+    "reserve_cdf": {
+      "80": 0.68359375,
+      "90": 0.9765625,
+      "130": 0.9765625
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0003645169999799691,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.40234375,
+      "expected_max_cash_deficit": 20.9765625,
+      "avg_cash_deficit_when_short": 52.13592233009709,
+      "funding_gap": 60.0
+    },
+    "index_hash": "ce2251075b2dcb6e176ca328080e3c31f2edfff6ffca74066a6b93396b62fe9b",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "71e189a5b4514847fa03b74caa1852febf4c2168bba7f7f9426ce33a16fddfa1",
+    "reserve_cdf": {
+      "80": 0.6640625,
+      "90": 0.96875,
+      "130": 0.96875
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0019918509933631867,
+    "estimates": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "8437c42cae6de38dab6d96228bf6979563ed0e956b322472fa19d96de5ceaa32",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "04f1cd9894ac1547c828df53dff6687e5eebf4ddec34562a1a319c266e35c871"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.000330177994328551,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5625,
+      "expected_max_cash_deficit": 773.515625,
+      "avg_cash_deficit_when_short": 1375.138888888889,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "057a04cb05cfc1db5899df486d73046cfdb652fd3ebab0911b6f00893439c4b6",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "7da076c76361f0ed80dc8baf71735bee817bf4f8ed1fb83b838935d91e88181c"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.00036705000093206763,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.58203125,
+      "expected_max_cash_deficit": 754.53125,
+      "avg_cash_deficit_when_short": 1296.3758389261745,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "befc8b63274c2cf9d128b1711a1c3f12e333cdeb230d222a1e9af63bb388f38f",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "9145bf905a191751a76fe567cf870014be99bc19825f48d906365c629dff9f63"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 4.795299901161343e-05,
+    "estimates": {
+      "integral": 1.660866225144345
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1184108454647671647,
+    "seconds": 0.0006760350006516092,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "0badb681d38aa1520e4294068164800b185cead89d3dca80dcb7b3804ff0c963",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "5fbd0cfd477ffcf0952a3f82d99e723a005faa5891857183960f39eae2cc0a1a"
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0020281090037315153,
+    "estimates": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "08df7e7da8c25d9b1841ba47363852f78e03a7711ec5ab83277fe455e848008f",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "fbcc57ec1e8de38166cf7802cbbe1aa70a771cb7c05be1130aaf690b181ae43b"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.00033007599995471537,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.6171875,
+      "expected_max_cash_deficit": 838.359375,
+      "avg_cash_deficit_when_short": 1358.3544303797469,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "e3bb17ab8722818eb40e28fc7249e273da41fb81b2e1357ce02022fbfc1443fc",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "a6a189d78c94c65ee7a15c3af22a4b069648fca7844cbd9f327c85bdd1d02429"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 4.7829002141952515e-05,
+    "estimates": {
+      "integral": 1.6618610734409576
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.0009175129962386563,
+    "estimates": {
+      "required_liquidity_reserve": 1377.2606594196177,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "0c125feba90f921843ace723366c49ba5ae89cdf5175810f90e3c612260fcc59",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "2ccbc655bb9415a6e3f84e526912d5245960df7e3260370bf4cb5675951df2c3"
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0002331729992874898,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3857421875,
+      "expected_max_cash_deficit": 20.966796875,
+      "avg_cash_deficit_when_short": 54.35443037974684,
+      "funding_gap": 60.0
+    },
+    "index_hash": "3921882cb93ab9baae7f91bad1368112cba28ef01985d2638f3cf7b6cc3d93ec",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "3b4d6600b05df42246df8b71d261dffa226225f4afe7feeed5dbfa1de29b6674",
+    "reserve_cdf": {
+      "80": 0.6669921875,
+      "90": 0.95703125,
+      "130": 0.962890625
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.00013193099584896117,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.41015625,
+      "expected_max_cash_deficit": 21.6015625,
+      "avg_cash_deficit_when_short": 52.666666666666664,
+      "funding_gap": 60.0
+    },
+    "index_hash": "7abb343be3f0bdf759eceaf156b7466d7cfbd893cfa76144f9963080980eddad",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "7f86ab51db4745fb993cc5b3f6130a6bbc422911e87eb01c208cd6a0db82a1ef",
+    "reserve_cdf": {
+      "80": 0.63671875,
+      "90": 0.96875,
+      "130": 0.96875
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.001494080999691505,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.6484375,
+      "expected_max_cash_deficit": 866.5625,
+      "avg_cash_deficit_when_short": 1336.3855421686746,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "62a9a5b6aa91fae357ca037b6e7894d065207128f7f72ad7d6cc0c1a6bc63669",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "d53c490007fb94d1c823520e8fa080addc8a648b2398fe245fb2c61a9a78d952"
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.0009239759965566918,
+    "estimates": {
+      "required_liquidity_reserve": 1351.7623370635883,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "97824fa831907368bb0ccd878548308a7c6b456add96c0c50913f98723ba56ef",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "5f5164655307c1b29e9e1de566b2fd6e059d1c4588ac82b4c1986aa25ab15b99"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.00024309199943672866,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.390625,
+      "expected_max_cash_deficit": 20.908203125,
+      "avg_cash_deficit_when_short": 53.525,
+      "funding_gap": 60.0
+    },
+    "index_hash": "4cd41c3ab0747e9a357b462b1a5be2e5908f1131f24c67a138428c05358cedc5",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "d7c5778ca39a9799230fc53d6dd29704ea43878fabe67228b2056b9b78c7f147",
+    "reserve_cdf": {
+      "80": 0.6630859375,
+      "90": 0.9619140625,
+      "130": 0.9619140625
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.0008944279979914427,
+    "estimates": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "89d726966e6b1cd31998c137250502919a5a27589f73bd7e828e7baa5aa83a8a",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "ef1410c77f85ad1d7202bb72c299788dd28ac0c623fa344d7a305abd4fc9112e"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 4.9180998757947236e-05,
+    "estimates": {
+      "integral": 1.6755746004431962
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.000391898000088986,
+    "estimates": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "816af5394ce217a841795ebd5d4681124875b7555e5aee27d72f30bcd4330483",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "6f35728d776b5d91ac6e0e00a4dc3903b51c26935e0af5758f6ebdf023f6314a"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.00020719500025734305,
+    "estimates": {
+      "integral": 1.6659776786229434
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.00031946299714036286,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "bc4ec6559d24439fb0a73456e267a4455fe210df5ee4e68fcd4623f1c7aa2218",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "10aa764c4672d3c35b6ba1aae1988061f67e62a06f06af9630f42665c131d658"
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.00022009899839758873,
+    "estimates": {
+      "integral": 1.6659648993232017
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.0007407709999824874,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.001953125,
+      "expected_max_cash_deficit": 0.126953125,
+      "avg_cash_deficit_when_short": 65.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "4b81cd0bc229c43f1546d64a9f1966e7f80325b6102ff641b53d976d469e50b1",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "bfa05c79de012faee1911ddc4cc481f2ea540f8af304a7a1cd27f4abfb024f25"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.0008460190001642331,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0029296875,
+      "expected_max_cash_deficit": 0.15625,
+      "avg_cash_deficit_when_short": 53.333333333333336,
+      "funding_gap": 10.0
+    },
+    "index_hash": "62bf71d82aa57e5737049a7db077ed8d32edef832e9f300669b95fafa07ae175",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "5552f32d47e6a153449666346a639265b8fa8a2658e07e168b8818b4163f5b69"
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.00026123199495486915,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3837890625,
+      "expected_max_cash_deficit": 20.41015625,
+      "avg_cash_deficit_when_short": 53.18066157760814,
+      "funding_gap": 60.0
+    },
+    "index_hash": "99f6817b74f76c8dd5a0f4601af9d34f7e3c0e34058c0353b14a01c625ad8b34",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "7c56c8a57d927361a9b10d85a0592a4e1deecacc4b8951092c10566377983e17",
+    "reserve_cdf": {
+      "80": 0.66796875,
+      "90": 0.9658203125,
+      "130": 0.9658203125
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.00047793200064916164,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3935546875,
+      "expected_max_cash_deficit": 20.751953125,
+      "avg_cash_deficit_when_short": 52.72952853598015,
+      "funding_gap": 60.0
+    },
+    "index_hash": "b562d76c8e8ddefaa83d997776e36278829533d6a948c9401858ede09e62c6ee",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "59127059e431f2974f818f84f98455ca5e2cb7c5fbfd6b2f3b6a8755a2f6c971",
+    "reserve_cdf": {
+      "80": 0.666015625,
+      "90": 0.966796875,
+      "130": 0.9677734375
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.0004977690041414462,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.388671875,
+      "expected_max_cash_deficit": 20.537109375,
+      "avg_cash_deficit_when_short": 52.8391959798995,
+      "funding_gap": 60.0
+    },
+    "index_hash": "eb68c2dd5b1d3de661c20647306dc8231f8607f9f8c89ac8f3ae4a86af8702e0",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "c4b0abb8597bbc9b69ed904e972c07d021d2379ab983d8fcfc2a493693ff84ff",
+    "reserve_cdf": {
+      "80": 0.6650390625,
+      "90": 0.96484375,
+      "130": 0.96875
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.00015442499716300517,
+    "estimates": {
+      "required_liquidity_reserve": 140.0,
+      "cash_shortfall_probability": 0.39453125,
+      "expected_max_cash_deficit": 22.9296875,
+      "avg_cash_deficit_when_short": 58.118811881188115,
+      "funding_gap": 110.0
+    },
+    "index_hash": "a97e01232bb680b787a4a068243a3a0ccccc1390b2c9e9a17e0fcd64b27f5eb6",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "1700f99129ffcb7bd97708b7bbb57a0478ca62ebb07ecf7a8a7293111adf827a",
+    "reserve_cdf": {
+      "80": 0.62890625,
+      "90": 0.9375,
+      "130": 0.9453125
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.0004933090021950193,
+    "estimates": {
+      "required_liquidity_reserve": 1404.26599358342,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "ac6cd6ac4e588644ec586ad9ab20e9cb49f2a204775a44019ac47a8be3aec1f0",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "12bd852ff37bbfb7778c592d20182ca29c25342f7952f393a6a6ee06b5d78d42"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 3.5007004044018686e-05,
+    "estimates": {
+      "integral": 1.6515488476148934
+    }
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.0001423679932486266,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.37890625,
+      "expected_max_cash_deficit": 19.6875,
+      "avg_cash_deficit_when_short": 51.95876288659794,
+      "funding_gap": 60.0
+    },
+    "index_hash": "d70fcf1957b21234e7f632b4fd362ee6750cabedee522aceb641bafd090ee1f9",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "9661b5d1adaa0b89ab3c9671c38247ea83dadb7d0cd797342ac511e1211df74c",
+    "reserve_cdf": {
+      "80": 0.6796875,
+      "90": 0.97265625,
+      "130": 0.97265625
+    }
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.00034710500040091574,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0078125,
+      "expected_max_cash_deficit": 0.5078125,
+      "avg_cash_deficit_when_short": 65.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "2e2a844327bb0e1bc8be280f0bbe21c9b34f418bcf56bc31c057208877f5e6cd",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "7b93307bfb7bd410a14e8e6841b1255ac6a890c00d35bf290a7ecf768f72bfce"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.0009056290000444278,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5791015625,
+      "expected_max_cash_deficit": 753.4765625,
+      "avg_cash_deficit_when_short": 1301.1129848229343,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "d9baf6c039b4be3f99a4b6f5c75697a0b794f6382b77ed5fc2fad2c4d4e75808",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "58fed978e955f52dbc86f8a883da9551510befd0a9c2273f4aceb7143d470541"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "replicate": 3,
+    "derived_seed": 1537863236284921634,
+    "seconds": 0.0001501480001024902,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3671875,
+      "expected_max_cash_deficit": 19.84375,
+      "avg_cash_deficit_when_short": 54.04255319148936,
+      "funding_gap": 60.0
+    },
+    "index_hash": "54befd80add1c9438fd2d27efaa7fe1c2b4c69ed310645385a14b91e4deaf997",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "0f789dcb5eec6a4e950ed75709124757e6fac9e7c2babf5b81e8ae0b104d4f39",
+    "reserve_cdf": {
+      "80": 0.6796875,
+      "90": 0.96484375,
+      "130": 0.96484375
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.00046697300422238186,
+    "estimates": {
+      "required_liquidity_reserve": 1314.6475468984734,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "3b0e5dd87c70db66fa4694e2fda3ad9f99c5334703c2d1f96b0bdf88696fcfad",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "3373cafc8a10d564f0e5cf645a6795e9e18825339dc50f758de530ce2b070889"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0018841659984900616,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "2c06f749e1fd8a4c996a8369ad21f07a02ea4ec20776c6d6f2f95b89a3aea60e",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "543baf236ed00a11fdb73a7d584573f22eecc0633ee5cbf96b4d88903dff87b9"
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 987016156837786288,
+    "seconds": 0.0008263269992312416,
+    "estimates": {
+      "required_liquidity_reserve": 1374.7433028223081,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "2a1c43e65c3a26d6cb6d0fa58958301d49a35e29339c4c8a1920fb736ea8419c",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "7e6b908c8c9c3d72a4f84e3a882e8763b8cde51b377e9514e02a1782860f1db5"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 18216759062806587941,
+    "seconds": 0.0007360750023508444,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.583984375,
+      "expected_max_cash_deficit": 736.73828125,
+      "avg_cash_deficit_when_short": 1261.571906354515,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "98f28589a331a13b0ba50508e48592ce625e69ce034713297bb82895a15af17f",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "847127ec786752a7c553c59854eb51cff643af94eddeb7da246c8295713cb68c"
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 3.4251999750267714e-05,
+    "estimates": {
+      "integral": 1.6491994222960251
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0018703399982769042,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5986328125,
+      "expected_max_cash_deficit": 773.22265625,
+      "avg_cash_deficit_when_short": 1291.647634584013,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "6d326f645db841b93d4cdcee6b9656adb62ef0009747c6f9813318554979b224",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "0f886859f9eaae6f4f930765fafa822538b9366fd27aa8101146134d24d8052a"
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 14305496046505563373,
+    "seconds": 0.0002556390027166344,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.361328125,
+      "expected_max_cash_deficit": 18.798828125,
+      "avg_cash_deficit_when_short": 52.027027027027025,
+      "funding_gap": 60.0
+    },
+    "index_hash": "7d8e00c4cc369a5dee289fe02cd7e1db8974be30e19f5aa27f89a1fd4d3be476",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "d12e18c7f45bb9c2a6c88ade46faf479f8ad8803641fb821692e92a4af4d5e2f",
+    "reserve_cdf": {
+      "80": 0.6962890625,
+      "90": 0.97265625,
+      "130": 0.974609375
+    }
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.0004464539961190894,
+    "estimates": {
+      "required_liquidity_reserve": 1482.3068014863802,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "8befa346c5ff8a0f12280f6777cdb6b515c2cace0659777da0485dedf0334640",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "79c34ccee81cd5cc35470c9b0515f66dadf2fa340a4f8bbc123c5358662c666d"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 1,
+    "derived_seed": 3022718400762496802,
+    "seconds": 0.00036778399953618646,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.62890625,
+      "expected_max_cash_deficit": 895.3125,
+      "avg_cash_deficit_when_short": 1423.6024844720496,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "d476f7e28799c55c107b5cda0144949250b8a11e62de46e71d79cc27d5d4f0aa",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "f420765cd73bf473a568443dc9f82362ed8b38a18f2a94268e5b7a1d0d693369"
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.0004891479984507896,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3935546875,
+      "expected_max_cash_deficit": 20.8203125,
+      "avg_cash_deficit_when_short": 52.903225806451616,
+      "funding_gap": 60.0
+    },
+    "index_hash": "6966c3d2d9aa8425dca4754145da56325873040acccbb3faab97a0da98f91f15",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "e72c00531fa726a8ded7d380e2108b5697ac35e2aa3ec7800d2700fc6e0e2235",
+    "reserve_cdf": {
+      "80": 0.6669921875,
+      "90": 0.96484375,
+      "130": 0.9677734375
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0007417759989039041,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.5859375,
+      "expected_max_cash_deficit": 772.40234375,
+      "avg_cash_deficit_when_short": 1318.2333333333333,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "6fd9839ce516b2af83faefc9405d9c9820b1aea18ba0e7ef5940e484420f31c1",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "b2caa757f73f3a82412838a6c37f6983b94d121e727bf37e88dc9233173c3875"
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 16228806681371335238,
+    "seconds": 0.00036233100399840623,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.58984375,
+      "expected_max_cash_deficit": 787.265625,
+      "avg_cash_deficit_when_short": 1334.7019867549668,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "319687de720f553ea6418cd34ed4035318d9f22e83c563b46aeb38abd7f3133a",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "ced700b4c72d22a468f3158c5acb1273d5a4ff0806355ac8f1625ea5657ac754"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "replicate": 0,
+    "derived_seed": 10975250547369335593,
+    "seconds": 0.0007251540009747259,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "efccf9a5790eaaac6b224b7bb3b9785dc05dc0b96f551ae8964e0a03a6e6e7e6",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "681e756681d2f855065fa17277106d72d2c8aa68df880e7d398faba2d8c027ba"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 2,
+    "derived_seed": 3425618965401698159,
+    "seconds": 0.00146311800199328,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "d4fdd13a34cb7c70f7dcf57a950ca5d992871ec6b95b914e4ec7ed3e3af1f05c",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "386e6fe2c62c60c7c99d75e94879e5ac3c1e27b22ab4f8c3b03d1480646d1775"
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.0019179980008630082,
+    "estimates": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.0009765625,
+      "expected_max_cash_deficit": 0.029296875,
+      "avg_cash_deficit_when_short": 30.0,
+      "funding_gap": 10.0
+    },
+    "index_hash": "f17a91d8d616a3c5cfddff755cb708f626493f2b77ad287d5b46b6d7079b4eb3",
+    "input_hash": "e9ddc7ed15690ba56411b2bcf7df840fba81bc0455ad6484bce5da13d5f87806",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "7ca740c8acc9c04b7ff02d0c98ee9ca93386a2d03f3805a4f5e5cead9e3b193f"
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "replicate": 0,
+    "derived_seed": 11786651213743873774,
+    "seconds": 0.0015644149971194565,
+    "estimates": {
+      "required_liquidity_reserve": 1300.5489951842378,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "index_hash": "f8ad6f8e32754cfbc2df9386ed2eeda77668aaf1c51fd21a25bdac99a1b0e613",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "e879524152ad032d89ecc771e8eea6803bb2278c1d42d5cbbd391c783fdcddfc"
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 1,
+    "derived_seed": 17327125715589302271,
+    "seconds": 0.00045439500536303967,
+    "estimates": {
+      "required_liquidity_reserve": 90.0,
+      "cash_shortfall_probability": 0.3876953125,
+      "expected_max_cash_deficit": 20.673828125,
+      "avg_cash_deficit_when_short": 53.32493702770781,
+      "funding_gap": 60.0
+    },
+    "index_hash": "46f5acd6db84e8d514654fc152cfcfe5c046aa596d78cb90c030f53f843d6e0e",
+    "input_hash": "1de8f17a57a40ba5c0a8ae509f741cee5be597298429d346841841d13dd69420",
+    "model_hash": "41297100bb879a9c766ab0dcd4307b24c1b2c746fbe598e46c7ee64410a55d81",
+    "result_hash": "704857be8af414fd9db873e25d1ef59c3196b933fe2d5573bfc35a10a1e5fc6f",
+    "reserve_cdf": {
+      "80": 0.6640625,
+      "90": 0.9638671875,
+      "130": 0.96875
+    }
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "replicate": 3,
+    "derived_seed": 8491494759371643355,
+    "seconds": 0.001965968003787566,
+    "estimates": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.607421875,
+      "expected_max_cash_deficit": 795.0390625,
+      "avg_cash_deficit_when_short": 1308.8745980707395,
+      "funding_gap": 3300.0
+    },
+    "index_hash": "721bfbb34a4f6dd3ded4a0271d221876e88825e25ed91262f75e87e9d7b92e4b",
+    "input_hash": "4ede602744d57f5fa9d6dad637915346dd8b5eb70ffe953edd760bacafca315d",
+    "model_hash": "1e8c0c2930fa5f6556b5163e5e9bd202d929d6ebd129d5ad85f324f5459945a6",
+    "result_hash": "482396ed499487312b3de767e63f5fcd2f8f4a183e797fa8fc2e6d03e0e628af"
+  }
+]

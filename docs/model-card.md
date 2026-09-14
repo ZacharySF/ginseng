@@ -4,7 +4,7 @@
 
 ## Purpose and data
 
-This model compares hypothetical ways to fund future expenses. It does not execute trades or borrowing, compute a final tax return, or establish validated coverage for a real household. The personal cash workspace remains a separate deterministic ledger; these probabilistic tools use the clearly labeled synthetic persona.
+This model compares hypothetical ways to fund future expenses. It does not execute trades or borrowing, compute a final tax return, or establish validated coverage for a real household. The personal workspace supports scheduled, prospective assumption-based, and historical-bootstrap forecasts from its own inputs. The demo and published numerical benchmarks use clearly labeled synthetic histories; the offline CLI also accepts a complete local input window.
 
 The persona contains daily variable income, routine essential and discretionary spending, monthly fixed flows, credit terms, taxable lots, and market history. Added asset histories are also synthetic. Their common market component and idiosyncratic components are explicit simulation assumptions, not measured relationships in a user's bank data.
 
@@ -58,7 +58,15 @@ Every cash-path constraint uses **net spendable proceeds**, and the objective pr
 
 Equal-cost allocations prefer taxable funds, then Roth contributions, then traditional withdrawals. This is a disclosed tie-break; there is no invented dollar penalty for touching retirement assets. Future tax-sheltered growth is not priced. State taxes, NIIT, bracket crossings, loss netting/deductions, basis in nondeductible traditional contributions, exception eligibility, and employer-plan withdrawal rules are excluded. These are conditional planning estimates, not a final tax calculation.
 
-## Historical evidence
+## Numerical evidence and historical evidence are separate
+
+The offline numerical release adds an independent exact 81-sequence oracle and measured MC-versus-scrambled-Sobol experiments. See [numerical definitions](numerical-model.md), [benchmark methodology](benchmark-methodology.md), and [measured results](benchmark-results.md). Exact agreement verifies the implementation on a small model. Independent simulation replicates measure numerical precision conditional on fixed history; the existing outer bootstrap instead measures sensitivity to the finite historical sample. Neither is held-out household forecast validation.
+
+The personal-history walk-forward backtest evaluates an 80% interval for terminal variable-flow change. It is not a 95% liquidity-reserve coverage test. The separate reserve calibration module evaluates reserve-related targets as described below, with its synthetic-source and dependence qualifications. Both integrations remain present.
+
+The busy/dry chain in `generate.py` generates synthetic history; it is not a fitted live regime model. Resampling cannot establish the probability of an unseen economic regime, although stitching observed blocks can produce drought-shaped sequences and cumulative outcomes absent from any one contiguous historical window.
+
+## Reserve calibration on historical windows
 
 Walk-forward checks reserve the first 365 days for training. A 30-day horizon therefore has **12 non-overlapping held-out windows**, not 24. Each historical forecast reads only transactions available before its start. Monthly fixed flows are inferred from repeated same-day-of-month training records, and the forecast uses the existing cash-path engine. The realized target includes the same routine flow types. Irregular expenses, transfers, investment activity, current scenario events, and stress overlays are excluded and disclosed.
 

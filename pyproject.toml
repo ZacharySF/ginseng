@@ -4,20 +4,20 @@ version = "0.1.0"
 description = "Probabilistic liquidity planning for variable-income investors"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "anyio>=4.0",
     "numpy>=2.1",
     "pandas>=2.2",
     "scipy>=1.14",
     "arch>=7.2",
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.32",
-    "httpx>=0.28",
-    "pydantic>=2.10",
-    "cvxpy>=1.4",
 ]
 
+[project.scripts]
+ginseng = "ginseng.cli:main"
+
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "httpx>=0.27"]
+app = ["anyio>=4.0", "fastapi>=0.115", "uvicorn[standard]>=0.32", "httpx>=0.28", "pydantic>=2.10"]
+optimization = ["cvxpy>=1.4"]
+research = ["matplotlib>=3.9", "nbformat>=5.10", "nbclient>=0.10", "ipykernel>=6.29"]
+dev = ["pytest>=8.3", "ginseng[app,optimization,research]"]
 
 [build-system]
 requires = ["hatchling"]

@@ -1,0 +1,152 @@
+{
+  "summary": {
+    "required_liquidity_reserve": 1350.2911645974489,
+    "cash_shortfall_probability": 0.0,
+    "expected_max_cash_deficit": 0.0,
+    "avg_cash_deficit_when_short": 0.0,
+    "funding_gap": 0.0
+  },
+  "manifest": {
+    "fixture": "canonical",
+    "input_hash": "58007d284c1666a9b4f0dc3b61b75ad95651907a291a2ed570c47d55efdd8458",
+    "synthetic_data_seed": 20260911,
+    "opening_cash": 3001.7417748726193,
+    "buffer": 1000.0,
+    "coverage_target": 0.95,
+    "history_length": 730,
+    "block_requested": null,
+    "block_resolved": 15,
+    "block_clipped": false,
+    "block_resolution": "arch Politis-White stationary",
+    "end_of_day": true,
+    "sampler": "mc",
+    "sampler_version": 1,
+    "mapping_version": 1,
+    "material_horizon": 30,
+    "dimension": 59,
+    "root_seed": 42,
+    "replicate": 0,
+    "domain": 100,
+    "derived_seed": 14305496046505563373,
+    "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+    "bit_generator": "PCG64",
+    "bits": null,
+    "scramble": null,
+    "optimization": null,
+    "stream_layout": "C-order fixed-width float64",
+    "visible_horizon": 30,
+    "requested_n": 2048,
+    "actual_n": 2048,
+    "index_hash": "6751aa17d477479ab7eca9060fa5bea5c186f8a476c099ca4d947edacb5f6aeb",
+    "model_hash": "c2672d29ed886de294710c3a72f2d8e258640c80b744ef138b221dcf8b17f46f",
+    "result_hash": "0c1be2d171c1ba74574288fe6783d8d54c2b1db36fc7730801861d71133e8fc9",
+    "environment": {
+      "python": "3.12.14",
+      "platform": "Linux-7.2.5-x86_64-with-glibc2.42",
+      "cpu": "Intel(R) Core(TM) Ultra 7 256V",
+      "dependencies": {
+        "numpy": "2.5.3",
+        "pandas": "3.0.5",
+        "scipy": "1.18.1",
+        "arch": "8.0.0",
+        "ginseng": "0.1.0"
+      },
+      "threads": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null
+      },
+      "dtype": "float64",
+      "git_commit": "90e730d26368d35ef0579a85964b546b92aada86",
+      "source_fingerprint": "de4163929faa5be870a7d04b416443c22dbd926c3c84b5fee58741122acab495"
+    }
+  },
+  "diagnostics": {
+    "minimum_flow_quantiles": [
+      -1411.0827270771126,
+      -350.29116459744887,
+      69.14490563791307,
+      404.41194821444134,
+      768.2206292098437
+    ],
+    "minimum_flow_std": 258.15058789355896,
+    "distinct_index_paths": 2004,
+    "distinct_requirements": 865,
+    "zero_requirement_fraction": 0.0,
+    "zero_deficit_fraction": 1.0,
+    "minimum_day_counts": [
+      1306,
+      230,
+      103,
+      53,
+      77,
+      32,
+      28,
+      20,
+      14,
+      10,
+      10,
+      3,
+      2,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+      0,
+      97,
+      61,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "minimum_tie_convention": "earliest forecast day",
+    "baseline": {
+      "required_liquidity_reserve": 1350.2911645974489,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "added_obligation": {
+      "required_liquidity_reserve": 1396.6891062197474,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "added_obligation_day": 17,
+    "added_obligation_amount": 100,
+    "canonical_staged_repair": {
+      "required_liquidity_reserve": 5763.191990727312,
+      "cash_shortfall_probability": 0.3388671875,
+      "expected_max_cash_deficit": 323.1089368732078,
+      "avg_cash_deficit_when_short": 953.4972661618582,
+      "funding_gap": 2761.450215854693
+    },
+    "canonical_staged_repair_events": [
+      {
+        "id": "repair-deposit",
+        "label": "Emergency vehicle repair deposit",
+        "amount": 1500.0,
+        "due_in_days": 3,
+        "transaction_type": "future_obligation",
+        "recurrence_days": null
+      },
+      {
+        "id": "repair-balance",
+        "label": "Emergency vehicle repair balance",
+        "amount": 3000.0,
+        "due_in_days": 17,
+        "transaction_type": "future_obligation",
+        "recurrence_days": null
+      }
+    ]
+  }
+}

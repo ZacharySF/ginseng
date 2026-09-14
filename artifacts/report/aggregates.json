@@ -1,0 +1,5056 @@
+[
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0004182960001344327,
+    "seconds_p10": 0.0003982896996603813,
+    "seconds_p90": 0.00046131539493217134,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0004182960001344327,
+    "seconds_p10": 0.0003982896996603813,
+    "seconds_p90": 0.00046131539493217134,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      58.50723801070345,
+      58.59810323893554
+    ],
+    "bias": -2.540074672986016,
+    "rmse": 58.55259453736996,
+    "sd": 59.433492004366414,
+    "seconds_median": 0.0004182960001344327,
+    "seconds_p10": 0.0003982896996603813,
+    "seconds_p90": 0.00046131539493217134,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0005657245019392576,
+    "seconds_p10": 0.0005527170986169949,
+    "seconds_p90": 0.0006228332975297235,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0005657245019392576,
+    "seconds_p10": 0.0005527170986169949,
+    "seconds_p90": 0.0006228332975297235,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      48.81292505688483,
+      49.046410735976465
+    ],
+    "bias": -5.122360997832871,
+    "rmse": 48.94495946578366,
+    "sd": 49.455048079619814,
+    "seconds_median": 0.0005657245019392576,
+    "seconds_p10": 0.0005527170986169949,
+    "seconds_p90": 0.0006228332975297235,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0008429509980487637,
+    "seconds_p10": 0.0008204111982195172,
+    "seconds_p90": 0.0009091725958569442,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0008429509980487637,
+    "seconds_p10": 0.0008204111982195172,
+    "seconds_p90": 0.0009091725958569442,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      49.31223109875258,
+      49.57827592308719
+    ],
+    "bias": -5.854354623450199,
+    "rmse": 49.46470780435003,
+    "sd": 49.90296493990779,
+    "seconds_median": 0.0008429509980487637,
+    "seconds_p10": 0.0008204111982195172,
+    "seconds_p90": 0.0009091725958569442,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.001439312498405343,
+    "seconds_p10": 0.001378380999813089,
+    "seconds_p90": 0.0014933595950424206,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.001439312498405343,
+    "seconds_p10": 0.001378380999813089,
+    "seconds_p90": 0.0014933595950424206,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      26.175822850009556,
+      26.58697521704906
+    ],
+    "bias": -4.878006465249484,
+    "rmse": 26.407615020152925,
+    "sd": 26.36845004269851,
+    "seconds_median": 0.001439312498405343,
+    "seconds_p10": 0.001378380999813089,
+    "seconds_p90": 0.0014933595950424206,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002578908002760727,
+    "seconds_p10": 0.0025129422981990503,
+    "seconds_p90": 0.0027198449010029436,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002578908002760727,
+    "seconds_p10": 0.0025129422981990503,
+    "seconds_p90": 0.0027198449010029436,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      16.126897416903937,
+      16.718736649138012
+    ],
+    "bias": -4.401183801494888,
+    "rmse": 16.457893933446424,
+    "sd": 16.112246718488766,
+    "seconds_median": 0.002578908002760727,
+    "seconds_p10": 0.0025129422981990503,
+    "seconds_p90": 0.0027198449010029436,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.005222443498496432,
+    "seconds_p10": 0.005125594596756855,
+    "seconds_p90": 0.00541407919881749,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.005222443498496432,
+    "seconds_p10": 0.005125594596756855,
+    "seconds_p90": 0.00541407919881749,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      14.52801241988197,
+      14.903546580113643
+    ],
+    "bias": -2.627170554720621,
+    "rmse": 14.718316425971844,
+    "sd": 14.713673720908691,
+    "seconds_median": 0.005222443498496432,
+    "seconds_p10": 0.005125594596756855,
+    "seconds_p90": 0.00541407919881749,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.011604261999309529,
+    "seconds_p10": 0.01142478019974078,
+    "seconds_p90": 0.012027061999833676,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.011604261999309529,
+    "seconds_p10": 0.01142478019974078,
+    "seconds_p90": 0.012027061999833676,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      7.514573263834798,
+      7.7200883640049
+    ],
+    "bias": 0.2982774513498754,
+    "rmse": 7.520490727041988,
+    "sd": 7.634814070874043,
+    "seconds_median": 0.011604261999309529,
+    "seconds_p10": 0.01142478019974078,
+    "seconds_p90": 0.012027061999833676,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.000469261001853738,
+    "seconds_p10": 0.00045051699635223486,
+    "seconds_p90": 0.0005487123009515927,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.000469261001853738,
+    "seconds_p10": 0.00045051699635223486,
+    "seconds_p90": 0.0005487123009515927,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      89.50546091871446,
+      90.40932687801495
+    ],
+    "bias": 34.10867004361446,
+    "rmse": 89.84053965588713,
+    "sd": 84.44381185764689,
+    "seconds_median": 0.000469261001853738,
+    "seconds_p10": 0.00045051699635223486,
+    "seconds_p90": 0.0005487123009515927,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0006394035008270293,
+    "seconds_p10": 0.0006079276958189439,
+    "seconds_p90": 0.0006913742021424696,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0006394035008270293,
+    "seconds_p10": 0.0006079276958189439,
+    "seconds_p90": 0.0006913742021424696,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      59.75095783756276,
+      60.326791460339834
+    ],
+    "bias": 14.336574427281171,
+    "rmse": 59.9581043092746,
+    "sd": 59.15043178575862,
+    "seconds_median": 0.0006394035008270293,
+    "seconds_p10": 0.0006079276958189439,
+    "seconds_p90": 0.0006913742021424696,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0009602675017958973,
+    "seconds_p10": 0.0009284086023399141,
+    "seconds_p90": 0.0010257266003463883,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0009602675017958973,
+    "seconds_p10": 0.0009284086023399141,
+    "seconds_p90": 0.0010257266003463883,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      31.59255947301996,
+      31.617589307274752
+    ],
+    "bias": -0.21334117888694948,
+    "rmse": 31.593279799902263,
+    "sd": 32.09807252267685,
+    "seconds_median": 0.0009602675017958973,
+    "seconds_p10": 0.0009284086023399141,
+    "seconds_p90": 0.0010257266003463883,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0015716869966126978,
+    "seconds_p10": 0.0015322527004173025,
+    "seconds_p90": 0.0016353674960555508,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0015716869966126978,
+    "seconds_p10": 0.0015322527004173025,
+    "seconds_p90": 0.0016353674960555508,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      20.173460543416674,
+      20.27124731697129
+    ],
+    "bias": -1.0960929149742071,
+    "rmse": 20.203215832511564,
+    "sd": 20.496256408377995,
+    "seconds_median": 0.0015716869966126978,
+    "seconds_p10": 0.0015322527004173025,
+    "seconds_p90": 0.0016353674960555508,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0029166499989514705,
+    "seconds_p10": 0.0028180677989439575,
+    "seconds_p90": 0.003001910496823257,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0029166499989514705,
+    "seconds_p10": 0.0028180677989439575,
+    "seconds_p90": 0.003001910496823257,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      15.010335769336113,
+      15.098328284775342
+    ],
+    "bias": -0.7350638575548842,
+    "rmse": 15.028323219271492,
+    "sd": 15.250516392169507,
+    "seconds_median": 0.0029166499989514705,
+    "seconds_p10": 0.0028180677989439575,
+    "seconds_p90": 0.003001910496823257,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.006126330998085905,
+    "seconds_p10": 0.006018743001186521,
+    "seconds_p90": 0.006292620101885404,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.006126330998085905,
+    "seconds_p10": 0.006018743001186521,
+    "seconds_p90": 0.006292620101885404,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      11.31224026919472,
+      11.610775329741768
+    ],
+    "bias": 1.1582549755350229,
+    "rmse": 11.368279099101184,
+    "sd": 11.490078304534958,
+    "seconds_median": 0.006126330998085905,
+    "seconds_p10": 0.006018743001186521,
+    "seconds_p90": 0.006292620101885404,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.014121240998065332,
+    "seconds_p10": 0.01391062240145402,
+    "seconds_p90": 0.01471004649574752,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.014121240998065332,
+    "seconds_p10": 0.01391062240145402,
+    "seconds_p90": 0.01471004649574752,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      6.470828752860657,
+      6.72534499687635
+    ],
+    "bias": 0.3614869616215941,
+    "rmse": 6.480917957532761,
+    "sd": 6.574368587278302,
+    "seconds_median": 0.014121240998065332,
+    "seconds_p10": 0.01391062240145402,
+    "seconds_p90": 0.01471004649574752,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0016384059999836609,
+    "seconds_p10": 0.0015813687976333312,
+    "seconds_p90": 0.0017499575980764348,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0016384059999836609,
+    "seconds_p10": 0.0015813687976333312,
+    "seconds_p90": 0.0017499575980764348,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      75.54879908398658,
+      75.89033743000869
+    ],
+    "bias": 10.651273495675966,
+    "rmse": 75.66927544402108,
+    "sd": 76.11461387649172,
+    "seconds_median": 0.0016384059999836609,
+    "seconds_p10": 0.0015813687976333312,
+    "seconds_p90": 0.0017499575980764348,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0017786385033105034,
+    "seconds_p10": 0.00173694970071665,
+    "seconds_p90": 0.0018728137009020429,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0017786385033105034,
+    "seconds_p10": 0.00173694970071665,
+    "seconds_p90": 0.0018728137009020429,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      44.349446928560056,
+      44.51834217412372
+    ],
+    "bias": 2.8855728481004803,
+    "rmse": 44.398514511871966,
+    "sd": 45.013564237537636,
+    "seconds_median": 0.0017786385033105034,
+    "seconds_p10": 0.00173694970071665,
+    "seconds_p90": 0.0018728137009020429,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002076833497994812,
+    "seconds_p10": 0.0020155193051323295,
+    "seconds_p90": 0.00218808790014009,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002076833497994812,
+    "seconds_p10": 0.0020155193051323295,
+    "seconds_p90": 0.00218808790014009,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      28.75079713725036,
+      29.016779003609667
+    ],
+    "bias": -3.5393872317609194,
+    "rmse": 28.893910875596973,
+    "sd": 29.135161308553737,
+    "seconds_median": 0.002076833497994812,
+    "seconds_p10": 0.0020155193051323295,
+    "seconds_p90": 0.00218808790014009,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002656380005646497,
+    "seconds_p10": 0.002566686901263893,
+    "seconds_p90": 0.002804770005604951,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002656380005646497,
+    "seconds_p10": 0.002566686901263893,
+    "seconds_p90": 0.002804770005604951,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      17.583872325342966,
+      17.938981043291218
+    ],
+    "bias": -2.957555461579112,
+    "rmse": 17.76880316321689,
+    "sd": 17.80128974072871,
+    "seconds_median": 0.002656380005646497,
+    "seconds_p10": 0.002566686901263893,
+    "seconds_p90": 0.002804770005604951,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.003936602497560671,
+    "seconds_p10": 0.0038196165012777785,
+    "seconds_p90": 0.0040342816937481984,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.003936602497560671,
+    "seconds_p10": 0.0038196165012777785,
+    "seconds_p90": 0.0040342816937481984,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      13.019274517649785,
+      13.351880437677591
+    ],
+    "bias": 1.5660494111374277,
+    "rmse": 13.095820144166305,
+    "sd": 13.209888553762145,
+    "seconds_median": 0.003936602497560671,
+    "seconds_p10": 0.0038196165012777785,
+    "seconds_p90": 0.0040342816937481984,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0069378794978547376,
+    "seconds_p10": 0.006834968497423688,
+    "seconds_p90": 0.007252374999370659,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0069378794978547376,
+    "seconds_p10": 0.006834968497423688,
+    "seconds_p90": 0.007252374999370659,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      6.557385369726029,
+      6.888268893738873
+    ],
+    "bias": 0.6380798813413975,
+    "rmse": 6.588357065465535,
+    "sd": 6.662310197955175,
+    "seconds_median": 0.0069378794978547376,
+    "seconds_p10": 0.006834968497423688,
+    "seconds_p90": 0.007252374999370659,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.01470446399616776,
+    "seconds_p10": 0.014448800801619654,
+    "seconds_p90": 0.015310973397572526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 3.5179834035890408e-06
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.013382464031105743
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.01470446399616776,
+    "seconds_p10": 0.014448800801619654,
+    "seconds_p90": 0.015310973397572526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.013382464031105743
+  },
+  {
+    "case": "canonical",
+    "method": "sobol",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      3.019947192508861,
+      4.194277043517153
+    ],
+    "bias": 1.5027350392408678,
+    "rmse": 3.3175362342225725,
+    "sd": 3.0049995445813518,
+    "seconds_median": 0.01470446399616776,
+    "seconds_p10": 0.014448800801619654,
+    "seconds_p90": 0.015310973397572526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.4711724661394783
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.025795857308344317,
+      0.0258326059630091
+    ],
+    "bias": -0.0004367828369140625,
+    "rmse": 0.025799554909321277,
+    "sd": 0.026208617233908164,
+    "seconds_median": 0.0003479075021459721,
+    "seconds_p10": 0.00032894419637159445,
+    "seconds_p90": 0.0004113194045203272,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      49.32896274904896,
+      49.87909415042547
+    ],
+    "bias": 8.070297241210938,
+    "rmse": 49.57597067715371,
+    "sd": 49.69737757495481,
+    "seconds_median": 0.0003479075021459721,
+    "seconds_p10": 0.00032894419637159445,
+    "seconds_p90": 0.0004113194045203272,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0003479075021459721,
+    "seconds_p10": 0.00032894419637159445,
+    "seconds_p90": 0.0004113194045203272,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.017125996070384886,
+      0.017483395646407038
+    ],
+    "bias": 0.0032863616943359375,
+    "rmse": 0.01727997324053697,
+    "sd": 0.017236040320891762,
+    "seconds_median": 0.0004905990026600193,
+    "seconds_p10": 0.0004736919967399444,
+    "seconds_p90": 0.0005254496027191635,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      32.048939459311214,
+      32.51464198197112
+    ],
+    "bias": 4.4460296630859375,
+    "rmse": 32.23832813346789,
+    "sd": 32.44119437880985,
+    "seconds_median": 0.0004905990026600193,
+    "seconds_p10": 0.0004736919967399444,
+    "seconds_p90": 0.0005254496027191635,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0004905990026600193,
+    "seconds_p10": 0.0004736919967399444,
+    "seconds_p90": 0.0005254496027191635,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.015444596452578818,
+      0.015767303099609765
+    ],
+    "bias": 0.0026760101318359375,
+    "rmse": 0.015578352248082792,
+    "sd": 0.015592356391751327,
+    "seconds_median": 0.0007611964974785224,
+    "seconds_p10": 0.0007397132969344967,
+    "seconds_p90": 0.0008358534971193877,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      29.672073720078256,
+      30.834338793375696
+    ],
+    "bias": 10.398788452148438,
+    "rmse": 30.21151722170183,
+    "sd": 28.81936573929279,
+    "seconds_median": 0.0007611964974785224,
+    "seconds_p10": 0.0007397132969344967,
+    "seconds_p90": 0.0008358534971193877,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0007611964974785224,
+    "seconds_p10": 0.0007397132969344967,
+    "seconds_p90": 0.0008358534971193877,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.008853752307273009,
+      0.009372403400179398
+    ],
+    "bias": -0.0025119781494140625,
+    "rmse": 0.00906815584922246,
+    "sd": 0.008852711122998172,
+    "seconds_median": 0.0013139494985807687,
+    "seconds_p10": 0.0012835979017836508,
+    "seconds_p90": 0.0013639881006383802,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      19.43354571218774,
+      20.276093371464384
+    ],
+    "bias": -4.9472808837890625,
+    "rmse": 19.787190292661215,
+    "sd": 19.465299123606876,
+    "seconds_median": 0.0013139494985807687,
+    "seconds_p10": 0.0012835979017836508,
+    "seconds_p90": 0.0013639881006383802,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0013139494985807687,
+    "seconds_p10": 0.0012835979017836508,
+    "seconds_p90": 0.0013639881006383802,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.006691283476806091,
+      0.006777860599437523
+    ],
+    "bias": -0.0001392364501953125,
+    "rmse": 0.006692731979994508,
+    "sd": 0.006798350810789199,
+    "seconds_median": 0.0024343850018340163,
+    "seconds_p10": 0.002379625799949281,
+    "seconds_p90": 0.0025207379985658918,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      14.294901441122201,
+      14.424359041036288
+    ],
+    "bias": 0.2375030517578125,
+    "rmse": 14.2968743056303,
+    "sd": 14.523634387821806,
+    "seconds_median": 0.0024343850018340163,
+    "seconds_p10": 0.002379625799949281,
+    "seconds_p90": 0.0025207379985658918,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0024343850018340163,
+    "seconds_p10": 0.002379625799949281,
+    "seconds_p90": 0.0025207379985658918,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.005724791202464266,
+      0.006179965834774504
+    ],
+    "bias": -0.0014400482177734375,
+    "rmse": 0.0058820123903516154,
+    "sd": 0.00579426465178756,
+    "seconds_median": 0.005043469001975609,
+    "seconds_p10": 0.004957638397900155,
+    "seconds_p90": 0.005272272599540884,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      8.746731964364042,
+      9.600563596889613
+    ],
+    "bias": -2.316436767578125,
+    "rmse": 9.026607320424706,
+    "sd": 8.863918039620911,
+    "seconds_median": 0.005043469001975609,
+    "seconds_p10": 0.004957638397900155,
+    "seconds_p90": 0.005272272599540884,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.005043469001975609,
+    "seconds_p10": 0.004957638397900155,
+    "seconds_p90": 0.005272272599540884,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0038327623815684374,
+      0.004050666069260089
+    ],
+    "bias": -0.000370025634765625,
+    "rmse": 0.003850582610975885,
+    "sd": 0.0038940904737659533,
+    "seconds_median": 0.011309046996757388,
+    "seconds_p10": 0.010952185498172184,
+    "seconds_p90": 0.011589893498603487,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      7.591501910582689,
+      7.807234939499437
+    ],
+    "bias": 0.13195037841796875,
+    "rmse": 7.592648560334218,
+    "sd": 7.712973654129523,
+    "seconds_median": 0.011309046996757388,
+    "seconds_p10": 0.010952185498172184,
+    "seconds_p90": 0.011589893498603487,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.011309046996757388,
+    "seconds_p10": 0.010952185498172184,
+    "seconds_p90": 0.011589893498603487,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.03228007987499799,
+      0.032375465766261685
+    ],
+    "bias": 0.0016384124755859375,
+    "rmse": 0.03231409997329552,
+    "sd": 0.032788930652125826,
+    "seconds_median": 0.00037780099955853075,
+    "seconds_p10": 0.0003685137053253129,
+    "seconds_p90": 0.00041364960052305835,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      61.302377521509,
+      61.50385541767717
+    ],
+    "bias": 3.6586761474609375,
+    "rmse": 61.37991878060809,
+    "sd": 62.251175034274794,
+    "seconds_median": 0.00037780099955853075,
+    "seconds_p10": 0.0003685137053253129,
+    "seconds_p90": 0.00041364960052305835,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00037780099955853075,
+    "seconds_p10": 0.0003685137053253129,
+    "seconds_p90": 0.00041364960052305835,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.02385052110794486,
+      0.023971337500007288
+    ],
+    "bias": -0.0015354156494140625,
+    "rmse": 0.023892503048507655,
+    "sd": 0.024224630509254767,
+    "seconds_median": 0.0005658515001414344,
+    "seconds_p10": 0.0005293590016663075,
+    "seconds_p90": 0.0006199927993293386,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      46.140201228850735,
+      46.1781440759692
+    ],
+    "bias": 0.1808929443359375,
+    "rmse": 46.14055582344181,
+    "sd": 46.87849132702711,
+    "seconds_median": 0.0005658515001414344,
+    "seconds_p10": 0.0005293590016663075,
+    "seconds_p90": 0.0006199927993293386,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0005658515001414344,
+    "seconds_p10": 0.0005293590016663075,
+    "seconds_p90": 0.0006199927993293386,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.01841496127627984,
+      0.01872821545514548
+    ],
+    "bias": -0.0030918121337890625,
+    "rmse": 0.018548442960700743,
+    "sd": 0.018581584612332263,
+    "seconds_median": 0.0008685504981258418,
+    "seconds_p10": 0.0008480251002765726,
+    "seconds_p90": 0.0009412535975570791,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      35.142751101564606,
+      35.42378880134725
+    ],
+    "bias": -2.9325103759765625,
+    "rmse": 35.24301991904862,
+    "sd": 35.68277200152437,
+    "seconds_median": 0.0008685504981258418,
+    "seconds_p10": 0.0008480251002765726,
+    "seconds_p90": 0.0009412535975570791,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0008685504981258418,
+    "seconds_p10": 0.0008480251002765726,
+    "seconds_p90": 0.0009412535975570791,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.01373902973951789,
+      0.014113476499855183
+    ],
+    "bias": -0.0027713775634765625,
+    "rmse": 0.013895744823990025,
+    "sd": 0.013834456865484323,
+    "seconds_median": 0.001476589502999559,
+    "seconds_p10": 0.0014498577038466465,
+    "seconds_p90": 0.0015505619980103803,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      25.0488316102697,
+      25.951220112065837
+    ],
+    "bias": -6.8051910400390625,
+    "rmse": 25.44791669611166,
+    "sd": 24.913493461787212,
+    "seconds_median": 0.001476589502999559,
+    "seconds_p10": 0.0014498577038466465,
+    "seconds_p90": 0.0015505619980103803,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.001476589502999559,
+    "seconds_p10": 0.0014498577038466465,
+    "seconds_p90": 0.0015505619980103803,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.009272182265281896,
+      0.009825793255195298
+    ],
+    "bias": -0.0028095245361328125,
+    "rmse": 0.009506626832493807,
+    "sd": 0.009227310130576597,
+    "seconds_median": 0.002766486501059262,
+    "seconds_p10": 0.002690840895229485,
+    "seconds_p90": 0.0028455902029236313,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      16.97038144783522,
+      17.8445397545672
+    ],
+    "bias": -4.5001983642578125,
+    "rmse": 17.330674879203336,
+    "sd": 17.0039997253316,
+    "seconds_median": 0.002766486501059262,
+    "seconds_p10": 0.002690840895229485,
+    "seconds_p90": 0.0028455902029236313,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002766486501059262,
+    "seconds_p10": 0.002690840895229485,
+    "seconds_p90": 0.0028455902029236313,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.005694666839421054,
+      0.006173037902645345
+    ],
+    "bias": -0.0015087127685546875,
+    "rmse": 0.005863728557437639,
+    "sd": 0.005756979349293403,
+    "seconds_median": 0.005936700003076112,
+    "seconds_p10": 0.005758577300002799,
+    "seconds_p90": 0.006131992502196227,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      10.36606172520032,
+      11.018963714277662
+    ],
+    "bias": -2.0645904541015625,
+    "rmse": 10.563047264572164,
+    "sd": 10.52507586464633,
+    "seconds_median": 0.005936700003076112,
+    "seconds_p10": 0.005758577300002799,
+    "seconds_p90": 0.006131992502196227,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.005936700003076112,
+    "seconds_p10": 0.005758577300002799,
+    "seconds_p90": 0.006131992502196227,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0036145212769756753,
+      0.003931730039320699
+    ],
+    "bias": -0.000606536865234375,
+    "rmse": 0.0036650581210395843,
+    "sd": 0.003672357289766412,
+    "seconds_median": 0.013792230500257574,
+    "seconds_p10": 0.013569186095992336,
+    "seconds_p90": 0.014126266902894712,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      5.7508067633541025,
+      6.571958430211666
+    ],
+    "bias": -1.490325927734375,
+    "rmse": 5.940778551698137,
+    "sd": 5.842825514396204,
+    "seconds_median": 0.013792230500257574,
+    "seconds_p10": 0.013569186095992336,
+    "seconds_p90": 0.014126266902894712,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.013792230500257574,
+    "seconds_p10": 0.013569186095992336,
+    "seconds_p90": 0.014126266902894712,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.021788485366628946,
+      0.022013193148118154
+    ],
+    "bias": 0.0026149749755859375,
+    "rmse": 0.021880876817287048,
+    "sd": 0.02207166453627027,
+    "seconds_median": 0.0015604180007358082,
+    "seconds_p10": 0.0014994723969721235,
+    "seconds_p90": 0.001657480403810041,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      40.715481597640604,
+      41.98238027741358
+    ],
+    "bias": 15.492172241210938,
+    "rmse": 41.31920760061303,
+    "sd": 38.91787238147282,
+    "seconds_median": 0.0015604180007358082,
+    "seconds_p10": 0.0014994723969721235,
+    "seconds_p90": 0.001657480403810041,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0015604180007358082,
+    "seconds_p10": 0.0014994723969721235,
+    "seconds_p90": 0.001657480403810041,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.012212588690079497,
+      0.012480944205227123
+    ],
+    "bias": 0.0017604827880859375,
+    "rmse": 0.012311558381563436,
+    "sd": 0.012380011783224287,
+    "seconds_median": 0.0016833839945320506,
+    "seconds_p10": 0.0016506560052221176,
+    "seconds_p90": 0.0017864114037365653,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      20.728970176078615,
+      20.942074649915483
+    ],
+    "bias": 1.2892913818359375,
+    "rmse": 20.769026862807827,
+    "sd": 21.060654759561164,
+    "seconds_median": 0.0016833839945320506,
+    "seconds_p10": 0.0016506560052221176,
+    "seconds_p90": 0.0017864114037365653,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0016833839945320506,
+    "seconds_p10": 0.0016506560052221176,
+    "seconds_p90": 0.0017864114037365653,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.007291530142368872,
+      0.00744653426058078
+    ],
+    "bias": 0.0005702972412109375,
+    "rmse": 0.007313798654625832,
+    "sd": 0.007408202032852511,
+    "seconds_median": 0.0019881029984389897,
+    "seconds_p10": 0.001925326100899838,
+    "seconds_p90": 0.002125149299536133,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      17.341248346884928,
+      17.481391459470977
+    ],
+    "bias": 0.5184173583984375,
+    "rmse": 17.348995670811266,
+    "sd": 17.618725939169835,
+    "seconds_median": 0.0019881029984389897,
+    "seconds_p10": 0.001925326100899838,
+    "seconds_p90": 0.002125149299536133,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0019881029984389897,
+    "seconds_p10": 0.001925326100899838,
+    "seconds_p90": 0.002125149299536133,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.004867505877507917,
+      0.00502595535368683
+    ],
+    "bias": 0.0003108978271484375,
+    "rmse": 0.004877424620278589,
+    "sd": 0.004945390916941433,
+    "seconds_median": 0.0025375529985467438,
+    "seconds_p10": 0.0024737546998949258,
+    "seconds_p90": 0.0027354686011676677,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      9.80737852501083,
+      10.27802261048247
+    ],
+    "bias": 1.3838958740234375,
+    "rmse": 9.90453640121448,
+    "sd": 9.96430654572253,
+    "seconds_median": 0.0025375529985467438,
+    "seconds_p10": 0.0024737546998949258,
+    "seconds_p90": 0.0027354686011676677,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0025375529985467438,
+    "seconds_p10": 0.0024737546998949258,
+    "seconds_p90": 0.0027354686011676677,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0037930216088231028,
+      0.0040316613807007875
+    ],
+    "bias": 0.0004253387451171875,
+    "rmse": 0.0038167952490403335,
+    "sd": 0.0038537138082800075,
+    "seconds_median": 0.0038224814998102374,
+    "seconds_p10": 0.0036746153033163863,
+    "seconds_p90": 0.003981906596891349,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      7.002532725838953,
+      7.553110196290628
+    ],
+    "bias": 1.1402130126953125,
+    "rmse": 7.09475512549695,
+    "sd": 7.114580364036298,
+    "seconds_median": 0.0038224814998102374,
+    "seconds_p10": 0.0036746153033163863,
+    "seconds_p90": 0.003981906596891349,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0038224814998102374,
+    "seconds_p10": 0.0036746153033163863,
+    "seconds_p90": 0.003981906596891349,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0025683056668007265,
+      0.0027905485073962642
+    ],
+    "bias": -0.0001506805419921875,
+    "rmse": 0.0025727220261535805,
+    "sd": 0.00260940116687201,
+    "seconds_median": 0.006737561503541656,
+    "seconds_p10": 0.0066069676031474955,
+    "seconds_p90": 0.007239330002630595,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      3.827673011214287,
+      4.321654424199517
+    ],
+    "bias": 0.315704345703125,
+    "rmse": 3.8406705032681585,
+    "sd": 3.888919668315329,
+    "seconds_median": 0.006737561503541656,
+    "seconds_p10": 0.0066069676031474955,
+    "seconds_p90": 0.007239330002630595,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.006737561503541656,
+    "seconds_p10": 0.0066069676031474955,
+    "seconds_p90": 0.007239330002630595,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0014543154977348456,
+      0.00211091150799037
+    ],
+    "bias": -0.0005893707275390625,
+    "rmse": 0.0015692008862576122,
+    "sd": 0.0014775860232853653,
+    "seconds_median": 0.01447022700085654,
+    "seconds_p10": 0.014129100496938917,
+    "seconds_p90": 0.014974267400975804,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0009411460018284856
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      2.3670067463291606,
+      3.2010379297131633
+    ],
+    "bias": -0.46428680419921875,
+    "rmse": 2.412111766424036,
+    "sd": 2.404881259152889,
+    "seconds_median": 0.01447022700085654,
+    "seconds_p10": 0.014129100496938917,
+    "seconds_p90": 0.014974267400975804,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 1.6906895043235863
+  },
+  {
+    "case": "drought-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.01447022700085654,
+    "seconds_p10": 0.014129100496938917,
+    "seconds_p90": 0.014974267400975804,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 256,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.017434516986982573,
+      0.017434516986982573
+    ],
+    "bias": -0.000850268678099099,
+    "rmse": 0.017434516986982573,
+    "sd": 0.017692409183147587,
+    "seconds_median": 4.117500429856591e-05,
+    "seconds_p10": 3.141620400128886e-05,
+    "seconds_p90": 8.441279715043493e-05,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 512,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.008915205327179838,
+      0.008915205327179838
+    ],
+    "bias": -0.00047114944898305616,
+    "rmse": 0.008915205327179838,
+    "sd": 0.009045200001569106,
+    "seconds_median": 4.329100192990154e-05,
+    "seconds_p10": 2.9788199753966182e-05,
+    "seconds_p90": 6.152690330054612e-05,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 1024,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.008312065082566667,
+      0.008312065082566667
+    ],
+    "bias": 0.0011933014314311902,
+    "rmse": 0.008312065082566667,
+    "sd": 0.008357586169845518,
+    "seconds_median": 5.459549720399082e-05,
+    "seconds_p10": 4.2792097519850356e-05,
+    "seconds_p90": 0.00010256800233037214,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 2048,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.00568089306454546,
+      0.00568089306454546
+    ],
+    "bias": 0.001343542106700249,
+    "rmse": 0.00568089306454546,
+    "sd": 0.005608053252549534,
+    "seconds_median": 7.853399802115746e-05,
+    "seconds_p10": 6.111879483796656e-05,
+    "seconds_p90": 0.0001106916977732908,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 4096,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.003429117743552807,
+      0.003429117743552807
+    ],
+    "bias": 0.00026458049175042547,
+    "rmse": 0.003429117743552807,
+    "sd": 0.0034736011860941798,
+    "seconds_median": 0.00011891799658769742,
+    "seconds_p10": 0.00010671610289136879,
+    "seconds_p90": 0.00013680129632120952,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 8192,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.002399348365476001,
+      0.002399348365476001
+    ],
+    "bias": 0.0002534683750923389,
+    "rmse": 0.002399348365476001,
+    "sd": 0.0024240997236466256,
+    "seconds_median": 0.00020825799947488122,
+    "seconds_p10": 0.0001970061050087679,
+    "seconds_p90": 0.0002471161969879177,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "mc",
+    "n": 16384,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0018535202627474661,
+      0.0018535202627474661
+    ],
+    "bias": 0.00028401814185351204,
+    "rmse": 0.0018535202627474661,
+    "sd": 0.0018609386627706447,
+    "seconds_median": 0.00037953249920974486,
+    "seconds_p10": 0.00036568549621733836,
+    "seconds_p90": 0.00039829400047892706,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 256,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      9.073968809348115e-05,
+      9.073968809348115e-05
+    ],
+    "bias": 3.301887803399545e-05,
+    "rmse": 9.073968809348115e-05,
+    "sd": 8.587128966257093e-05,
+    "seconds_median": 0.0002402200007054489,
+    "seconds_p10": 0.00020840770448558033,
+    "seconds_p90": 0.0003192046031472274,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 512,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      2.1640490765314136e-05,
+      2.1640490765314136e-05
+    ],
+    "bias": 5.0216108203257614e-06,
+    "rmse": 2.1640490765314136e-05,
+    "sd": 2.1386622658350405e-05,
+    "seconds_median": 0.0002280590015288908,
+    "seconds_p10": 0.0002032947973930277,
+    "seconds_p90": 0.00029246989943203515,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 1024,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      5.6116607487332784e-06,
+      5.6116607487332784e-06
+    ],
+    "bias": -2.5039443209140533e-07,
+    "rmse": 5.6116607487332784e-06,
+    "sd": 5.69577445976555e-06,
+    "seconds_median": 0.00024150299941538833,
+    "seconds_p10": 0.0002127389016095549,
+    "seconds_p90": 0.00033822859622887334,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 2048,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      4.577116695402457e-06,
+      4.577116695402457e-06
+    ],
+    "bias": -5.235300622047356e-07,
+    "rmse": 4.577116695402457e-06,
+    "sd": 4.619835329259127e-06,
+    "seconds_median": 0.0002553749982325826,
+    "seconds_p10": 0.0002291612036060542,
+    "seconds_p90": 0.000333115005196305,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 4096,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.11003579733386e-06,
+      1.11003579733386e-06
+    ],
+    "bias": 8.200125310026118e-08,
+    "rmse": 1.11003579733386e-06,
+    "sd": 1.124716000099629e-06,
+    "seconds_median": 0.00030096800037426874,
+    "seconds_p10": 0.00026434650062583386,
+    "seconds_p90": 0.00039922470023157075,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 8192,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.617537739301056e-07,
+      1.617537739301056e-07
+    ],
+    "bias": -4.9689582080902905e-08,
+    "rmse": 1.617537739301056e-07,
+    "sd": 1.563956234459245e-07,
+    "seconds_median": 0.000386941999749979,
+    "seconds_p10": 0.0003436060018429998,
+    "seconds_p90": 0.00043397350527811794,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "smooth",
+    "method": "sobol",
+    "n": 16384,
+    "target": "integral",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      7.644528418382835e-08,
+      7.644528418382835e-08
+    ],
+    "bias": -2.4744381807439986e-08,
+    "rmse": 7.644528418382835e-08,
+    "sd": 7.348712974287821e-08,
+    "seconds_median": 0.000545872997463448,
+    "seconds_p10": 0.0004961000013281591,
+    "seconds_p90": 0.0006448551976063755,
+    "reference_kind": "analytic exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.025925832182740607,
+      0.025925832182740607
+    ],
+    "bias": 0.0036603606803171096,
+    "rmse": 0.025925832182740607,
+    "sd": 0.02607682019122121,
+    "seconds_median": 0.00016532900190213695,
+    "seconds_p10": 0.00014374150341609493,
+    "seconds_p90": 0.00022531919676112012,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.6567779833228198,
+      1.6567779833228198
+    ],
+    "bias": 0.07927171312886827,
+    "rmse": 1.6567779833228198,
+    "sd": 1.681360211724395,
+    "seconds_median": 0.00016532900190213695,
+    "seconds_p10": 0.00014374150341609493,
+    "seconds_p90": 0.00022531919676112012,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      19.03943276465977,
+      19.03943276465977
+    ],
+    "bias": 7.5,
+    "rmse": 19.03943276465977,
+    "sd": 17.78001778002667,
+    "seconds_median": 0.00016532900190213695,
+    "seconds_p10": 0.00014374150341609493,
+    "seconds_p90": 0.00022531919676112012,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.01771284179771745,
+      0.01771284179771745
+    ],
+    "bias": 0.00402657161781711,
+    "rmse": 0.01771284179771745,
+    "sd": 0.01752510414845662,
+    "seconds_median": 0.00018722900131251663,
+    "seconds_p10": 0.00017497160442871972,
+    "seconds_p90": 0.00023109660396585243,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.1540528467921214,
+      1.1540528467921214
+    ],
+    "bias": 0.26848069750386827,
+    "rmse": 1.1540528467921214,
+    "sd": 1.1403479212180865,
+    "seconds_median": 0.00018722900131251663,
+    "seconds_p10": 0.00017497160442871972,
+    "seconds_p90": 0.00023109660396585243,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      7.0710678118654755,
+      7.0710678118654755
+    ],
+    "bias": 1.25,
+    "rmse": 7.0710678118654755,
+    "sd": 7.0710678118654755,
+    "seconds_median": 0.00018722900131251663,
+    "seconds_p10": 0.00017497160442871972,
+    "seconds_p90": 0.00023109660396585243,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.016005032402590567,
+      0.016005032402590567
+    ],
+    "bias": 0.0013715423209421096,
+    "rmse": 0.016005032402590567,
+    "sd": 0.016201312057415873,
+    "seconds_median": 0.0002456330039422028,
+    "seconds_p10": 0.00023781370400683955,
+    "seconds_p90": 0.0003140364984574262,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.9698846178992482,
+      0.9698846178992482
+    ],
+    "bias": 0.15007249437886827,
+    "rmse": 0.9698846178992482,
+    "sd": 0.9735359792710284,
+    "seconds_median": 0.0002456330039422028,
+    "seconds_p10": 0.00023781370400683955,
+    "seconds_p90": 0.0003140364984574262,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0002456330039422028,
+    "seconds_p10": 0.00023781370400683955,
+    "seconds_p90": 0.0003140364984574262,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.013064230340570217,
+      0.013064230340570217
+    ],
+    "bias": 0.0010816253287546096,
+    "rmse": 0.013064230340570217,
+    "sd": 0.013227701179440233,
+    "seconds_median": 0.0003790820046560839,
+    "seconds_p10": 0.00036063719962839966,
+    "seconds_p90": 0.00044447760010370987,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.7166912985180988,
+      0.7166912985180988
+    ],
+    "bias": 0.06767503344136827,
+    "rmse": 0.7166912985180988,
+    "sd": 0.7249055162248251,
+    "seconds_median": 0.0003790820046560839,
+    "seconds_p10": 0.00036063719962839966,
+    "seconds_p90": 0.00044447760010370987,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0003790820046560839,
+    "seconds_p10": 0.00036063719962839966,
+    "seconds_p90": 0.00044447760010370987,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.008260450731714511,
+      0.008260450731714511
+    ],
+    "bias": 0.0008451140982858596,
+    "rmse": 0.008260450731714511,
+    "sd": 0.008348587886124642,
+    "seconds_median": 0.0006336724982247688,
+    "seconds_p10": 0.0006100837985286489,
+    "seconds_p90": 0.0006925660985871218,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.4833731216859375,
+      0.4833731216859375
+    ],
+    "bias": 0.02563706957418077,
+    "rmse": 0.4833731216859375,
+    "sd": 0.49041635023215363,
+    "seconds_median": 0.0006336724982247688,
+    "seconds_p10": 0.0006100837985286489,
+    "seconds_p90": 0.0006925660985871218,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0006336724982247688,
+    "seconds_p10": 0.0006100837985286489,
+    "seconds_p90": 0.0006925660985871218,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.006281928897636043,
+      0.006281928897636043
+    ],
+    "bias": 0.0011502898795358596,
+    "rmse": 0.006281928897636043,
+    "sd": 0.0062745333813803575,
+    "seconds_median": 0.001139146501373034,
+    "seconds_p10": 0.0011069823987782002,
+    "seconds_p90": 0.0012170615991635714,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.3566882173280691,
+      0.3566882173280691
+    ],
+    "bias": 0.05253068529683702,
+    "rmse": 0.3566882173280691,
+    "sd": 0.35844396545271384,
+    "seconds_median": 0.001139146501373034,
+    "seconds_p10": 0.0011069823987782002,
+    "seconds_p90": 0.0012170615991635714,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.001139146501373034,
+    "seconds_p10": 0.0011069823987782002,
+    "seconds_p90": 0.0012170615991635714,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.003808128023111442,
+      0.003808128023111442
+    ],
+    "bias": 7.07305533639846e-05,
+    "rmse": 0.003808128023111442,
+    "sd": 0.0038683945129200123,
+    "seconds_median": 0.0021616015037579928,
+    "seconds_p10": 0.0021128585991391446,
+    "seconds_p90": 0.0022538796001754235,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.19593418439057445,
+      0.19593418439057445
+    ],
+    "bias": -0.01903303540628798,
+    "rmse": 0.19593418439057445,
+    "sd": 0.19812787835562357,
+    "seconds_median": 0.0021616015037579928,
+    "seconds_p10": 0.0021128585991391446,
+    "seconds_p90": 0.0022538796001754235,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0021616015037579928,
+    "seconds_p10": 0.0021128585991391446,
+    "seconds_p90": 0.0022538796001754235,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.023579259028592404,
+      0.023579259028592404
+    ],
+    "bias": 0.0030500091178171096,
+    "rmse": 0.023579259028592404,
+    "sd": 0.02375528791590788,
+    "seconds_median": 0.00016581100135226734,
+    "seconds_p10": 0.00015159400063566864,
+    "seconds_p90": 0.00020903410040773454,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.2792450588773099,
+      1.2792450588773099
+    ],
+    "bias": 0.25139085375386827,
+    "rmse": 1.2792450588773099,
+    "sd": 1.274370912456217,
+    "seconds_median": 0.00016581100135226734,
+    "seconds_p10": 0.00015159400063566864,
+    "seconds_p90": 0.00020903410040773454,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      8.838834764831844,
+      8.838834764831844
+    ],
+    "bias": 1.5625,
+    "rmse": 8.838834764831844,
+    "sd": 8.838834764831844,
+    "seconds_median": 0.00016581100135226734,
+    "seconds_p10": 0.00015159400063566864,
+    "seconds_p90": 0.00020903410040773454,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.019083895195187228,
+      0.019083895195187228
+    ],
+    "bias": -0.0030535065071828904,
+    "rmse": 0.019083895195187228,
+    "sd": 0.01913945167466119,
+    "seconds_median": 0.00019212949700886384,
+    "seconds_p10": 0.00018002569922828115,
+    "seconds_p90": 0.0002609560964629055,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      1.0072667903886279,
+      1.0072667903886279
+    ],
+    "bias": -0.09467848218363173,
+    "rmse": 1.0072667903886279,
+    "sd": 1.0188531804863041,
+    "seconds_median": 0.00019212949700886384,
+    "seconds_p10": 0.00018002569922828115,
+    "seconds_p90": 0.0002609560964629055,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00019212949700886384,
+    "seconds_p10": 0.00018002569922828115,
+    "seconds_p90": 0.0002609560964629055,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.013020884321526534,
+      0.013020884321526534
+    ],
+    "bias": -0.0036943756478078904,
+    "rmse": 0.013020884321526534,
+    "sd": 0.01268557797683692,
+    "seconds_median": 0.00025960749917430803,
+    "seconds_p10": 0.0002493336993211415,
+    "seconds_p90": 0.0003058581001823768,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.7789347531874203,
+      0.7789347531874203
+    ],
+    "bias": -0.24055250562113173,
+    "rmse": 0.7789347531874203,
+    "sd": 0.752714719904782,
+    "seconds_median": 0.00025960749917430803,
+    "seconds_p10": 0.0002493336993211415,
+    "seconds_p90": 0.0003058581001823768,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00025960749917430803,
+    "seconds_p10": 0.0002493336993211415,
+    "seconds_p90": 0.0003058581001823768,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.009242367509367118,
+      0.009242367509367118
+    ],
+    "bias": -0.0022600494759328904,
+    "rmse": 0.009242367509367118,
+    "sd": 0.009105179443104815,
+    "seconds_median": 0.0003991309968114365,
+    "seconds_p10": 0.000383589300327003,
+    "seconds_p90": 0.00043970179904135876,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.4997163410644003,
+      0.4997163410644003
+    ],
+    "bias": -0.14457472241800673,
+    "rmse": 0.4997163410644003,
+    "sd": 0.48599967732849864,
+    "seconds_median": 0.0003991309968114365,
+    "seconds_p10": 0.000383589300327003,
+    "seconds_p90": 0.00043970179904135876,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0003991309968114365,
+    "seconds_p10": 0.000383589300327003,
+    "seconds_p90": 0.00043970179904135876,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.006684469885800438,
+      0.006684469885800438
+    ],
+    "bias": -0.0018862091439016404,
+    "rmse": 0.006684469885800438,
+    "sd": 0.006515438952430511,
+    "seconds_median": 0.000672685000608908,
+    "seconds_p10": 0.0006426303007174283,
+    "seconds_p90": 0.0007220793042506557,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.3919580225090174,
+      0.3919580225090174
+    ],
+    "bias": -0.07133253491800673,
+    "rmse": 0.3919580225090174,
+    "sd": 0.39157944638980063,
+    "seconds_median": 0.000672685000608908,
+    "seconds_p10": 0.0006426303007174283,
+    "seconds_p90": 0.0007220793042506557,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.000672685000608908,
+    "seconds_p10": 0.0006426303007174283,
+    "seconds_p90": 0.0007220793042506557,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.004951331629141279,
+      0.004951331629141279
+    ],
+    "bias": 0.0001279510123483596,
+    "rmse": 0.004951331629141279,
+    "sd": 0.0050288779935218015,
+    "seconds_median": 0.0011944479992962442,
+    "seconds_p10": 0.0011628378058958333,
+    "seconds_p90": 0.0012544037068437318,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.2778206463894877,
+      0.2778206463894877
+    ],
+    "bias": 0.03380052172261827,
+    "rmse": 0.2778206463894877,
+    "sd": 0.2801692323446124,
+    "seconds_median": 0.0011944479992962442,
+    "seconds_p10": 0.0011628378058958333,
+    "seconds_p90": 0.0012544037068437318,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0011944479992962442,
+    "seconds_p10": 0.0011628378058958333,
+    "seconds_p90": 0.0012544037068437318,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.003250691023253833,
+      0.003250691023253833
+    ],
+    "bias": 0.0010053313834421096,
+    "rmse": 0.003250691023253833,
+    "sd": 0.003140791096256984,
+    "seconds_median": 0.0022773930031689815,
+    "seconds_p10": 0.0022067529978812674,
+    "seconds_p90": 0.0023979844998393675,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.1945563044834035,
+      0.1945563044834035
+    ],
+    "bias": 0.044615188470665146,
+    "rmse": 0.1945563044834035,
+    "sd": 0.19240183909513583,
+    "seconds_median": 0.0022773930031689815,
+    "seconds_p10": 0.0022067529978812674,
+    "seconds_p90": 0.0023979844998393675,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0022773930031689815,
+    "seconds_p10": 0.0022067529978812674,
+    "seconds_p90": 0.0023979844998393675,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.010893863695908737,
+      0.010893863695908737
+    ],
+    "bias": -0.0009783111946828904,
+    "rmse": 0.010893863695908737,
+    "sd": 0.011023455271498672,
+    "seconds_median": 0.00042124299943679944,
+    "seconds_p10": 0.0003700284993101377,
+    "seconds_p90": 0.000513915898045525,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.539789252770755,
+      0.539789252770755
+    ],
+    "bias": -0.16853102124613173,
+    "rmse": 0.539789252770755,
+    "sd": 0.5210111581092769,
+    "seconds_median": 0.00042124299943679944,
+    "seconds_p10": 0.0003700284993101377,
+    "seconds_p90": 0.000513915898045525,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00042124299943679944,
+    "seconds_p10": 0.0003700284993101377,
+    "seconds_p90": 0.000513915898045525,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.006553792331231856,
+      0.006553792331231856
+    ],
+    "bias": -0.0020159088509328904,
+    "rmse": 0.006553792331231856,
+    "sd": 0.006335831980962506,
+    "seconds_median": 0.00044175199946039356,
+    "seconds_p10": 0.0004081654013134539,
+    "seconds_p90": 0.0005062574011390098,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.333426914999646,
+      0.333426914999646
+    ],
+    "bias": -0.15388258374613173,
+    "rmse": 0.333426914999646,
+    "sd": 0.30052626196795923,
+    "seconds_median": 0.00044175199946039356,
+    "seconds_p10": 0.0004081654013134539,
+    "seconds_p90": 0.0005062574011390098,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00044175199946039356,
+    "seconds_p10": 0.0004081654013134539,
+    "seconds_p90": 0.0005062574011390098,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.002646946136064123,
+      0.002646946136064123
+    ],
+    "bias": -0.0007952057259328904,
+    "rmse": 0.002646946136064123,
+    "sd": 0.002565069919322371,
+    "seconds_median": 0.0005113780025567394,
+    "seconds_p10": 0.00046744630308239723,
+    "seconds_p90": 0.0006151517962280196,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.1564710879372027,
+      0.1564710879372027
+    ],
+    "bias": -0.06446607983988173,
+    "rmse": 0.1564710879372027,
+    "sd": 0.1448552591416191,
+    "seconds_median": 0.0005113780025567394,
+    "seconds_p10": 0.00046744630308239723,
+    "seconds_p90": 0.0006151517962280196,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0005113780025567394,
+    "seconds_p10": 0.00046744630308239723,
+    "seconds_p90": 0.0006151517962280196,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0019575366115407457,
+      0.0019575366115407457
+    ],
+    "bias": -0.0006731354134328904,
+    "rmse": 0.0019575366115407457,
+    "sd": 0.0018675741175649934,
+    "seconds_median": 0.0006350080002448522,
+    "seconds_p10": 0.0005926627993176226,
+    "seconds_p90": 0.0007400928006973118,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.09762830232990152,
+      0.09762830232990152
+    ],
+    "bias": -0.03364332593363173,
+    "rmse": 0.09762830232990152,
+    "sd": 0.09311477225067485,
+    "seconds_median": 0.0006350080002448522,
+    "seconds_p10": 0.0005926627993176226,
+    "seconds_p90": 0.0007400928006973118,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0006350080002448522,
+    "seconds_p10": 0.0005926627993176226,
+    "seconds_p90": 0.0007400928006973118,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.001118259820949313,
+      0.001118259820949313
+    ],
+    "bias": -0.0001924835579641404,
+    "rmse": 0.001118259820949313,
+    "sd": 0.001119195613015938,
+    "seconds_median": 0.0008627254974271636,
+    "seconds_p10": 0.0008328583942784462,
+    "seconds_p90": 0.0009341492019302678,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0661154723721059,
+      0.0661154723721059
+    ],
+    "bias": -0.01388319409769423,
+    "rmse": 0.0661154723721059,
+    "sd": 0.06567574390856315,
+    "seconds_median": 0.0008627254974271636,
+    "seconds_p10": 0.0008328583942784462,
+    "seconds_p90": 0.0009341492019302678,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0008627254974271636,
+    "seconds_p10": 0.0008328583942784462,
+    "seconds_p90": 0.0009341492019302678,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0006847324714179939,
+      0.0006847324714179939
+    ],
+    "bias": -0.0001161896126516404,
+    "rmse": 0.0006847324714179939,
+    "sd": 0.0006856001139203094,
+    "seconds_median": 0.0013854789976903703,
+    "seconds_p10": 0.0013180578025639988,
+    "seconds_p90": 0.0014812646018981467,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.04025206658497179,
+      0.04025206658497179
+    ],
+    "bias": -0.006063064703162979,
+    "rmse": 0.04025206658497179,
+    "sd": 0.040429540279881895,
+    "seconds_median": 0.0013854789976903703,
+    "seconds_p10": 0.0013180578025639988,
+    "seconds_p90": 0.0014812646018981467,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0013854789976903703,
+    "seconds_p10": 0.0013180578025639988,
+    "seconds_p90": 0.0014812646018981467,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0003845558802985569,
+      0.0003845558802985569
+    ],
+    "bias": 5.5471764301484594e-05,
+    "rmse": 0.0003845558802985569,
+    "sd": 0.00038662290830444114,
+    "seconds_median": 0.0023951285002112854,
+    "seconds_p10": 0.0023055979057971855,
+    "seconds_p90": 0.0024967793018731755,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.017460426294574668,
+      0.017460426294574668
+    ],
+    "bias": 0.0014709623964463958,
+    "rmse": 0.017460426294574668,
+    "sd": 0.017676746336622754,
+    "seconds_median": 0.0023951285002112854,
+    "seconds_p10": 0.0023055979057971855,
+    "seconds_p90": 0.0024967793018731755,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "tiny",
+    "method": "sobol",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0023951285002112854,
+    "seconds_p10": 0.0023055979057971855,
+    "seconds_p90": 0.0024967793018731755,
+    "reference_kind": "rational exact",
+    "reference_uncertainty_95": 0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0014532406972013346,
+      0.0015195951507577569
+    ],
+    "bias": -0.0007314682006835938,
+    "rmse": 0.0014845793284032455,
+    "sd": 0.0013125420020161074,
+    "seconds_median": 0.00031567250334774144,
+    "seconds_p10": 0.0003006314975209534,
+    "seconds_p90": 0.00034224270129925574,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.05622354692582681,
+      0.062033785671434125
+    ],
+    "bias": -0.04458427429199219,
+    "rmse": 0.059074483175762436,
+    "sd": 0.039376260060483226,
+    "seconds_median": 0.00031567250334774144,
+    "seconds_p10": 0.0003006314975209534,
+    "seconds_p90": 0.00034224270129925574,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      24.748737341529164,
+      24.748737341529164
+    ],
+    "bias": -8.75,
+    "rmse": 24.748737341529164,
+    "sd": 23.520752676128648,
+    "seconds_median": 0.00031567250334774144,
+    "seconds_p10": 0.0003006314975209534,
+    "seconds_p90": 0.00034224270129925574,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0014327019768439334,
+      0.0014383987622499984
+    ],
+    "bias": 6.198883056640625e-05,
+    "rmse": 0.0014340423876467198,
+    "sd": 0.0014556266641008282,
+    "seconds_median": 0.00046952200136729516,
+    "seconds_p10": 0.00043849089561263097,
+    "seconds_p90": 0.0005410399993706961,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.07547657864800152,
+      0.0756924472782557
+    ],
+    "bias": -0.0018596649169921875,
+    "rmse": 0.07549948528308952,
+    "sd": 0.07668428059068848,
+    "seconds_median": 0.00046952200136729516,
+    "seconds_p10": 0.00043849089561263097,
+    "seconds_p90": 0.0005410399993706961,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      17.5,
+      17.5
+    ],
+    "bias": -4.375,
+    "rmse": 17.5,
+    "sd": 17.215428189328765,
+    "seconds_median": 0.00046952200136729516,
+    "seconds_p10": 0.00043849089561263097,
+    "seconds_p90": 0.0005410399993706961,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0010886434420742102,
+      0.0011256865935522842
+    ],
+    "bias": 0.00030612945556640625,
+    "rmse": 0.0011056573628386618,
+    "sd": 0.0010794325679888742,
+    "seconds_median": 0.0007301204968825914,
+    "seconds_p10": 0.0006973464020120446,
+    "seconds_p90": 0.0007878836047893855,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.051031028467467404,
+      0.052659652148320114
+    ],
+    "bias": 0.010957717895507812,
+    "rmse": 0.05170839468667708,
+    "sd": 0.05134260884931312,
+    "seconds_median": 0.0007301204968825914,
+    "seconds_p10": 0.0006973464020120446,
+    "seconds_p90": 0.0007878836047893855,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      12.374368670764582,
+      12.374368670764582
+    ],
+    "bias": -2.1875,
+    "rmse": 12.374368670764582,
+    "sd": 12.374368670764582,
+    "seconds_median": 0.0007301204968825914,
+    "seconds_p10": 0.0006973464020120446,
+    "seconds_p90": 0.0007878836047893855,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0008023110675384112,
+      0.000822461507093049
+    ],
+    "bias": 0.00012302398681640625,
+    "rmse": 0.0008098671697677666,
+    "sd": 0.0008132768802561483,
+    "seconds_median": 0.0012721579987555742,
+    "seconds_p10": 0.001226194196351571,
+    "seconds_p90": 0.0013288304027810228,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.04028984939771324,
+      0.04049130010704398
+    ],
+    "bias": -0.0001811981201171875,
+    "rmse": 0.04029025685260827,
+    "sd": 0.04093452792262504,
+    "seconds_median": 0.0012721579987555742,
+    "seconds_p10": 0.001226194196351571,
+    "seconds_p90": 0.0013288304027810228,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0012721579987555742,
+    "seconds_p10": 0.001226194196351571,
+    "seconds_p90": 0.0013288304027810228,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0005609276416508648,
+      0.00059459266384246
+    ],
+    "bias": 0.00014591217041015625,
+    "rmse": 0.00057442631146033,
+    "sd": 0.0005644754123726584,
+    "seconds_median": 0.0023257985012605786,
+    "seconds_p10": 0.002284248599607963,
+    "seconds_p90": 0.002455056797771249,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.037450539415454516,
+      0.03944782258862225
+    ],
+    "bias": 0.009965896606445312,
+    "rmse": 0.03826868785840933,
+    "sd": 0.037539462250384036,
+    "seconds_median": 0.0023257985012605786,
+    "seconds_p10": 0.002284248599607963,
+    "seconds_p90": 0.002455056797771249,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0023257985012605786,
+    "seconds_p10": 0.002284248599607963,
+    "seconds_p90": 0.002455056797771249,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0003555453383027583,
+      0.0003676488492909812
+    ],
+    "bias": 2.765655517578125e-05,
+    "rmse": 0.00035661936659835776,
+    "sd": 0.000361234424950208,
+    "seconds_median": 0.004853614500461845,
+    "seconds_p10": 0.004700648302969057,
+    "seconds_p90": 0.0050512568006524814,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.022891108008161326,
+      0.023392244900707477
+    ],
+    "bias": 0.0009632110595703125,
+    "rmse": 0.02291136402282907,
+    "sd": 0.02325738899369253,
+    "seconds_median": 0.004853614500461845,
+    "seconds_p10": 0.004700648302969057,
+    "seconds_p90": 0.0050512568006524814,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.004853614500461845,
+    "seconds_p10": 0.004700648302969057,
+    "seconds_p90": 0.0050512568006524814,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0003230972018905405,
+      0.0003454229218615659
+    ],
+    "bias": 5.626678466796875e-05,
+    "rmse": 0.0003279599867763875,
+    "sd": 0.0003282670853880387,
+    "seconds_median": 0.010993685500579886,
+    "seconds_p10": 0.010434380300284828,
+    "seconds_p90": 0.011383934794866945,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.01719864839648996,
+      0.018689514127182925
+    ],
+    "bias": 0.0034618377685546875,
+    "rmse": 0.01754359790356238,
+    "sd": 0.01747384424468678,
+    "seconds_median": 0.010993685500579886,
+    "seconds_p10": 0.010434380300284828,
+    "seconds_p90": 0.011383934794866945,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "legacy_mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.010993685500579886,
+    "seconds_p10": 0.010434380300284828,
+    "seconds_p90": 0.011383934794866945,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.002135667229995653,
+      0.002150969933096182
+    ],
+    "bias": 0.00024509429931640625,
+    "rmse": 0.002142434180666255,
+    "sd": 0.0021624246851978976,
+    "seconds_median": 0.00036739100323757157,
+    "seconds_p10": 0.00034365770188742316,
+    "seconds_p90": 0.00041265649779234084,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.12739431049893413,
+      0.1280186592298041
+    ],
+    "bias": 0.010347366333007812,
+    "rmse": 0.12764873440385602,
+    "sd": 0.1292644457461768,
+    "seconds_median": 0.00036739100323757157,
+    "seconds_p10": 0.00034365770188742316,
+    "seconds_p90": 0.00041265649779234084,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      24.748737341529164,
+      24.748737341529164
+    ],
+    "bias": -8.75,
+    "rmse": 24.748737341529164,
+    "sd": 23.520752676128648,
+    "seconds_median": 0.00036739100323757157,
+    "seconds_p10": 0.00034365770188742316,
+    "seconds_p90": 0.00041265649779234084,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0014607924957084246,
+      0.001472035781652604
+    ],
+    "bias": -0.00012111663818359375,
+    "rmse": 0.0014647645854420125,
+    "sd": 0.0014831060869875683,
+    "seconds_median": 0.0005234734999248758,
+    "seconds_p10": 0.000497619598172605,
+    "seconds_p90": 0.0005597115035925526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.08354909923528465,
+      0.08400085464117665
+    ],
+    "bias": -0.0049114227294921875,
+    "rmse": 0.08368663840420505,
+    "sd": 0.08487915583884988,
+    "seconds_median": 0.0005234734999248758,
+    "seconds_p10": 0.000497619598172605,
+    "seconds_p90": 0.0005597115035925526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      12.374368670764582,
+      12.374368670764582
+    ],
+    "bias": -2.1875,
+    "rmse": 12.374368670764582,
+    "sd": 12.374368670764582,
+    "seconds_median": 0.0005234734999248758,
+    "seconds_p10": 0.000497619598172605,
+    "seconds_p90": 0.0005597115035925526,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0010358009490037316,
+      0.001038012836874121
+    ],
+    "bias": 9.5367431640625e-07,
+    "rmse": 0.0010358013880333106,
+    "sd": 0.0010523748165631342,
+    "seconds_median": 0.0008198450013878755,
+    "seconds_p10": 0.0008008739023352973,
+    "seconds_p90": 0.00088006679652608,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.06310672813978484,
+      0.06373360226202725
+    ],
+    "bias": 0.0051593780517578125,
+    "rmse": 0.06330380132788156,
+    "sd": 0.06410275686832974,
+    "seconds_median": 0.0008198450013878755,
+    "seconds_p10": 0.0008008739023352973,
+    "seconds_p90": 0.00088006679652608,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0008198450013878755,
+    "seconds_p10": 0.0008008739023352973,
+    "seconds_p90": 0.00088006679652608,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0006557729781171966,
+      0.0006655233848651934
+    ],
+    "bias": -4.482269287109375e-05,
+    "rmse": 0.0006573030295266511,
+    "sd": 0.0006662660120334169,
+    "seconds_median": 0.00141345549855032,
+    "seconds_p10": 0.0013585396998678334,
+    "seconds_p90": 0.001481686297483975,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.04341655088813169,
+      0.043642437541879645
+    ],
+    "bias": 0.0005817413330078125,
+    "rmse": 0.04342044810916002,
+    "sd": 0.04411125981362366,
+    "seconds_median": 0.00141345549855032,
+    "seconds_p10": 0.0013585396998678334,
+    "seconds_p90": 0.001481686297483975,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.00141345549855032,
+    "seconds_p10": 0.0013585396998678334,
+    "seconds_p90": 0.001481686297483975,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.00042499220206315474,
+      0.00043162143826610486
+    ],
+    "bias": -6.67572021484375e-06,
+    "rmse": 0.0004250446294859826,
+    "sd": 0.0004317925090888902,
+    "seconds_median": 0.0026827629953913856,
+    "seconds_p10": 0.00260461030411534,
+    "seconds_p90": 0.0028365232996293344,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.029086309954696913,
+      0.029753513299591985
+    ],
+    "bias": 0.0024127960205078125,
+    "rmse": 0.02918621269396355,
+    "sd": 0.029551720465707306,
+    "seconds_median": 0.0026827629953913856,
+    "seconds_p10": 0.00260461030411534,
+    "seconds_p90": 0.0028365232996293344,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0026827629953913856,
+    "seconds_p10": 0.00260461030411534,
+    "seconds_p90": 0.0028365232996293344,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0003765359346330417,
+      0.0003898952367073571
+    ],
+    "bias": 3.528594970703125e-05,
+    "rmse": 0.00037818567968222355,
+    "sd": 0.0003825608921482538,
+    "seconds_median": 0.005785014498542296,
+    "seconds_p10": 0.00559205200188444,
+    "seconds_p90": 0.005912621297466103,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.025786450612891382,
+      0.026648547161601793
+    ],
+    "bias": 0.0028705596923828125,
+    "rmse": 0.02594573468141959,
+    "sd": 0.026199060021770765,
+    "seconds_median": 0.005785014498542296,
+    "seconds_p10": 0.00559205200188444,
+    "seconds_p90": 0.005912621297466103,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.005785014498542296,
+    "seconds_p10": 0.00559205200188444,
+    "seconds_p90": 0.005912621297466103,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.00025093054256734745,
+      0.0002738574421995569
+    ],
+    "bias": -4.100799560546875e-05,
+    "rmse": 0.0002542593024782407,
+    "sd": 0.00025494568619423866,
+    "seconds_median": 0.013439855498290854,
+    "seconds_p10": 0.013202086399542168,
+    "seconds_p90": 0.013645644100324716,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.016824231336830052,
+      0.017553421636019275
+    ],
+    "bias": -0.0011539459228515625,
+    "rmse": 0.01686375851546861,
+    "sd": 0.01709343613166401,
+    "seconds_median": 0.013439855498290854,
+    "seconds_p10": 0.013202086399542168,
+    "seconds_p90": 0.013645644100324716,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "mc",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.013439855498290854,
+    "seconds_p10": 0.013202086399542168,
+    "seconds_p90": 0.013645644100324716,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.002575014950912494,
+      0.0025940617547546376
+    ],
+    "bias": 0.00036716461181640625,
+    "rmse": 0.0025838768577990346,
+    "sd": 0.0025985821968736666,
+    "seconds_median": 0.0015429295017383993,
+    "seconds_p10": 0.001477612194867106,
+    "seconds_p90": 0.0016210433037485926,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.1460398898364719,
+      0.146327938246436
+    ],
+    "bias": 0.0054645538330078125,
+    "rmse": 0.14613320339029465,
+    "sd": 0.14836764027506155,
+    "seconds_median": 0.0015429295017383993,
+    "seconds_p10": 0.001477612194867106,
+    "seconds_p90": 0.0016210433037485926,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 256,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0015429295017383993,
+    "seconds_p10": 0.001477612194867106,
+    "seconds_p90": 0.0016210433037485926,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0017117868820184987,
+      0.0017260888847714158
+    ],
+    "bias": 0.00018405914306640625,
+    "rmse": 0.001717783476414306,
+    "sd": 0.001735222154767377,
+    "seconds_median": 0.0016533259986317717,
+    "seconds_p10": 0.0016163722983037587,
+    "seconds_p90": 0.0017191272978379858,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.09178640427629584,
+      0.09200392630512581
+    ],
+    "bias": -0.0024700164794921875,
+    "rmse": 0.09181963292989458,
+    "sd": 0.0932550799998432,
+    "seconds_median": 0.0016533259986317717,
+    "seconds_p10": 0.0016163722983037587,
+    "seconds_p90": 0.0017191272978379858,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 512,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0016533259986317717,
+    "seconds_p10": 0.0016163722983037587,
+    "seconds_p90": 0.0017191272978379858,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.001145121035113142,
+      0.0011471221506958286
+    ],
+    "bias": 9.5367431640625e-07,
+    "rmse": 0.0011451214322303533,
+    "sd": 0.0011634441351196692,
+    "seconds_median": 0.0019371309972484596,
+    "seconds_p10": 0.0018848853025701829,
+    "seconds_p90": 0.0020640509996155743,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.05456657639840225,
+      0.05610050090356342
+    ],
+    "bias": -0.011014938354492188,
+    "rmse": 0.05520456861886611,
+    "sd": 0.05496007258709423,
+    "seconds_median": 0.0019371309972484596,
+    "seconds_p10": 0.0018848853025701829,
+    "seconds_p90": 0.0020640509996155743,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 1024,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0019371309972484596,
+    "seconds_p10": 0.0018848853025701829,
+    "seconds_p90": 0.0020640509996155743,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0008716228486235182,
+      0.0008754822457684336
+    ],
+    "bias": 1.621246337890625e-05,
+    "rmse": 0.0008717736140830307,
+    "sd": 0.0008855696997716371,
+    "seconds_median": 0.002479964001395274,
+    "seconds_p10": 0.0024105686003167647,
+    "seconds_p90": 0.0025941005034837874,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.03793321134257851,
+      0.04002035374307956
+    ],
+    "bias": -0.010557174682617188,
+    "rmse": 0.038799926338839566,
+    "sd": 0.03793346088317766,
+    "seconds_median": 0.002479964001395274,
+    "seconds_p10": 0.0024105686003167647,
+    "seconds_p90": 0.0025941005034837874,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 2048,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.002479964001395274,
+    "seconds_p10": 0.0024105686003167647,
+    "seconds_p90": 0.0025941005034837874,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0005424923350412347,
+      0.0005573634167832546
+    ],
+    "bias": 6.198883056640625e-05,
+    "rmse": 0.0005460224800257603,
+    "sd": 0.0005511727635749336,
+    "seconds_median": 0.0037253275004331954,
+    "seconds_p10": 0.0035831920024065765,
+    "seconds_p90": 0.003823282001394546,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.024998641944818524,
+      0.026291012952511846
+    ],
+    "bias": -0.0043010711669921875,
+    "rmse": 0.025361987229623677,
+    "sd": 0.0253945624467167,
+    "seconds_median": 0.0037253275004331954,
+    "seconds_p10": 0.0035831920024065765,
+    "seconds_p90": 0.003823282001394546,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 4096,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.0037253275004331954,
+    "seconds_p10": 0.0035831920024065765,
+    "seconds_p90": 0.003823282001394546,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0004325099655044446,
+      0.0004479114814839427
+    ],
+    "bias": 5.054473876953125e-05,
+    "rmse": 0.00043545337394253366,
+    "sd": 0.00043943056438329985,
+    "seconds_median": 0.006551441998453811,
+    "seconds_p10": 0.0063547468977049,
+    "seconds_p90": 0.007097899101063377,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.019169641355210053,
+      0.020080585362681373
+    ],
+    "bias": -0.0021266937255859375,
+    "rmse": 0.019287249049302655,
+    "sd": 0.019476375093278247,
+    "seconds_median": 0.006551441998453811,
+    "seconds_p10": 0.0063547468977049,
+    "seconds_p90": 0.007097899101063377,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 8192,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.006551441998453811,
+    "seconds_p10": 0.0063547468977049,
+    "seconds_p90": 0.007097899101063377,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "cash_shortfall_probability",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.00025643733136380476,
+      0.0002707296690405401
+    ],
+    "bias": -1.811981201171875e-05,
+    "rmse": 0.00025707670548754476,
+    "sd": 0.00026054058920634514,
+    "seconds_median": 0.014019464997545583,
+    "seconds_p10": 0.013743286303360946,
+    "seconds_p90": 0.014680224799667485,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 6.868139064014882e-05
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "expected_max_cash_deficit",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.014920831286168586,
+      0.016469089881194218
+    ],
+    "bias": -0.0031185150146484375,
+    "rmse": 0.015243239228159317,
+    "sd": 0.01515957974633461,
+    "seconds_median": 0.014019464997545583,
+    "seconds_p10": 0.013743286303360946,
+    "seconds_p90": 0.014680224799667485,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0038528345852889
+  },
+  {
+    "case": "zero-heavy",
+    "method": "sobol",
+    "n": 16384,
+    "target": "required_liquidity_reserve",
+    "replicates": 32,
+    "rmse_reference_interval": [
+      0.0,
+      0.0
+    ],
+    "bias": 0.0,
+    "rmse": 0.0,
+    "sd": 0.0,
+    "seconds_median": 0.014019464997545583,
+    "seconds_p10": 0.013743286303360946,
+    "seconds_p90": 0.014680224799667485,
+    "reference_kind": "independent MC numerical reference",
+    "reference_uncertainty_95": 0.0
+  }
+]

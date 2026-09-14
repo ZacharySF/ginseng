@@ -36,6 +36,7 @@ from ginseng.state import FinancialState, Obligation
 
 
 class SeverityMetrics(BaseModel):
+    expected_max_cash_deficit: float
     cash_shortfall_probability: float
     avg_cash_deficit_when_short: float
     dollar_days_below_buffer: float

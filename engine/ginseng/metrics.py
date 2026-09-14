@@ -61,7 +61,7 @@ def severity_metrics(
     available_cash = immediate_funding + cash_matrix  # B_{j,t}
     min_cash_per_path = np.min(available_cash, axis=1)
     w = probabilities(len(cash_matrix), weights)
-    cash_shortfall_probability = float(w[min_cash_per_path < 0.0].sum())
+    cash_shortfall_probability = float(np.clip(w[min_cash_per_path < 0.0].sum(), 0.0, 1.0))
 
     max_deficit_per_path = np.maximum(0.0, -min_cash_per_path)  # H_j (spec 27.2)
     short_mask = max_deficit_per_path > 0.0
@@ -75,6 +75,7 @@ def severity_metrics(
     return {
         "cash_shortfall_probability": cash_shortfall_probability,
         "avg_cash_deficit_when_short": avg_cash_deficit_when_short,
+        "expected_max_cash_deficit": float(np.dot(w, max_deficit_per_path)),
         "dollar_days_below_buffer": dollar_days_below_buffer,
     }
 
@@ -236,3 +237,24 @@ def compute_scenario_metrics(
         shortfall_distribution=shortfall_distribution(matrix, immediate_funding, weights=weights),
         wrong_way_risk=wwr,
     )
+
+
+def cash_risk_summary(cash_matrix, opening_cash, operating_buffer, coverage_target, weights=None):
+    """Minimal end-of-day reduction shared by every numerical sampler."""
+    x = np.asarray(cash_matrix, dtype=float)
+    if x.ndim != 2 or min(x.shape) < 1 or not np.all(np.isfinite(x)):
+        raise ValueError("Cash paths must be a finite nonempty paths-by-days matrix.")
+    if not np.all(np.isfinite([opening_cash, operating_buffer, coverage_target])) or not 0 <= coverage_target <= 1:
+        raise ValueError("Cash and buffer must be finite; coverage must be in [0, 1].")
+    w = probabilities(len(x), weights)
+    minima = x.min(axis=1)
+    required = np.maximum(0, operating_buffer - minima)
+    deficits = np.maximum(0, -(opening_cash + minima))
+    reserve = quantile(required, coverage_target, w)
+    failure = float(np.clip(w[deficits > 0].sum(), 0.0, 1.0))
+    mean = float(np.dot(w, deficits))
+    return {"required_liquidity_reserve": reserve,
+            "cash_shortfall_probability": failure,
+            "expected_max_cash_deficit": mean,
+            "avg_cash_deficit_when_short": mean / failure if failure else 0.0,
+            "funding_gap": max(0.0, reserve - opening_cash)}

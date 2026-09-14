@@ -10,7 +10,7 @@ def probabilities(n: int, weights: np.ndarray | None = None) -> np.ndarray:
     if n < 1:
         raise ValueError("At least one scenario is required.")
     w = np.full(n, 1.0 / n) if weights is None else np.asarray(weights, dtype=float)
-    if w.shape != (n,) or not np.all(np.isfinite(w)) or np.any(w < 0) or w.sum() <= 0:
+    if w.shape != (n,) or not np.all(np.isfinite(w)) or np.any(w < 0) or not np.isfinite(w.sum()) or w.sum() <= 0:
         raise ValueError("Scenario weights must be finite, nonnegative, and have positive mass.")
     total = float(w.sum())
     # Re-normalizing an already normalized vector can alternate its last
@@ -34,8 +34,13 @@ def quantile(values: np.ndarray, q: float, weights: np.ndarray | None = None) ->
     w = probabilities(len(x), weights)
     order = np.argsort(x[w > 0], kind="stable")
     positive_x, positive_w = x[w > 0][order], w[w > 0][order]
-    cumulative = np.cumsum(positive_w)
-    index = min(int(np.searchsorted(cumulative, q - 1e-14)), len(order) - 1)
+    if q == 1:
+        return float(positive_x[-1])
+    cumulative = np.cumsum(positive_w.astype(np.longdouble))
+    # Round CDF boundaries once to the public float64 probability precision;
+    # no blanket epsilon may erase a positive upper tail.
+    cumulative = (cumulative / cumulative[-1]).astype(float)
+    index = min(int(np.searchsorted(cumulative, q)), len(order) - 1)
     return float(positive_x[max(0, index)])
 
 

@@ -1,0 +1,1657 @@
+{
+  "smooth": {
+    "kind": "analytic exact",
+    "summary": {
+      "integral": 1.6659761812862741
+    }
+  },
+  "tiny": {
+    "kind": "rational exact",
+    "summary": {
+      "required_liquidity_reserve": 90,
+      "cash_shortfall_probability": 0.3903826080696829,
+      "expected_max_cash_deficit": 20.68855055249613,
+      "avg_cash_deficit_when_short": 52.99557440531071,
+      "funding_gap": 60
+    },
+    "rational": {
+      "failure": "10846/27783",
+      "mean_deficit": "574790/27783",
+      "total_probability": "1"
+    },
+    "sequences": [
+      {
+        "indices": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -170,
+          -230
+        ],
+        "reserve": 240,
+        "deficit": 200,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -170,
+          -180
+        ],
+        "reserve": 190,
+        "deficit": 150,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          0,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -170,
+          -120
+        ],
+        "reserve": 180,
+        "deficit": 140,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          1,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -120,
+          -180
+        ],
+        "reserve": 190,
+        "deficit": 150,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -120,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          1,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -120,
+          -70
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          2,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -60,
+          -120
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          2,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -60,
+          -70
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          0,
+          2,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -130,
+          -60,
+          -10
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          0,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -120,
+          -180
+        ],
+        "reserve": 190,
+        "deficit": 150,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          0,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -120,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          0,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -120,
+          -70
+        ],
+        "reserve": 130,
+        "deficit": 90,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -70,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          1,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -70,
+          -80
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          1,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -70,
+          -20
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          2,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -10,
+          -70
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.24687758701364143,
+        "rational_probability": "6859/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          2,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -10,
+          -20
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          1,
+          2,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -80,
+          -10,
+          40
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          0,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -60,
+          -120
+        ],
+        "reserve": 130,
+        "deficit": 90,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          0,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -60,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          0,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -60,
+          -10
+        ],
+        "reserve": 70,
+        "deficit": 30,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          1,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -10,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          1,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -10,
+          -20
+        ],
+        "reserve": 50,
+        "deficit": 10,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          1,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          -10,
+          40
+        ],
+        "reserve": 50,
+        "deficit": 10,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          2,
+          0
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          50,
+          -10
+        ],
+        "reserve": 50,
+        "deficit": 10,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          2,
+          1
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          50,
+          40
+        ],
+        "reserve": 50,
+        "deficit": 10,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          0,
+          2,
+          2,
+          2
+        ],
+        "cumulative": [
+          -40,
+          -20,
+          50,
+          100
+        ],
+        "reserve": 50,
+        "deficit": 10,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -120,
+          -180
+        ],
+        "reserve": 190,
+        "deficit": 150,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          0,
+          1
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -120,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          0,
+          2
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -120,
+          -70
+        ],
+        "reserve": 130,
+        "deficit": 90,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          1,
+          0
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -70,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          1,
+          1
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -70,
+          -80
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          1,
+          2
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -70,
+          -20
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          2,
+          0
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -10,
+          -70
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          2,
+          1
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -10,
+          -20
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          0,
+          2,
+          2
+        ],
+        "cumulative": [
+          10,
+          -80,
+          -10,
+          40
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          0,
+          0
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -70,
+          -130
+        ],
+        "reserve": 140,
+        "deficit": 100,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          0,
+          1
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -70,
+          -80
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          0,
+          2
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -70,
+          -20
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          1,
+          0
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -20,
+          -80
+        ],
+        "reserve": 90,
+        "deficit": 50,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -20,
+          -30
+        ],
+        "reserve": 40,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          1,
+          2
+        ],
+        "cumulative": [
+          10,
+          -30,
+          -20,
+          30
+        ],
+        "reserve": 40,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          2,
+          0
+        ],
+        "cumulative": [
+          10,
+          -30,
+          40,
+          -20
+        ],
+        "reserve": 40,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          2,
+          1
+        ],
+        "cumulative": [
+          10,
+          -30,
+          40,
+          30
+        ],
+        "reserve": 40,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          1,
+          2,
+          2
+        ],
+        "cumulative": [
+          10,
+          -30,
+          40,
+          90
+        ],
+        "reserve": 40,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          0,
+          0
+        ],
+        "cumulative": [
+          10,
+          30,
+          -10,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          0,
+          1
+        ],
+        "cumulative": [
+          10,
+          30,
+          -10,
+          -20
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.24687758701364143,
+        "rational_probability": "6859/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          0,
+          2
+        ],
+        "cumulative": [
+          10,
+          30,
+          -10,
+          40
+        ],
+        "reserve": 20,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          1,
+          0
+        ],
+        "cumulative": [
+          10,
+          30,
+          40,
+          -20
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          1,
+          1
+        ],
+        "cumulative": [
+          10,
+          30,
+          40,
+          30
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          1,
+          2
+        ],
+        "cumulative": [
+          10,
+          30,
+          40,
+          90
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          2,
+          0
+        ],
+        "cumulative": [
+          10,
+          30,
+          100,
+          40
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          2,
+          1
+        ],
+        "cumulative": [
+          10,
+          30,
+          100,
+          90
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          1,
+          2,
+          2,
+          2
+        ],
+        "cumulative": [
+          10,
+          30,
+          100,
+          150
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -60,
+          -120
+        ],
+        "reserve": 130,
+        "deficit": 90,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -60,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          0,
+          2
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -60,
+          -10
+        ],
+        "reserve": 70,
+        "deficit": 30,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          1,
+          0
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -10,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          1,
+          1
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -10,
+          -20
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          1,
+          2
+        ],
+        "cumulative": [
+          70,
+          -20,
+          -10,
+          40
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.24687758701364143,
+        "rational_probability": "6859/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          2,
+          0
+        ],
+        "cumulative": [
+          70,
+          -20,
+          50,
+          -10
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          2,
+          1
+        ],
+        "cumulative": [
+          70,
+          -20,
+          50,
+          40
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          0,
+          2,
+          2
+        ],
+        "cumulative": [
+          70,
+          -20,
+          50,
+          100
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          0,
+          0
+        ],
+        "cumulative": [
+          70,
+          30,
+          -10,
+          -70
+        ],
+        "reserve": 80,
+        "deficit": 40,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          0,
+          1
+        ],
+        "cumulative": [
+          70,
+          30,
+          -10,
+          -20
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          0,
+          2
+        ],
+        "cumulative": [
+          70,
+          30,
+          -10,
+          40
+        ],
+        "reserve": 20,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          1,
+          0
+        ],
+        "cumulative": [
+          70,
+          30,
+          40,
+          -20
+        ],
+        "reserve": 30,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          1,
+          1
+        ],
+        "cumulative": [
+          70,
+          30,
+          40,
+          30
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          1,
+          2
+        ],
+        "cumulative": [
+          70,
+          30,
+          40,
+          90
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          2,
+          0
+        ],
+        "cumulative": [
+          70,
+          30,
+          100,
+          40
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          2,
+          1
+        ],
+        "cumulative": [
+          70,
+          30,
+          100,
+          90
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          1,
+          2,
+          2
+        ],
+        "cumulative": [
+          70,
+          30,
+          100,
+          150
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          0,
+          0
+        ],
+        "cumulative": [
+          70,
+          90,
+          50,
+          -10
+        ],
+        "reserve": 20,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          0,
+          1
+        ],
+        "cumulative": [
+          70,
+          90,
+          50,
+          40
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.012993557211244285,
+        "rational_probability": "361/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          0,
+          2
+        ],
+        "cumulative": [
+          70,
+          90,
+          50,
+          100
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          1,
+          0
+        ],
+        "cumulative": [
+          70,
+          90,
+          100,
+          40
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          1,
+          1
+        ],
+        "cumulative": [
+          70,
+          90,
+          100,
+          90
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          1,
+          2
+        ],
+        "cumulative": [
+          70,
+          90,
+          100,
+          150
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          2,
+          0
+        ],
+        "cumulative": [
+          70,
+          90,
+          160,
+          100
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 0.0006838714321707519,
+        "rational_probability": "19/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          2,
+          1
+        ],
+        "cumulative": [
+          70,
+          90,
+          160,
+          150
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      },
+      {
+        "indices": [
+          2,
+          2,
+          2,
+          2
+        ],
+        "cumulative": [
+          70,
+          90,
+          160,
+          210
+        ],
+        "reserve": 0,
+        "deficit": 0,
+        "probability": 3.599323327214484e-05,
+        "rational_probability": "1/27783"
+      }
+    ],
+    "reserve_distribution": [
+      {
+        "value": 0,
+        "probability": 0.05830903790087463,
+        "cdf": 0.05830903790087463,
+        "rational_probability": "20/343"
+      },
+      {
+        "value": 20,
+        "probability": 0.013713421876687183,
+        "cdf": 0.07202245977756182,
+        "rational_probability": "127/9261"
+      },
+      {
+        "value": 30,
+        "probability": 0.5225137674117266,
+        "cdf": 0.5945362271892884,
+        "rational_probability": "1613/3087"
+      },
+      {
+        "value": 40,
+        "probability": 0.015081164741028687,
+        "cdf": 0.609617391930317,
+        "rational_probability": "419/27783"
+      },
+      {
+        "value": 50,
+        "probability": 0.0014757225641579383,
+        "cdf": 0.611093114494475,
+        "rational_probability": "41/27783"
+      },
+      {
+        "value": 70,
+        "probability": 0.0013677428643415039,
+        "cdf": 0.6124608573588165,
+        "rational_probability": "38/27783"
+      },
+      {
+        "value": 80,
+        "probability": 0.052082208544793576,
+        "cdf": 0.6645430659036101,
+        "rational_probability": "1447/27783"
+      },
+      {
+        "value": 90,
+        "probability": 0.30169528128711803,
+        "cdf": 0.9662383471907281,
+        "rational_probability": "2794/9261"
+      },
+      {
+        "value": 130,
+        "probability": 0.0020876075297844004,
+        "cdf": 0.9683259547205125,
+        "rational_probability": "58/27783"
+      },
+      {
+        "value": 140,
+        "probability": 0.029514451283158768,
+        "cdf": 0.9978404060036713,
+        "rational_probability": "820/27783"
+      },
+      {
+        "value": 180,
+        "probability": 3.599323327214484e-05,
+        "cdf": 0.9978763992369435,
+        "rational_probability": "1/27783"
+      },
+      {
+        "value": 190,
+        "probability": 0.0020876075297844004,
+        "cdf": 0.9999640067667278,
+        "rational_probability": "58/27783"
+      },
+      {
+        "value": 240,
+        "probability": 3.599323327214484e-05,
+        "cdf": 1.0,
+        "rational_probability": "1/27783"
+      }
+    ],
+    "count": 81
+  },
+  "canonical": {
+    "kind": "independent MC numerical reference",
+    "summary": {
+      "required_liquidity_reserve": 1354.3764772476075,
+      "cash_shortfall_probability": 0.0,
+      "expected_max_cash_deficit": 0.0,
+      "avg_cash_deficit_when_short": 0.0,
+      "funding_gap": 0.0
+    },
+    "n": 16384,
+    "batch": 16384,
+    "seed": 9418319663574067657,
+    "domain": 200,
+    "intervals_95": {
+      "required_liquidity_reserve": [
+        1335.6243777029363,
+        1371.1272569134212
+      ],
+      "cash_shortfall_probability": [
+        0.0,
+        0.00022512598920985084
+      ],
+      "expected_max_cash_deficit": [
+        0.0,
+        0.856382793049659
+      ]
+    },
+    "mean_deficit_se": 0.0,
+    "max_possible_deficit": 3804.0156805324823,
+    "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+  },
+  "zero-heavy": {
+    "kind": "independent MC numerical reference",
+    "summary": {
+      "required_liquidity_reserve": 110.0,
+      "cash_shortfall_probability": 0.00103759765625,
+      "expected_max_cash_deficit": 0.052490234375,
+      "avg_cash_deficit_when_short": 50.588235294117645,
+      "funding_gap": 10.0
+    },
+    "n": 16384,
+    "batch": 16384,
+    "seed": 9418319663574067657,
+    "domain": 200,
+    "intervals_95": {
+      "required_liquidity_reserve": [
+        110.0,
+        110.0
+      ],
+      "cash_shortfall_probability": [
+        0.0006045513788622595,
+        0.0016607762714676965
+      ],
+      "expected_max_cash_deficit": [
+        0.023002602743037764,
+        0.08197786600696223
+      ]
+    },
+    "mean_deficit_se": 0.015044710016307264,
+    "max_possible_deficit": 2900.0,
+    "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+  },
+  "drought-heavy": {
+    "kind": "independent MC numerical reference",
+    "summary": {
+      "required_liquidity_reserve": 3900.0,
+      "cash_shortfall_probability": 0.59259033203125,
+      "expected_max_cash_deficit": 777.94921875,
+      "avg_cash_deficit_when_short": 1312.794314553507,
+      "funding_gap": 3300.0
+    },
+    "n": 16384,
+    "batch": 16384,
+    "seed": 9418319663574067657,
+    "domain": 200,
+    "intervals_95": {
+      "required_liquidity_reserve": [
+        3900.0,
+        3900.0
+      ],
+      "cash_shortfall_probability": [
+        0.5850202291064746,
+        0.6001275491290339
+      ],
+      "expected_max_cash_deficit": [
+        764.376655963683,
+        791.521781536317
+      ]
+    },
+    "mean_deficit_se": 6.924776931794365,
+    "max_possible_deficit": 2300.0,
+    "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+  }
+}
