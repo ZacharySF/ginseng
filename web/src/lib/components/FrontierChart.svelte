@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { themeStore } from '$lib/theme.svelte';
 	import '$lib/chart-lab.css';
+	import OrientationGizmo from './OrientationGizmo.svelte';
 	import type { FrontierReady, FrontierPoint } from '$lib/frontier-types';
 	import type * as PlotlyType from 'plotly.js';
 
@@ -19,6 +20,7 @@
 	let pointerMoved = false;
 	let pendingPoint: string | null = null;
 	let ignoreClicksUntil = 0;
+	let orientation = $state<Partial<PlotlyType.Camera>>({ eye: { x: 1.3, y: -1.5, z: 1.15 } });
 	function selectPoint(id: string) {
 		if (performance.now() < ignoreClicksUntil) return;
 		if (pointerOrigin) pendingPoint = id;
@@ -81,23 +83,50 @@
 		const cameraKey = `${data.metadata.input_hash}:${narrow}:${angle}`;
 		const targetCamera = cameraForView();
 		if (!p || !chart) return;
-		const css = getComputedStyle(document.documentElement);
+		const css = getComputedStyle(chart);
 		const color = (name: string) => css.getPropertyValue(name).trim();
 		const paper = color('--lab-scene'), ink = color('--ink'), grid = color('--lab-grid');
-		const trace = (points: FrontierPoint[], name: string, marker: object): PlotlyType.Data => ({
+		const trace = (points: FrontierPoint[], name: string, marker: object): Partial<PlotlyType.PlotData> => ({
 			type: 'scatter3d', mode: 'markers', name,
 			x: points.map(point => point[mode].volatility),
 			y: points.map(point => point[mode].mean_return),
 			z: points.map(point => point[mode].pressure_cvar),
 			text: points.map(point => point.label), customdata: points.map(point => point.id), marker,
 			hovertemplate: '<b>%{text}</b><br>X · Volatility %{x:.2%}<br>Y · Return %{y:.2%}<br>Z · Pressure tail %{z:.2%}<extra></extra>'
-		} as PlotlyType.Data);
+		});
 		const traces: PlotlyType.Data[] = [];
-		if (!only) traces.push(trace(data.points.filter(point => !point.pareto), 'Other explored allocations', { size: 3.5, color: color('--lab-point'), opacity: .5 }));
-		traces.push(trace(data.points.filter(point => point.pareto), 'Discovery Pareto set', { size: 5, color: color('--cobalt'), opacity: 1 }));
-		if (current) traces.push(trace([current], 'Current allocation', { size: 7, symbol: 'diamond', color: color('--ink-soft') }));
+		const pareto = data.points.filter(point => point.pareto);
+		const floor = Math.min(0, ...data.points.map(point => point[mode].pressure_cvar));
+		const yOrigin = Math.min(0, ...data.points.map(point => point[mode].mean_return));
+		if (angle === 'space') {
+			const projected = only ? pareto : data.points;
+			traces.push({ type: 'scatter3d', mode: 'markers', name: 'Floor projection',
+				x: projected.map(point => point[mode].volatility), y: projected.map(point => point[mode].mean_return), z: projected.map(() => floor),
+				marker: { size: 2, color: color('--lab-wire'), opacity: .23 }, hoverinfo: 'skip', showlegend: false
+			} as PlotlyType.Data);
+		}
+		if (!only) traces.push(trace(data.points.filter(point => !point.pareto), 'Other explored allocations', { size: 3, color: color('--lab-point'), opacity: .65 }));
+		for (const [size, opacity] of [[20, .025], [12, .055], [7, .12]]) {
+			const halo = trace(pareto, 'Pareto light halo', { size, color: color('--lab-wire'), opacity });
+			halo.hoverinfo = 'skip'; halo.hovertemplate = undefined; halo.customdata = undefined;
+			traces.push(halo);
+		}
+		traces.push(trace(pareto, 'Discovery Pareto set', { size: 3.6, color: color('--lab-hot'), opacity: 1 }));
+		if (current) traces.push(trace([current], 'Current allocation', { size: 7, symbol: 'diamond', color: '#b9cce3' }));
 		if (selected) {
-			traces.push(trace([selected], 'Selected allocation', { size: 11, symbol: 'circle-open', color: color('--lab-selection'), line: { color: color('--lab-selection'), width: 3 } }));
+			const value = selected[mode];
+			if (angle === 'space') traces.push({ type: 'scatter3d', mode: 'lines', name: 'Selected coordinate guides',
+				x: [value.volatility, value.volatility, null, value.volatility, value.volatility, null, value.volatility, 0],
+				y: [value.mean_return, value.mean_return, null, value.mean_return, yOrigin, null, value.mean_return, value.mean_return],
+				z: [value.pressure_cvar, floor, null, floor, floor, null, floor, floor],
+				line: { color: '#4186b6', width: 2, dash: 'dot' }, hoverinfo: 'skip', showlegend: false, connectgaps: false
+			} as PlotlyType.Data);
+			const glow = trace([selected], 'Selection light halo', { size: 21, color: color('--lab-hot'), opacity: .065 });
+			glow.hoverinfo = 'skip'; glow.hovertemplate = undefined; glow.customdata = undefined;
+			traces.push(glow as PlotlyType.Data);
+			traces.push({ ...trace([selected], 'Selected allocation', { size: 11, symbol: 'circle-open', color: color('--lab-selection'), line: { color: color('--lab-selection'), width: 2 } }),
+				mode: 'text+markers', text: [selected.id === 'current' ? 'CURRENT' : 'SELECTED'], textposition: 'top center', textfont: { size: 10, color: color('--lab-selection'), family: 'SFMono-Regular, Consolas, monospace' }
+			} as PlotlyType.Data);
 			if (mode === 'evaluation') traces.push({
 				type: 'scatter3d', mode: 'lines+markers', name: 'Selected: discovery → check',
 				x: [selected.discovery.volatility, selected.evaluation.volatility],
@@ -106,11 +135,11 @@
 				line: { color: color('--lab-selection'), width: 4 }, marker: { size: 3, color: color('--lab-selection') }, hoverinfo: 'skip'
 			} as PlotlyType.Data);
 		}
-		const axis = { color: color('--ink-soft'), gridcolor: grid, gridwidth: 1, zeroline: false, showbackground: false, showspikes: false, tickformat: '.1%', nticks: 4, tickfont: { size: narrow ? 10 : 11 } };
+		const axis = { color: color('--ink-soft'), gridcolor: grid, gridwidth: 1, zeroline: false, showline: true, linecolor: '#315777', linewidth: 1, showbackground: false, showspikes: false, tickformat: '.1%', nticks: 5, tickfont: { size: narrow ? 10 : 11 } };
 		const reset = lastCameraKey !== cameraKey; lastCameraKey = cameraKey;
 		let alive = true;
 		void p.react(chart, traces, {
-			autosize: true, height: narrow ? 370 : 470, margin: { l: 10, r: 10, t: 8, b: narrow ? 38 : 35 },
+			autosize: true, height: narrow ? 400 : 540, margin: { l: 10, r: 10, t: 8, b: narrow ? 38 : 35 },
 			paper_bgcolor: paper, font: { color: ink, family: 'SFMono-Regular, Consolas, monospace', size: 11 },
 			hoverlabel: { bgcolor: color('--paper'), bordercolor: color('--rule-strong'), font: { color: ink, size: 12 } },
 			showlegend: false, uirevision: cameraKey,
@@ -119,7 +148,7 @@
 				dragmode: angle === 'space' ? 'orbit' : 'pan',
 				xaxis: { ...axis, tickangle: angle === 'returns' ? 0 : 'auto', showticklabels: angle !== 'tail', showgrid: angle !== 'tail', title: { text: angle === 'tail' ? '' : 'X', font: { size: 13, color: ink } } },
 				yaxis: { ...axis, tickangle: angle === 'tail' ? 0 : 'auto', title: { text: 'Y', font: { size: 13, color: ink } } },
-				zaxis: { ...axis, showticklabels: angle !== 'returns', showgrid: angle !== 'returns', showbackground: angle === 'space', backgroundcolor: paper, title: { text: angle === 'returns' ? '' : 'Z', font: { size: 13, color: ink } } }
+				zaxis: { ...axis, showticklabels: angle !== 'returns', showgrid: angle !== 'returns', showbackground: angle === 'space', backgroundcolor: color('--lab-floor'), title: { text: angle === 'returns' ? '' : 'Z', font: { size: 13, color: ink } } }
 			}
 		}, { responsive: true, displayModeBar: false, displaylogo: false, scrollZoom: false })
 		.then(async graph => {
@@ -129,7 +158,10 @@
 				const id = event.points[0]?.customdata;
 				if (typeof id === 'string') selectPoint(id);
 			});
+			graph.removeAllListeners('plotly_relayout');
+			graph.on('plotly_relayout', () => { if (graph.layout.scene?.camera) orientation = structuredClone(graph.layout.scene.camera); });
 			if (reset) await p.relayout(chart, { 'scene.camera': targetCamera } as unknown as Partial<PlotlyType.Layout>);
+			if (graph.layout.scene?.camera) orientation = structuredClone(graph.layout.scene.camera);
 		}).catch(() => { if (alive) error = '3D is unavailable in this browser. All allocation values remain available below.'; });
 		return () => { alive = false; };
 	});
@@ -150,23 +182,27 @@
 		<button class="reset" aria-label="Reset camera" onclick={resetCamera}><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.3 5M4 3v4h4"/></svg>Reset</button>
 	</div>
 	<div class="scene-area">
+		<div class="scene-caption"><span>PORTFOLIO / {angle === 'space' ? '3D COORDINATES' : 'ORTHOGRAPHIC'}</span><span>{view === 'discovery' ? 'SAMPLE 01' : 'SAMPLE 02'}</span></div>
 		<div class="frontier-plot" class:narrow bind:this={chart} role="img" aria-label="Portfolio allocations by volatility, return and tail loss at the first cash-buffer breach. Use the portfolio selector for keyboard access to every point."></div>
+		<div class="orientation"><OrientationGizmo camera={orientation}/></div>
 		{#if !plotly && !error}<p role="status">Loading allocation space…</p>{/if}
 		{#if error}<p class="error" role="alert">{error}</p>{/if}
 	</div>
-	<p class="camera-help">{angle === 'space' ? 'Drag to rotate. Select a point to inspect its portfolio.' : angle === 'returns' ? 'Flat view of volatility and return. Switch to 3D to include tail loss.' : 'Flat view of return and tail loss. Switch to 3D to include volatility.'}</p>
+	<p class="camera-help">{angle === 'space' ? 'Drag to rotate · click to inspect. Faint floor points project return and volatility; dotted guides locate the selection.' : angle === 'returns' ? 'Flat view of volatility and return. Switch to 3D to include tail loss.' : 'Flat view of return and tail loss. Switch to 3D to include volatility.'}</p>
 	<div class="legend" aria-label="Portfolio point legend"><span class="other"><i></i>Explored</span><span class="pareto"><i></i>Pareto</span><span class="current"><i></i>Current</span><span class="selected"><i></i>Selected</span></div>
 </div>
 <style>
 	.chart-frame { min-width: 0; background: var(--paper); }
 	.reset { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.5rem; padding: .4rem .25rem; border: 0; background: transparent; color: var(--ink-soft); font: .7rem var(--font-mono); cursor: pointer; }
 	.reset:hover { color: var(--cobalt); }.reset svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.5; }
-	.scene-area { background: var(--lab-scene); }.scene-area > p { padding: 1rem; }
-	.frontier-plot { width: 100%; height: 470px; overflow: hidden; }.frontier-plot.narrow { height: 370px; }
+	.scene-area { position: relative; background: var(--lab-scene); }.scene-area > p { padding: 1rem; }
+	.scene-caption { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem .1rem; font: .58rem var(--font-mono); letter-spacing: .09em; color: #829fb9; }
+	.orientation { position: absolute; left: .6rem; bottom: .5rem; pointer-events: none; }
+	.frontier-plot { width: 100%; height: 540px; overflow: hidden; }.frontier-plot.narrow { height: 400px; }
 	.camera-help { padding: .65rem 1rem; font-size: .83rem; color: var(--ink-soft); background: var(--lab-scene); }
 	.legend { display: flex; flex-wrap: wrap; gap: 1.2rem; padding: .9rem 1rem; font: .65rem var(--font-mono); border-top: 1px solid var(--rule); }
 	.legend span { display: flex; align-items: center; gap: .45rem; }.legend i { display: inline-block; width: .45rem; height: .45rem; background: currentColor; border-radius: 50%; }
-	.other { color: var(--ink-muted); }.pareto { color: var(--cobalt); }.current { color: var(--ink-soft); }.current i { border-radius: 0; transform: rotate(45deg); }.selected { color: var(--lab-selection); }.selected i { width: .6rem; height: .6rem; border: 1.5px solid currentColor; background: transparent; }
+	.other { color: var(--ink-muted); }.pareto { color: var(--lab-hot); }.pareto i { box-shadow: 0 0 9px #389dff; }.current { color: var(--ink-soft); }.current i { border-radius: 0; transform: rotate(45deg); }.selected { color: var(--lab-selection); }.selected i { width: .6rem; height: .6rem; border: 1.5px solid currentColor; background: transparent; }
 	.error { color: var(--negative); }
 	@media(max-width: 42rem) { .legend { gap: .85rem; padding: .8rem .75rem; }.camera-help { padding: .6rem .75rem; } }
 </style>

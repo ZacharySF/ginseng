@@ -1,31 +1,61 @@
-/* Shared visual language for the two numerical workbenches. */
+/* Dark plotting instruments within Ginseng's light or dark application shell. */
 :root {
-	--lab-scene: #f2f3fa;
-	--lab-grid: #d9dced;
-	--lab-point: #767fa6;
-	--lab-selection: #070c56;
+	--lab-scene: #071321;
+	--lab-floor: #0a1a2d;
+	--lab-grid: #203b56;
+	--lab-point: #568bbf;
+	--lab-selection: #e3faff;
+	--lab-wire: #359aff;
+	--lab-hot: #8deaff;
 }
 :root[data-theme='dark'] {
-	--lab-scene: #08080c;
-	--lab-grid: #292936;
-	--lab-point: #9393ad;
-	--lab-selection: #f0f0f5;
+	--lab-scene: #050e1a;
+	--lab-floor: #081729;
 }
-.lab-view { min-width: 0; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); }
+.lab-view {
+	--paper: #091726;
+	--paper-soft: #0d1f32;
+	--paper-deep: #152b43;
+	--ink: #dcebf9;
+	--ink-soft: #a0b7ce;
+	--ink-muted: #8ba3bd;
+	--cobalt: #5bb6ff;
+	--cobalt-bright: #9cdeff;
+	--positive: #8deaff;
+	--negative: #ff99b0;
+	--rule: #233c54;
+	--rule-strong: #3c617f;
+	--control-border: #517c9f;
+	--on-accent: #04111f;
+	color-scheme: dark;
+	position: relative;
+	min-width: 0;
+	color: var(--ink);
+	background: var(--paper);
+	border: 1px solid var(--rule-strong);
+	box-shadow: 0 16px 45px rgb(2 10 25 / 14%), inset 0 1px 0 rgb(135 200 255 / 8%);
+}
+.lab-view::before, .lab-view::after { content: ''; position: absolute; z-index: 2; pointer-events: none; width: 18px; height: 18px; border-color: var(--lab-wire); border-style: solid; opacity: .8; }
+.lab-view::before { left: -1px; top: -1px; border-width: 1px 0 0 1px; }
+.lab-view::after { right: -1px; bottom: -1px; border-width: 0 1px 1px 0; }
+.lab-view table { color: var(--ink); }
 .lab-kicker { font: .65rem/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
 .lab-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: .8rem 1rem; border-bottom: 1px solid var(--rule); }
 .lab-switch { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--rule); background: var(--paper-soft); }
 .lab-switch button, .lab-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.5rem; padding: .5rem .8rem; font: .7rem/1.3 var(--font-mono); color: var(--ink-soft); background: transparent; border: 1px solid transparent; cursor: pointer; }
 .lab-switch button:hover, .lab-button:hover { color: var(--ink); background: var(--paper-deep); }
+.lab-view .lab-switch button[aria-pressed='true'] { color: #bcf0ff; background: #153753; border-color: #3f81ab; box-shadow: inset 0 -2px 0 var(--lab-hot); }
 .lab-switch button[aria-pressed='true'] { color: var(--on-accent); background: var(--cobalt); border-color: var(--cobalt); }
 .lab-switch--camera { padding: 0; border: 0; background: transparent; }
 .lab-switch--camera button[aria-pressed='true'] { color: var(--cobalt); background: var(--paper); border-color: var(--rule-strong); }
+.lab-view .lab-switch--camera button[aria-pressed='true'] { color: #c5f4ff; background: #102d46; border-color: #427395; box-shadow: none; }
 .lab-button { border-color: var(--control-border); color: var(--ink); background: var(--paper); }
 .lab-button:disabled, .lab-switch button:disabled { cursor: wait; opacity: .6; }
 .lab-axis-key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
 .lab-axis-key > div { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .6rem; padding: .9rem 1rem; }
 .lab-axis-key > div + div { border-left: 1px solid var(--rule); }
 .lab-axis-key .axis-letter { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border: 1px solid var(--rule-strong); color: var(--cobalt); background: var(--paper-soft); font: .72rem var(--font-mono); }
+.lab-view .lab-axis-key .axis-letter { color: var(--lab-hot); border-color: #315778; background: #10273e; text-shadow: 0 0 12px rgb(103 207 255 / 40%); }
 .lab-axis-key strong { display: block; font-size: .9rem; font-weight: 600; line-height: 1.25; }
 .lab-axis-key small { display: block; margin-top: .25rem; font: .65rem/1.4 var(--font-mono); color: var(--ink-soft); }
 .lab-help { padding: .7rem 1rem; font-size: .85rem; line-height: 1.45; color: var(--ink-soft); }

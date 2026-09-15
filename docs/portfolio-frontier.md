@@ -27,7 +27,9 @@ Coordinates are return fractions shown as percentages, without annualization. Z 
 
 External **X / Y / Z** cards explain each quantity and its preferred direction; short labels inside the plot keep the scene readable. **Risk / return** gives a flat projection hiding the tail-loss axis, while **Tail / return** hides volatility. These camera presets preserve the points, selected portfolio, weights and simulation sample. **Focus on Pareto candidates** hides background candidates while keeping current and selected portfolio markers visible.
 
-The compact portfolio inspector shows allocation weights and both samples' values, highlighting the active sample's column. The full allocation table remains available below. **Understand the axes & sample check** and **Sampling & optimization record** disclosures hold the longer explanations and diagnostics. The larger scene, restrained grid and selection markers use the same paper, cobalt and light/dark styling as the cash surface.
+The compact portfolio inspector shows allocation weights and both samples' values, highlighting the active sample's column. The full allocation table remains available below. **Understand the axes & sample check** and **Sampling & optimization record** disclosures hold the longer explanations and diagnostics.
+
+The portfolio and cash plots share an embedded navy workbench in both app themes. Luminous cyan point layers reuse each portfolio's actual coordinates; their halos are styling, not extra portfolios or uncertainty bounds. In 3D, faint floor points project the portfolios onto the X/Y plane and dotted guides locate the selected point. These projections are visual aids, not additional loss observations. The small X/Y/Z orientation indicator (`OrientationGizmo`) follows the actual camera as it rotates or changes preset.
 
 The existing `/demo/future` surfaces vary extra **bank cash**. Here CASH is a **portfolio sleeve**: changing its weight does not alter bank cash, bills or pressure events. It changes the portfolio return at those events, keeping all allocations comparable on the same scenarios.
 

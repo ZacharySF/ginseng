@@ -13,7 +13,7 @@ const temp = await mkdtemp(join(tmpdir(), 'ginseng-frontier-browser-'));
 const fixture = JSON.parse(await readFile(join(root, 'tests/fixtures/portfolio-frontier.json'), 'utf8'));
 await symlink(join(root, 'node_modules'), join(temp, 'node_modules'), 'dir');
 await writeFile(join(temp, 'package.json'), '{"type":"module"}');
-await writeFile(join(temp, 'index.html'), '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"/></head><body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>');
+await writeFile(join(temp, 'index.html'), '<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"/></head><body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>');
 await writeFile(join(temp, 'paths.ts'), 'export const resolve = path => path;');
 await writeFile(join(temp, 'transport.ts'), `
 async function post(path, request, signal) {
@@ -61,6 +61,12 @@ try {
  });
  await page.waitForTimeout(350); // Let the initial WebGL camera relayout finish.
  assert.equal(await selector.inputValue(), 'current');
+ assert.equal(await plot.evaluate(el => el.layout.paper_bgcolor), '#071321', 'light page retains the scientific dark canvas');
+ assert.equal(await page.locator('.orientation-gizmo').count(), 1, 'view includes a camera orientation triad');
+ assert.deepEqual(await plot.evaluate(el => {
+  const projection = el.data.find(row => row.name === 'Floor projection');
+  return { x: projection.x, y: projection.y };
+ }), { x: fixture.points.map(point => point.discovery.volatility), y: fixture.points.map(point => point.discovery.mean_return) }, 'floor projection uses actual allocation coordinates');
  const current = fixture.points.find(point => point.id === 'current');
  assert.deepEqual(await plot.evaluate(el => {
   const trace = el.data.find(row => row.name === 'Current allocation');
@@ -68,6 +74,7 @@ try {
  }), [current.discovery.volatility, current.discovery.mean_return, current.discovery.pressure_cvar]);
 
  const original = await plot.evaluate(el => el.layout.scene.camera);
+ const originalAxes = await page.locator('.orientation-gizmo').innerHTML();
  const box = await plot.boundingBox();
  await page.mouse.move(box.x + box.width * .5, box.y + box.height * .5);
  await page.mouse.down();
@@ -75,6 +82,7 @@ try {
  await page.mouse.up();
  assert.notDeepEqual(await plot.evaluate(el => el.layout.scene.camera), original, 'pointer drag rotates actual 3D camera');
  assert.equal(await selector.inputValue(), 'current', 'dragging across a point does not select it');
+ await page.waitForFunction(previous => document.querySelector('.orientation-gizmo')?.innerHTML !== previous, originalAxes);
  await page.getByRole('button', { name: 'Reset camera' }).click();
  await page.getByRole('button', { name: 'Risk / return', exact: true }).click();
  await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'orthographic');
@@ -117,10 +125,13 @@ try {
  await page.getByLabel('Focus on Pareto candidates').uncheck();
  await page.getByRole('button', { name: 'Discovery sample', exact: true }).click();
  await page.waitForTimeout(500);
- if (shots) await page.screenshot({ path: join(shots, 'frontier-light.png'), fullPage: true });
+ if (shots) {
+  await page.screenshot({ path: join(shots, 'frontier-light.png'), fullPage: true });
+  await page.locator('.chart-frame').screenshot({ path: join(shots, 'frontier-field.png') });
+ }
 
  await page.evaluate(async root => { const module = await import('/@fs' + root + '/src/lib/theme.svelte.ts'); module.themeStore.toggle(); }, root);
- await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.paper_bgcolor === '#08080c');
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.paper_bgcolor === '#050e1a');
  if (shots) await page.screenshot({ path: join(shots, 'frontier-dark.png'), fullPage: true });
  await page.getByRole('button', { name: 'Fresh-sample check', exact: true }).click();
  await page.waitForTimeout(500);
