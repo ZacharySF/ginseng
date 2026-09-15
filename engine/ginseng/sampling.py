@@ -76,7 +76,7 @@ def unit_points(method, n_paths, dimension, seed):
     ).random_base2(n_paths.bit_length() - 1)
 
 
-def map_indices(points, history_length, mean_block_length):
+def map_indices(points, history_length, mean_block_length, *, return_initial_lengths=False):
     u = np.asarray(points, dtype=float)
     if (
         u.ndim != 2
@@ -95,13 +95,17 @@ def map_indices(points, history_length, mean_block_length):
         raise ValueError("History length and mean block length must be positive.")
     indices = np.empty((len(u), (u.shape[1] + 1) // 2), dtype=np.int64)
     indices[:, 0] = np.floor(history_length * u[:, 0]).astype(np.int64)
+    lengths = np.full(len(u), indices.shape[1], dtype=np.int64) if return_initial_lengths else None
     for t in range(1, indices.shape[1]):
+        if return_initial_lengths:
+            restart = u[:, 2 * t - 1] >= 1 - 1 / mean_block_length
+            lengths[(lengths == indices.shape[1]) & restart] = t
         indices[:, t] = np.where(
             u[:, 2 * t - 1] < 1 - 1 / mean_block_length,
             (indices[:, t - 1] + 1) % history_length,
             np.floor(history_length * u[:, 2 * t]).astype(np.int64),
         )
-    return indices
+    return (indices, lengths) if return_initial_lengths else indices
 
 
 @dataclass(frozen=True)
@@ -160,12 +164,17 @@ def sample_bundle(
     material_horizon=None,
     replicate=0,
     domain=100,
+    *,
+    trace_initial_block=False,
 ):
     material = horizon if material_horizon is None else material_horizon
     dimension = validate_size(method, paths, material)
     if not isinstance(horizon, int) or not 1 <= horizon <= material:
         raise ValueError("Visible horizon must lie within declared material horizon.")
     seed = derive_seed(root_seed, method, replicate, domain)
+    lengths = None
+    if trace_initial_block and method == "legacy_mc":
+        raise ValueError("Initial-block traces require mc or sobol.")
     if method == "legacy_mc":
         if material != horizon:
             raise ValueError(
@@ -183,7 +192,11 @@ def sample_bundle(
             unit_points(method, paths, dimension, seed),
             len(prepared.joint),
             prepared.resolved_length,
+            return_initial_lengths=trace_initial_block,
         )
+        if trace_initial_block:
+            full, lengths = full
+            lengths = np.minimum(lengths, horizon)
     visible = full[:, :horizon]
     metadata = dict(
         sampler_version=1,
@@ -214,4 +227,5 @@ def sample_bundle(
         full if method != "legacy_mc" else None,
         tuple(metadata.items()),
         prepared.requested_length,
+        lengths,
     )

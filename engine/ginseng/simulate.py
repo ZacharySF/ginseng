@@ -52,11 +52,12 @@ class DrawBundle:
     material_indices: np.ndarray | None = None
     sampling_metadata: tuple = ()
     requested_mean_block_length: int | None = None
+    initial_block_lengths: np.ndarray | None = None
 
     def __post_init__(self):
         if self.sampler != "legacy_mc":
             # Immutable bytes backing also prevents callers re-enabling writes.
-            for name in ("index_matrix", "material_indices"):
+            for name in ("index_matrix", "material_indices", "initial_block_lengths"):
                 value = getattr(self, name)
                 if value is not None:
                     owned = np.frombuffer(np.asarray(value, dtype="<i8").tobytes(), dtype="<i8").reshape(value.shape)

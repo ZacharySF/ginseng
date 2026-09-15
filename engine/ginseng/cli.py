@@ -22,6 +22,7 @@ def main(argv=None):
     )
     source.add_argument("--input", type=Path)
     sim.add_argument("--sampler", choices=["mc", "sobol", "legacy_mc"], default="mc")
+    sim.add_argument("--estimator", choices=["path", "initial-block-cmc"], default="path")
     sim.add_argument("--paths", type=int, default=2048)
     sim.add_argument("--seed", type=int, default=42)
     sim.add_argument("--replicate", type=int, default=0)
@@ -59,10 +60,11 @@ def main(argv=None):
                 args.horizon,
                 args.material_horizon,
                 args.replicate,
+                estimator=args.estimator,
             )
             result = dict(
                 summary=summary,
-                manifest=manifest(case, prepared, bundle, summary),
+                manifest=manifest(case, prepared, bundle, summary, args.estimator),
                 diagnostics=diagnostics(case, prepared, bundle, x),
             )
         elif args.command == "exact":

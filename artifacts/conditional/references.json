@@ -1,0 +1,166 @@
+{
+  "tiny": {
+    "kind": "exact rational",
+    "probability": 0.3903826080696829,
+    "interval": [
+      0.3903826080696829,
+      0.3903826080696829
+    ]
+  },
+  "canonical": {
+    "kind": "independent MC numerical reference",
+    "probability": 0.0,
+    "interval": [
+      0.0,
+      3.5179834035890408e-06
+    ],
+    "details": {
+      "kind": "independent MC numerical reference",
+      "summary": {
+        "required_liquidity_reserve": 1351.7623370635883,
+        "cash_shortfall_probability": 0.0,
+        "expected_max_cash_deficit": 0.0,
+        "avg_cash_deficit_when_short": 0.0,
+        "funding_gap": 0.0
+      },
+      "n": 1048576,
+      "batch": 16384,
+      "seed": 9418319663574067657,
+      "domain": 200,
+      "intervals_95": {
+        "required_liquidity_reserve": [
+          1350.2911645974489,
+          1352.654951640687
+        ],
+        "cash_shortfall_probability": [
+          0.0,
+          3.5179834035890408e-06
+        ],
+        "expected_max_cash_deficit": [
+          0.0,
+          0.013382464031105743
+        ]
+      },
+      "mean_deficit_se": 0.0,
+      "max_possible_deficit": 3804.0156805324823,
+      "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+    }
+  },
+  "repair": {
+    "kind": "independent MC numerical reference",
+    "probability": 0.3484687805175781,
+    "interval": [
+      0.34755671724412535,
+      0.34938168089079885
+    ],
+    "details": {
+      "kind": "independent MC numerical reference",
+      "summary": {
+        "required_liquidity_reserve": 5783.819751193363,
+        "cash_shortfall_probability": 0.3484687805175781,
+        "expected_max_cash_deficit": 337.39967358959404,
+        "avg_cash_deficit_when_short": 968.2350111492249,
+        "funding_gap": 2782.077976320744
+      },
+      "n": 1048576,
+      "batch": 16384,
+      "seed": 9418319663574067657,
+      "domain": 200,
+      "intervals_95": {
+        "required_liquidity_reserve": [
+          5782.1853197365435,
+          5789.375337255482
+        ],
+        "cash_shortfall_probability": [
+          0.34755671724412535,
+          0.34938168089079885
+        ],
+        "expected_max_cash_deficit": [
+          336.22052840588543,
+          338.57881877330266
+        ]
+      },
+      "mean_deficit_se": 0.6016046855656125,
+      "max_possible_deficit": 8304.015680532488,
+      "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+    }
+  },
+  "zero-heavy": {
+    "kind": "independent MC numerical reference",
+    "probability": 0.0012197494506835938,
+    "interval": [
+      0.0011538475279102346,
+      0.0012884308413237426
+    ],
+    "details": {
+      "kind": "independent MC numerical reference",
+      "summary": {
+        "required_liquidity_reserve": 110.0,
+        "cash_shortfall_probability": 0.0012197494506835938,
+        "expected_max_cash_deficit": 0.05923271179199219,
+        "avg_cash_deficit_when_short": 48.56137607505864,
+        "funding_gap": 10.0
+      },
+      "n": 1048576,
+      "batch": 16384,
+      "seed": 9418319663574067657,
+      "domain": 200,
+      "intervals_95": {
+        "required_liquidity_reserve": [
+          110.0,
+          110.0
+        ],
+        "cash_shortfall_probability": [
+          0.0011538475279102346,
+          0.0012884308413237426
+        ],
+        "expected_max_cash_deficit": [
+          0.055379877206703294,
+          0.06308554637728109
+        ]
+      },
+      "mean_deficit_se": 0.001965731931269844,
+      "max_possible_deficit": 2900.0,
+      "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+    }
+  },
+  "drought-heavy": {
+    "kind": "independent MC numerical reference",
+    "probability": 0.5927219390869141,
+    "interval": [
+      0.5917807930850856,
+      0.5936625728781966
+    ],
+    "details": {
+      "kind": "independent MC numerical reference",
+      "summary": {
+        "required_liquidity_reserve": 3900.0,
+        "cash_shortfall_probability": 0.5927219390869141,
+        "expected_max_cash_deficit": 774.6445465087891,
+        "avg_cash_deficit_when_short": 1306.9274063013866,
+        "funding_gap": 3300.0
+      },
+      "n": 1048576,
+      "batch": 16384,
+      "seed": 9418319663574067657,
+      "domain": 200,
+      "intervals_95": {
+        "required_liquidity_reserve": [
+          3900.0,
+          3900.0
+        ],
+        "cash_shortfall_probability": [
+          0.5917807930850856,
+          0.5936625728781966
+        ],
+        "expected_max_cash_deficit": [
+          772.9538570044655,
+          776.3352360131126
+        ]
+      },
+      "mean_deficit_se": 0.8625966858793745,
+      "max_possible_deficit": 2300.0,
+      "interval_methods": "Clopper-Pearson binomial; mean normal SE (zero events: model-bound times binomial upper bound); binomial order-statistic reserve interval (ties retained)"
+    }
+  }
+}
