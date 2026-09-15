@@ -29,9 +29,11 @@ External **X / Y / Z** cards explain each quantity and its preferred direction; 
 
 For keyboard control, click the graph or Tab into it. **Left/Right** rotate horizontally; **Up/Down** raise or lower the viewing angle along Z, preserving the 3D zoom. A plain arrow key in a flat preset returns to the default 3D camera and applies the movement. **Tab** leaves the graph. The portfolio selector and other controls retain their normal arrow-key behavior; camera movement does not change the calculations.
 
+Use **Fullscreen**, or press **F** while the graph has focus, to expand the plot, axes and camera controls. **Escape**, **Exit fullscreen**, or another focused **F** returns to the page. The camera, selected portfolio and numerical values stay the same.
+
 The compact portfolio inspector shows allocation weights and both samples' values, highlighting the active sample's column. The full allocation table remains available below. **Understand the axes & sample check** and **Sampling & optimization record** disclosures hold the longer explanations and diagnostics.
 
-The portfolio and cash plots share an embedded navy workbench in both app themes. Luminous cyan point layers reuse each portfolio's actual coordinates; their halos are styling, not extra portfolios or uncertainty bounds. In 3D, faint floor points project the portfolios onto the X/Y plane and dotted guides locate the selected point. These projections are visual aids, not additional loss observations. The small X/Y/Z orientation indicator (`OrientationGizmo`) follows the actual camera as it rotates or changes preset.
+The portfolio and cash plots follow the app theme: paper and cobalt in light mode, navy and cyan in dark mode. Point layers reuse each portfolio's actual coordinates, with subtler halos in light mode; the halos are styling, not extra portfolios or uncertainty bounds. In 3D, faint floor points project the portfolios onto the X/Y plane and dotted guides locate the selected point. These projections are visual aids, not additional loss observations. The small X/Y/Z orientation indicator (`OrientationGizmo`) follows the actual camera as it rotates or changes preset.
 
 The existing `/demo/future` surfaces vary extra **bank cash**. Here CASH is a **portfolio sleeve**: changing its weight does not alter bank cash, bills or pressure events. It changes the portfolio return at those events, keeping all allocations comparable on the same scenarios.
 

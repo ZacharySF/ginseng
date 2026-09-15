@@ -6,6 +6,8 @@ The **Cash events** pages (`/future` and `/demo/future`) now include a Risk labo
 
 **Refine estimate** runs independent initial-block conditional MC for cash-shortfall probability. It displays a 95% numerical interval, a requested error of ±0.5 percentage points, observations used, and either “Precision target reached” or “Computation limit reached.” This is precision under the active historical model, not confidence that the model predicts the future accurately. Existing reserve and funding results remain separate.
 
+The graph starts collapsed, with a compact entry row and **Explore in 3D** button. No axes or canvas appear before opening. The first open calculates the surface; **Hide graph** closes it while retaining the result, so reopening needs no new calculation. **Recalculate surface** is available while open. Changed inputs clear the old result and close the graph; loading and error messages remain visible.
+
 **Explore in 3D** opens two views of the same 2,048 modeled futures:
 
 | Axis | Meaning |
@@ -21,11 +23,13 @@ External **X / Y / Z** cards explain the dimensions while short axis labels keep
 
 For keyboard control, click the graph or Tab into it. **Left/Right** rotate horizontally; **Up/Down** raise or lower the viewing angle along Z, preserving the 3D zoom. A plain arrow key in **Overhead** or **Cash slice** returns to the default 3D camera and applies the movement. **Tab** leaves the graph. The cash slider and other controls retain their normal arrow-key behavior; camera movement does not change the calculations.
 
+Use **Fullscreen**, or press **F** while the graph has focus, to expand the plot with its axes, camera controls, metric buttons and cash slider. **Escape**, **Exit fullscreen**, or another focused **F** returns to the page. The camera, metric, selected cash amount and numerical values stay the same.
+
 The cash slider highlights a cross-section and its final-day point. A compact readout shows the selected amount's horizon-end result and its reduction from **$0 extra cash**: percentage points for shortfall chance, dollars for deficit severity. An expandable table exposes every day in that slice using the same engine values. **Model & reading notes** holds the detailed scope explanation.
 
-The surface uses a midnight-blue-to-cyan-to-mint color ramp. Height fits the current grid, with an explicit **Height scale** label. For probability, the maximum rounds up to the next five percentage points, with a minimum of 5% and maximum of 100%. The probability color scale stays fixed at **0–100%** across scenarios; height and color therefore need not share the same maximum. Deficit severity uses a dollar scale fitted to the grid. The display does not change the estimates.
+The surface uses pale blue to cobalt in light mode and midnight blue through cyan to mint in dark mode. Height fits the current grid, with an explicit **Height scale** label. For probability, the maximum rounds up to the next five percentage points, with a minimum of 5% and maximum of 100%. The probability color scale stays fixed at **0–100%** across scenarios; height and color therefore need not share the same maximum. Deficit severity uses a dollar scale fitted to the grid. The display does not change the estimates.
 
-An embedded navy workbench remains dark in both app themes, matching the portfolio laboratory. Its luminous blue wireframe joins the original computed grid nodes along cash rows and forecast-day columns; it adds no new estimates or smoothed peaks. A bright cyan/white line identifies the selected cash slice. The camera adapts at mobile widths. Plotly is loaded only after a surface result is requested; it is not part of the initial page bundle. [Plotly surface documentation](https://plotly.com/javascript/3d-surface-plots/) describes the underlying rendering capability.
+The plot matches the portfolio laboratory and app theme: paper and cobalt in light mode, navy and cyan in dark mode. Its blue wireframe joins the original computed grid nodes along cash rows and forecast-day columns; it adds no new estimates or smoothed peaks. A contrasting line identifies the selected cash slice, with softer glow in light mode. The camera adapts at mobile widths. Plotly is loaded only after a surface result is requested; it is not part of the initial page bundle. [Plotly surface documentation](https://plotly.com/javascript/3d-surface-plots/) describes the underlying rendering capability.
 
 ## Calculation
 

@@ -1,6 +1,7 @@
 // Render the real Svelte/Plotly components with frozen synthetic engine output.
 import assert from 'node:assert/strict';
 import { checkKeyboardOrbit } from './helpers/graph-camera.mjs';
+import { checkGraphFullscreen } from './helpers/graph-fullscreen.mjs';
 import { mkdtemp, readFile, writeFile, symlink, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -62,7 +63,7 @@ try {
  });
  await page.waitForTimeout(350); // Let the initial WebGL camera relayout finish.
  assert.equal(await selector.inputValue(), 'current');
- assert.equal(await plot.evaluate(el => el.layout.paper_bgcolor), '#071321', 'light page retains the scientific dark canvas');
+ assert.equal(await plot.evaluate(el => el.layout.paper_bgcolor), '#f7f7f2', 'light plotting field matches the application paper theme');
  assert.equal(await page.locator('.orientation-gizmo').count(), 1, 'view includes a camera orientation triad');
  assert.deepEqual(await plot.evaluate(el => {
   const projection = el.data.find(row => row.name === 'Floor projection');
@@ -94,6 +95,22 @@ try {
   })))
  });
  assert.equal(await page.getByRole('button', { name: 'Discovery sample', exact: true }).getAttribute('aria-pressed'), 'true', 'keyboard camera controls preserve the selected sample');
+ // Fullscreen must preserve a nondefault allocation and the fresh sample.
+ await selector.selectOption('equal-weight');
+ await page.getByRole('button', { name: 'Fresh-sample check', exact: true }).click();
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.data.some(trace => trace.name === 'Selected: discovery → check'));
+ await checkGraphFullscreen(page, '.frontier-plot', {
+  reset: 'Reset camera', control: '#allocation-select',
+  screenshot: shots ? join(shots, 'frontier-fullscreen.png') : undefined,
+  metrics: () => plot.evaluate(el => el.data.filter(trace => trace.customdata).map(trace => ({
+   id: trace.customdata, x: trace.x, y: trace.y, z: trace.z
+  })))
+ });
+ assert.equal(await selector.inputValue(), 'equal-weight');
+ assert.equal(await page.getByRole('button', { name: 'Fresh-sample check', exact: true }).getAttribute('aria-pressed'), 'true', 'fullscreen preserves the selected evaluation sample');
+ await selector.selectOption('current');
+ await page.getByRole('button', { name: 'Discovery sample', exact: true }).click();
+ await page.waitForFunction(() => !document.querySelector('.frontier-plot')?.data.some(trace => trace.name === 'Selected: discovery → check'));
  await page.getByRole('button', { name: 'Risk / return', exact: true }).click();
  await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'orthographic');
  assert.equal(await plot.evaluate(el => el.layout.scene.zaxis.showticklabels), false, 'risk/return projection hides only tail axis');
@@ -200,7 +217,7 @@ try {
  await page.getByText('Disable stress weighting and choose a horizon of 60 days or less to use this research model.', { exact: true }).waitFor();
  assert.equal(await build.isDisabled(), true);
  assert.deepEqual(errors, []);
- console.log('Browser passed: 3D rendering, pointer and keyboard camera controls, focus/native-control isolation, selection, holdout, Pareto filter, export/table, themes/mobile, repair route, stale-result clearing, unsupported mode and errors.');
+ console.log('Browser passed: 3D rendering, pointer/keyboard camera controls, native/fallback fullscreen, focus/native-control isolation, selection, holdout, Pareto filter, export/table, themes/mobile, repair route, stale-result clearing, unsupported mode and errors.');
 } finally {
  if (browser) await browser.close();
  await server.close();

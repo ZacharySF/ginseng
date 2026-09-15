@@ -4,6 +4,7 @@ type GraphCamera = Partial<Camera>;
 type Controls = {
 	read: () => GraphCamera | null;
 	apply: (camera: GraphCamera) => Promise<void>;
+	toggleFullscreen?: () => Promise<void>;
 	onError: () => void;
 };
 
@@ -51,7 +52,13 @@ export function graphCameraKeys(node: HTMLElement, controls: Controls) {
 		}
 	}
 	function keydown(event: KeyboardEvent) {
-		if (event.target !== node || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || !arrows.has(event.key)) return;
+		if (event.target !== node || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+		if (event.key.toLowerCase() === 'f' && controls.toggleFullscreen) {
+			event.preventDefault();
+			if (!event.repeat) void controls.toggleFullscreen();
+			return;
+		}
+		if (event.shiftKey || !arrows.has(event.key)) return;
 		const camera = desired ?? controls.read();
 		if (!camera) return;
 		event.preventDefault();

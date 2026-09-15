@@ -1,6 +1,7 @@
 // Real component/browser test using frozen synthetic engine output and mocked transport.
 import assert from 'node:assert/strict';
 import { checkKeyboardOrbit } from './helpers/graph-camera.mjs';
+import { checkGraphFullscreen } from './helpers/graph-fullscreen.mjs';
 import {mkdtemp,readFile,writeFile,symlink,rm,mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname,join,resolve} from 'node:path';
@@ -22,23 +23,39 @@ try{
  await server.listen();const address=server.httpServer.address();
  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox','--enable-unsafe-swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:1100}});
+ const shots=process.env.RISK_SCREENSHOTS;
+ if(shots)await mkdir(shots,{recursive:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  let fail=false;
- await page.route('**/mock/demo/numerics',async route=>{const {options}=route.request().postDataJSON();await route.fulfill({status:fail?503:200,contentType:'application/json',body:JSON.stringify(fixture[options.action])});});
+ let surfaceRequests=0;
+ await page.route('**/mock/demo/numerics',async route=>{const {options}=route.request().postDataJSON();if(options.action==='surface')surfaceRequests++;await route.fulfill({status:fail?503:200,contentType:'application/json',body:JSON.stringify(fixture[options.action])});});
  await page.goto(`http://127.0.0.1:${address.port}`);
+ assert.equal(await page.locator('.plot').count(),0,'the cash graph starts collapsed without a canvas');
+ assert.equal(await page.locator('.empty,.lab-axis-key').count(),0,'collapsed cash exploration does not render an axes preview or empty chart');
+ assert.equal(surfaceRequests,0,'collapsed exploration does not request a surface');
+ if(shots)await page.locator('.numerical-panel').screenshot({path:join(shots,'cash-collapsed.png')});
  await page.getByRole('button',{name:'Refine estimate',exact:true}).click();
  await page.getByText('Precision target reached',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Explore in 3D'}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?._fullLayout?.scene?._scene?.glplot);
+ assert.equal(surfaceRequests,1);
+ await page.getByRole('button',{name:'Hide graph',exact:true}).click();
+ assert.equal(await page.locator('.plot').isVisible(),false,'Hide graph collapses the plotting area');
+ await page.getByRole('button',{name:'Explore in 3D'}).click();
+ await page.waitForFunction(()=>document.querySelector('.plot')?._fullLayout?.scene?._scene?.glplot);
+ assert.equal(surfaceRequests,1,'reopening reuses the existing calculation');
+ await page.getByRole('button',{name:/Recalculate/}).click();
+ await page.waitForFunction(()=>document.querySelector('.plot')?._fullLayout?.scene?._scene?.glplot);
+ assert.equal(surfaceRequests,2,'Recalculate explicitly requests a fresh surface');
  assert.equal(await page.locator('.surface-workbench .lab-axis-key > div').count(),3,'each axis has an external reading key');
  assert.equal(await page.locator('.surface-footer details[open]').count(),0,'method notes start collapsed');
  assert.deepEqual(await page.locator('.plot').evaluate(el=>el.data[0].z),fixture.surface.shortfall_probability,'camera and styling preserve every calculated grid value');
  assert.equal(await page.locator('.plot').evaluate(el=>el.data[0].cmax),1,'probability color scale stays0–100%');
  assert.ok(await page.locator('.height-scale').isVisible(),'adaptive vertical scale is explicitly labeled');
- assert.equal(await page.locator('.plot').evaluate(el=>el.layout.paper_bgcolor),'#071321','light application still uses a navy plotting instrument');
- assert.equal(await page.locator('.plot').evaluate(el=>el.layout.font.color),'#e3faff','graph labels use local instrument colors');
+ assert.equal(await page.locator('.plot').evaluate(el=>el.layout.paper_bgcolor),'#f7f7f2','light plotting field matches the application paper theme');
+ assert.equal(await page.locator('.plot').evaluate(el=>el.layout.font.color),'#070c56','light graph labels use dark indigo text');
  const wire=await page.locator('.plot').evaluate(el=>{const t=el.data.find(trace=>trace.name==='Sampled grid');return {x:t.x,y:t.y,z:t.z,color:t.line.color};});
- assert.equal(wire.color,'#359aff','cash surface has a visible blue wire grid');
+ assert.equal(wire.color,'#0100f4','light cash surface has a visible cobalt wire grid');
  const expected={x:[],y:[],z:[]};
  const append=(day,cash,value)=>{expected.x.push(day);expected.y.push(cash);expected.z.push(value);};
  const separator=()=>append(null,null,null);
@@ -70,7 +87,6 @@ try{
  await page.getByRole('button',{name:'Overhead',exact:true}).click();
  await page.waitForFunction(()=>{const c=document.querySelector('.plot')?.layout.scene.camera;return c?.eye.z===1.55&&c?.projection.type==='orthographic';});
  assert.equal(await plot.evaluate(el=>el.data[0].showscale),true,'overhead colors retain the numerical scale');
- const shots=process.env.RISK_SCREENSHOTS;
  if(shots){await mkdir(shots,{recursive:true});await page.screenshot({path:join(shots,'risk-overhead.png'),fullPage:true});}
  await page.getByRole('button',{name:'Cash slice',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout.scene.camera.eye.y===-2.65);
@@ -88,6 +104,13 @@ try{
  await page.getByRole('button',{name:'Hide exact cash slice table'}).click();
  await page.getByRole('button',{name:'3D view',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout.scene.camera.eye.x===1.5);
+ await checkGraphFullscreen(page,'.plot',{
+  reset:'Reset view',control:'#cash-slice',
+  screenshot:shots?join(shots,'risk-fullscreen.png'):undefined,
+  metrics:()=>plot.evaluate(el=>({grid:el.data[0].z,selectedCash:el.data[1].y,selectedValues:el.data[1].z}))
+ });
+ assert.equal(await page.getByRole('slider').inputValue(),'8','fullscreen preserves the nondefault cash slice');
+ assert.equal(await page.getByRole('button',{name:'Deficit severity',exact:true}).getAttribute('aria-pressed'),'true','fullscreen preserves the selected surface metric');
  if(shots) await page.screenshot({path:join(shots,'risk-deficit.png'),fullPage:true});
  await page.getByRole('button',{name:'Shortfall chance',exact:true}).click();
  await page.waitForFunction(value=>document.querySelector('.plot')?.data[0].z[8][29]===value,fixture.surface.shortfall_probability[8][29]);
@@ -110,10 +133,10 @@ try{
  await page.getByRole('button',{name:'3D view',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout.scene.camera.eye.x===2.15);
  await page.evaluate(async root=>{const m=await import('/@fs'+root+'/src/lib/theme.svelte.ts');m.themeStore.toggle();},root);
- await page.waitForFunction(()=>document.querySelector('.plot')?.layout?.paper_bgcolor==='#071321');
+ await page.waitForFunction(()=>document.querySelector('.plot')?.layout?.paper_bgcolor==='#f7f7f2');
  if(shots) await page.screenshot({path:join(shots,'risk-mobile-light.png'),fullPage:true});
  fail=true;await page.getByRole('button',{name:'Refine estimate',exact:true}).click();await page.getByRole('alert').first().waitFor();
  assert.equal(await page.getByText('Precision target reached',{exact:true}).count(),0);
  assert.deepEqual(errors,[]);
- console.log('Browser passed: precision,exact wire-mesh geometry,navy instrument frame,camera-synced triad,pointer and keyboard rotation/reset,focus/native-slider isolation,perspective and orthographic presets,metric toggle,exact slice,selected inspector,both themes,mobile layout and error state.');
+ console.log('Browser passed: collapsed/reused/recalculated cash graph,precision,exact wire-mesh geometry,camera-synced triad,pointer/keyboard controls,native/fallback fullscreen,focus/native-slider isolation,presets,metric toggle,exact slice,selected inspector,both themes,mobile layout and error state.');
 }finally{if(browser)await browser.close();await server.close();await rm(temp,{recursive:true,force:true});}
