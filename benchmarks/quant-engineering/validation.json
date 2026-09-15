@@ -1,0 +1,54 @@
+{
+  "baseline_tests": 374,
+  "final_tests": 428,
+  "dependency_warnings": 2,
+  "benchmark_records": 180,
+  "all_outputs_verified": true,
+  "source_fingerprint": "4d9cd4daeb9bd06825aa1a3f88e6443b742a0265600158fd6426a3bfc5b5822d",
+  "native": {
+    "api_version": 1,
+    "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+    "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+    "compiler": "15.3.0",
+    "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+    "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+    "build_type": "Release",
+    "environment_compiler_flags": "",
+    "options": "C++20; no fast-math; no FP contraction; portable target",
+    "available": true,
+    "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+    "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+  },
+  "dependencies": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "scipy": "1.18.1",
+    "arch": "8.0.0",
+    "fastapi": "0.141.1",
+    "pydantic": "2.13.5",
+    "cvxpy": "1.9.2",
+    "clarabel": "0.11.1",
+    "pytest": "9.1.1",
+    "pybind11": "2.13.6",
+    "scikit-build-core": "0.10.7"
+  },
+  "sanitizers": {
+    "command": "cmake -S native -B /tmp/ginseng-sanitize -DGINSENG_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug && cmake --build /tmp/ginseng-sanitize && /tmp/ginseng-sanitize/kernel_sanitize",
+    "cases": 1000,
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "wheels": {
+    "pure_python_clean_replay": true,
+    "native_clean_replay": true,
+    "installed_execution_source_matches": true,
+    "artifacts": {
+      "ginseng_native-0.1.0-cp312-cp312-linux_x86_64.whl": "7a47303d76f13bb7f57558bfb23adb110242341e16ddd82c8f58a1df48a6fdae",
+      "ginseng-0.1.0-py3-none-any.whl": "4ee5377251d1f067c8bd5d436ee9aa8f9c08fe09a9ee670b586bf33ac912f760"
+    }
+  },
+  "cli_smoke_configurations": 10,
+  "frontend": "No frontend or shared response types changed; not run.",
+  "ci": "Workflow added; local equivalents passed; no remote CI run claimed."
+}

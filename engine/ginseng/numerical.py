@@ -54,6 +54,10 @@ def environment():
     )
 
 
+from ginseng.execution import execution_scope
+
+
+@execution_scope
 def run_core(
     case,
     prepared,

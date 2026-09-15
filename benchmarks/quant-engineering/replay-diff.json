@@ -1,0 +1,11 @@
+{
+  "left_run": "e0688334106e8b096b7fb90c95aa7729d7b67b22a485ac261e1729e260bc4626",
+  "right_run": "83db3cd7fee4a0cb3b574f9d1408e0f05715f31e4336280bfd406b0cab4cb50a",
+  "input_identities": [
+    "ad8756978dfde2f9af13fbb092f135eef5ec4ec6e02fc3df0a336aa89050de16",
+    "ad8756978dfde2f9af13fbb092f135eef5ec4ec6e02fc3df0a336aa89050de16"
+  ],
+  "comparison": "backend correctness comparison",
+  "match": true,
+  "first_divergence": null
+}

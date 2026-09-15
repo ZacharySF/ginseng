@@ -1,0 +1,15 @@
+{
+  "commit": "891f9e1c922c5f868715315fe24c0b08e4b3d872",
+  "rows": [
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "profiled_seconds": 0.03206446400145069
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "profiled_seconds": 0.7550705629982986
+    }
+  ]
+}

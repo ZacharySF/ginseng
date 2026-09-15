@@ -24,6 +24,8 @@ contributions. Future returns never reprice an executed sale.
 
 from __future__ import annotations
 
+from ginseng.execution import execution_scope
+
 from dataclasses import dataclass
 from math import isfinite
 from typing import Literal, Sequence
@@ -215,6 +217,7 @@ def _trim_redundant_liquidation(
     return liquidation - lower
 
 
+@execution_scope
 def optimize_funding(
     state: FinancialState,
     bundle: DrawBundle | PathBundle,

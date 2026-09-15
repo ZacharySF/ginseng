@@ -87,6 +87,20 @@ wheels = [
 ]
 
 [[package]]
+name = "build"
+version = "1.2.2.post1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "os_name == 'nt'" },
+    { name = "packaging" },
+    { name = "pyproject-hooks" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/46/aeab111f8e06793e4f0e421fcad593d547fb8313b50990f31681ee2fb1ad/build-1.2.2.post1.tar.gz", hash = "sha256:b36993e92ca9375a219c99e606a122ff365a760a2d4bba0caa09bd5278b608b7", size = 46701, upload-time = "2024-10-06T17:22:25.251Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/c2/80633736cd183ee4a62107413def345f7e6e3c01563dbca1417363cf957e/build-1.2.2.post1-py3-none-any.whl", hash = "sha256:1d61c0887fa860c01971625baae8bdd338e517b836a2f70dd1f7aa3a6b2fc5b5", size = 22950, upload-time = "2024-10-06T17:22:23.299Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.7.22"
 source = { registry = "https://pypi.org/simple" }
@@ -340,6 +354,11 @@ dev = [
     { name = "pytest" },
     { name = "uvicorn", extra = ["standard"] },
 ]
+native-build = [
+    { name = "build" },
+    { name = "pybind11" },
+    { name = "scikit-build-core" },
+]
 optimization = [
     { name = "cvxpy" },
 ]
@@ -354,6 +373,7 @@ research = [
 requires-dist = [
     { name = "anyio", marker = "extra == 'app'", specifier = ">=4.0" },
     { name = "arch", specifier = ">=7.2" },
+    { name = "build", marker = "extra == 'native-build'", specifier = "==1.2.2.post1" },
     { name = "cvxpy", marker = "extra == 'optimization'", specifier = ">=1.4" },
     { name = "fastapi", marker = "extra == 'app'", specifier = ">=0.115" },
     { name = "ginseng", extras = ["app", "optimization", "research"], marker = "extra == 'dev'" },
@@ -364,12 +384,14 @@ requires-dist = [
     { name = "nbformat", marker = "extra == 'research'", specifier = ">=5.10" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "pandas", specifier = ">=2.2" },
+    { name = "pybind11", marker = "extra == 'native-build'", specifier = "==2.13.6" },
     { name = "pydantic", marker = "extra == 'app'", specifier = ">=2.10" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
+    { name = "scikit-build-core", marker = "extra == 'native-build'", specifier = "==0.10.7" },
     { name = "scipy", specifier = ">=1.14" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'app'", specifier = ">=0.32" },
 ]
-provides-extras = ["app", "optimization", "research", "dev"]
+provides-extras = ["native-build", "app", "optimization", "research", "dev"]
 
 [[package]]
 name = "h11"
@@ -832,6 +854,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pathspec"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/82/42f767fc1c1143d6fd36efb827202a2d997a375e160a71eb2888a925aac1/pathspec-1.1.1.tar.gz", hash = "sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a", size = 135180, upload-time = "2026-04-27T01:46:08.907Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl", hash = "sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189", size = 57328, upload-time = "2026-04-27T01:46:07.06Z" },
+]
+
+[[package]]
 name = "patsy"
 version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -938,6 +969,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pybind11"
+version = "2.13.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/c1/72b9622fcb32ff98b054f724e213c7f70d6898baa714f4516288456ceaba/pybind11-2.13.6.tar.gz", hash = "sha256:ba6af10348c12b24e92fa086b39cfba0eff619b61ac77c406167d813b096d39a", size = 218403, upload-time = "2024-09-14T00:35:22.606Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/2f/0f24b288e2ce56f51c920137620b4434a38fd80583dbbe24fc2a1656c388/pybind11-2.13.6-py3-none-any.whl", hash = "sha256:237c41e29157b962835d356b370ededd57594a26d5894a795960f0047cb5caf5", size = 243282, upload-time = "2024-09-14T00:35:20.361Z" },
+]
+
+[[package]]
 name = "pycparser"
 version = "3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1007,6 +1047,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f3/91/9c6ee907786a473bf81c5f53cf703ba0957b23ab84c264080fb5a450416f/pyparsing-3.3.2.tar.gz", hash = "sha256:c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc", size = 6851574, upload-time = "2026-01-21T03:57:59.36Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl", hash = "sha256:850ba148bd908d7e2411587e247a1e4f0327839c40e2e5e6d05a007ecc69911d", size = 122781, upload-time = "2026-01-21T03:57:55.912Z" },
+]
+
+[[package]]
+name = "pyproject-hooks"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/82/28175b2414effca1cdac8dc99f76d660e7a4fb0ceefa4b4ab8f5f6742925/pyproject_hooks-1.2.0.tar.gz", hash = "sha256:1e859bd5c40fae9448642dd871adf459e5e2084186e8d2c2a79a824c970da1f8", size = 19228, upload-time = "2024-09-29T09:24:13.293Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl", hash = "sha256:9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913", size = 10216, upload-time = "2024-09-29T09:24:11.978Z" },
 ]
 
 [[package]]
@@ -1139,6 +1188,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c9/50/22f73127a41f1ce4f87fe39aadfb9a126345801c274aa93ae88456249327/rpds_py-2026.6.3-cp312-cp312-win32.whl", hash = "sha256:501f9f04a588d6a09179368c57071301445191767c64e4b52a6aa9871f1ef5ed", size = 202185, upload-time = "2026-06-30T07:15:32.027Z" },
     { url = "https://files.pythonhosted.org/packages/04/3a/f0ee4d4dde9d3b69dedf1b5f74e7a40017046d55052d173e418c6a94f960/rpds_py-2026.6.3-cp312-cp312-win_amd64.whl", hash = "sha256:2c958bf94822e9290a40aaf2a822d4bc5c88099093e3948ad6c571eca9272e5f", size = 220394, upload-time = "2026-06-30T07:15:33.359Z" },
     { url = "https://files.pythonhosted.org/packages/f3/83/3382fe37f809b59f02aac04dbc4e765b480b46ee0227ed516e3bdc4d3dfc/rpds_py-2026.6.3-cp312-cp312-win_arm64.whl", hash = "sha256:22bffe6042b9bcb0822bcd1955ec00e245daf17b4344e4ed8e9551b976b63e96", size = 215753, upload-time = "2026-06-30T07:15:34.778Z" },
+]
+
+[[package]]
+name = "scikit-build-core"
+version = "0.10.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "pathspec" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/34/75/ad5664c8050bbbea46a5f2b6a3dfbc6e6cf284826c0eee0a12f861364b3f/scikit_build_core-0.10.7.tar.gz", hash = "sha256:04cbb59fe795202a7eeede1849112ee9dcbf3469feebd9b8b36aa541336ac4f8", size = 255019, upload-time = "2024-09-20T20:54:15.873Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/fe/90476c4f6a1b2f922efa00d26e876dd40c7279e28ec18f08f0851ad21ba6/scikit_build_core-0.10.7-py3-none-any.whl", hash = "sha256:5e13ab7ca7c3c6dd019607c3a6f53cba67dade8757c4c4f75b459e2f90e4dbc3", size = 165511, upload-time = "2024-09-20T20:54:14.181Z" },
 ]
 
 [[package]]

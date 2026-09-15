@@ -8,6 +8,8 @@ set of liquidity and funding calculations.
 
 from __future__ import annotations
 
+from ginseng.execution import execution_scope
+
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Sequence
 
@@ -171,6 +173,7 @@ def _direct_average_discretionary(bundle: DrawBundle | PathBundle) -> float | No
     return float(np.mean(paths)) if paths.size else 0.0
 
 
+@execution_scope
 def evaluate_funding(state, bundle, obligations, gap, *, coverage_target, operating_buffer,
                      funding_config=FundingConfig(), funding_policy=FundingPolicy(),
                      overdraft_apr=0.2999, capital_gains_rate=0.15,
@@ -200,6 +203,7 @@ def evaluate_funding(state, bundle, obligations, gap, *, coverage_target, operat
     return plans, recommendation, optimal, policy, comparison
 
 
+@execution_scope
 def evaluate_scenario(
     state: FinancialState,
     bundle: DrawBundle | PathBundle,

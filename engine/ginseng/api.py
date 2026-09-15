@@ -9,6 +9,8 @@ it never substitutes data for a saved workspace.
 from __future__ import annotations
 
 import asyncio
+from ginseng.execution import execution_scope
+
 from collections.abc import AsyncIterator, Awaitable
 from dataclasses import asdict, replace
 from functools import lru_cache
@@ -438,6 +440,7 @@ def _summary(computed) -> dict:
 
 
 @app.post("/scenario", response_model=ScenarioResponse)
+@execution_scope
 def scenario(
     request: ScenarioRequest,
     _: Annotated[AuthenticatedIdentity, Depends(require_identity)],
@@ -576,6 +579,7 @@ def calibration_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIde
 
 
 @app.post("/analysis/funding")
+@execution_scope
 def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
@@ -596,6 +600,7 @@ def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdenti
 
 
 @app.post("/analysis/portfolio")
+@execution_scope
 def portfolio_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")

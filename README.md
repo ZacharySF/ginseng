@@ -73,3 +73,17 @@ The offline CLI supports `--estimator initial-block-cmc` for historical cash-fai
 Cash events now includes optional precision refinement and an interactive 3D cash/time sensitivity explorer for historical forecasts. Rotate between shortfall probability and expected worst deficit, select extra opening cash, or inspect exact values in a table. See the [API, model definitions and browser verification](docs/risk-explorer.md).
 
 The demo **Research** page adds a [liquidity-aware portfolio frontier](docs/portfolio-frontier.md): explore hypothetical allocations by expected return, volatility and tail loss at the first cash-buffer breach. Inspect portfolio weights in 3D, compare independently simulated estimates and export the experiment. Start with **Load repair case**. Demo asset returns are synthetic.
+
+### Prepared execution engine and offline replay
+
+The cash engine supports request-scoped reuse, batched chart quantiles, bounded summary execution, and an optional C++ backend. Existing sampler/estimator commands remain unchanged. `auto` uses NumPy; native execution is explicit.
+
+```bash
+uv sync --locked --extra dev --extra native-build
+uv build native --wheel --out-dir /tmp/ginseng-wheels
+uv pip install --no-deps /tmp/ginseng-wheels/ginseng_native-*.whl
+uv run --no-sync ginseng engine inspect
+uv run --no-sync ginseng engine replay examples/engine/canonical --backend native --workers 2
+```
+
+See [the engineering report](docs/quant-engineering.md) for capture/diff commands, ownership and memory contracts, installation verification, tests, raw benchmarks, small-workload regressions and measured native tradeoffs.

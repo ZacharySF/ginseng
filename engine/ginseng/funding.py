@@ -14,6 +14,8 @@ of candidates so every plan shares the full evaluation window and draws
 from __future__ import annotations
 
 import hashlib
+from ginseng.execution import execution_scope
+
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from enum import Enum
@@ -693,6 +695,7 @@ def optimizer_comparison_bundle(state: FinancialState, bundle: DrawBundle | Path
     return comparison_draw_bundle(state, bundle, [*specs, available_levers])
 
 
+@execution_scope
 def evaluate_plan_paths(
     state: FinancialState,
     bundle: DrawBundle | PathBundle,

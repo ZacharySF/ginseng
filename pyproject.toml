@@ -14,6 +14,7 @@ dependencies = [
 ginseng = "ginseng.cli:main"
 
 [project.optional-dependencies]
+native-build = ["pybind11==2.13.6", "scikit-build-core==0.10.7", "build==1.2.2.post1"]
 app = ["anyio>=4.0", "fastapi>=0.115", "uvicorn[standard]>=0.32", "httpx>=0.28", "pydantic>=2.10"]
 optimization = ["cvxpy>=1.4"]
 research = ["matplotlib>=3.9", "nbformat>=5.10", "nbclient>=0.10", "ipykernel>=6.29"]

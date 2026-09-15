@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ginseng.execution import execution_scope
+
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -65,6 +67,7 @@ def _current_workspace(
 
 
 @router.post("/finance/forecast", response_model=ForecastResponse)
+@execution_scope
 def forecast_finance(
     request: ForecastRequest,
     identity: Annotated[AuthenticatedIdentity, Depends(require_identity)],
