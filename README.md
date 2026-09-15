@@ -63,3 +63,7 @@ Existing contributors' work is retained. Codex implemented this numerical releas
 ### Experimental conditional estimator
 
 The offline CLI supports `--estimator initial-block-cmc` for historical cash-failure probability with MC or Sobol. See the [method, validation and reproduction commands](docs/conditional-monte-carlo.md) and [measured comparison](artifacts/conditional/results.md). The path estimator remains the default.
+
+### Stop Monte Carlo at a requested numerical precision
+
+`uv run ginseng precision --fixture tiny --estimator initial-block-cmc --absolute-error 0.005` returns a cash-failure estimate and a checkpoint-valid numerical interval, stopping when the error target is met or the path budget is exhausted. See the [method and CLI contract](docs/precision-stopping.md) and [measured stopping results](artifacts/precision/results.md).

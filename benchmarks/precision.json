@@ -1,0 +1,10 @@
+{
+  "cases": ["tiny", "canonical", "repair", "drought-heavy"],
+  "replicates": 32,
+  "root_seed": 42,
+  "block_length": 14,
+  "absolute_error": 0.01,
+  "confidence": 0.95,
+  "max_paths": 131072,
+  "batch_size": 1024
+}
