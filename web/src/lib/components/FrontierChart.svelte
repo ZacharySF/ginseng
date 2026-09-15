@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { graphCameraKeys } from '$lib/graph-camera';
 	import { themeStore } from '$lib/theme.svelte';
 	import '$lib/chart-lab.css';
 	import OrientationGizmo from './OrientationGizmo.svelte';
@@ -20,20 +21,31 @@
 	let pointerMoved = false;
 	let pendingPoint: string | null = null;
 	let ignoreClicksUntil = 0;
+	let rendering: Promise<unknown> = Promise.resolve();
 	let orientation = $state<Partial<PlotlyType.Camera>>({ eye: { x: 1.3, y: -1.5, z: 1.15 } });
 	function selectPoint(id: string) {
 		if (performance.now() < ignoreClicksUntil) return;
 		if (pointerOrigin) pendingPoint = id;
 		else onSelect(id);
 	}
-	function cameraForView(): Partial<PlotlyType.Camera> & { projection: { type: 'orthographic' | 'perspective' } } {
-		if (angle === 'returns') return { eye: { x: 0, y: 0, z: narrow ? 1.95 : 1.75 }, up: { x: 0, y: 1, z: 0 }, projection: { type: 'orthographic' } };
-		if (angle === 'tail') return { eye: { x: narrow ? 1.95 : 1.75, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 }, projection: { type: 'orthographic' } };
+	function cameraForView(viewpoint = angle): Partial<PlotlyType.Camera> & { projection: { type: 'orthographic' | 'perspective' } } {
+		if (viewpoint === 'returns') return { eye: { x: 0, y: 0, z: narrow ? 1.95 : 1.75 }, up: { x: 0, y: 1, z: 0 }, projection: { type: 'orthographic' } };
+		if (viewpoint === 'tail') return { eye: { x: narrow ? 1.95 : 1.75, y: 0, z: 0 }, up: { x: 0, y: 0, z: 1 }, projection: { type: 'orthographic' } };
 		return { eye: narrow ? { x: 1.45, y: -1.65, z: 1.25 } : { x: 1.3, y: -1.5, z: 1.15 }, up: { x: 0, y: 0, z: 1 }, projection: { type: 'perspective' } };
 	}
 	function resetCamera() {
 		if (plotly) void plotly.relayout(chart, { 'scene.camera': cameraForView() } as unknown as Partial<PlotlyType.Layout>);
 	}
+	const keyboardControls = {
+		read: () => !plotly || error ? null : angle === 'space' ? (chart as unknown as PlotlyType.PlotlyHTMLElement).layout?.scene?.camera ?? cameraForView() : cameraForView('space'),
+		apply: async (camera: Partial<PlotlyType.Camera>) => {
+			angle = 'space';
+			await tick();
+			await rendering;
+			if (plotly && chart.isConnected) await plotly.relayout(chart, { 'scene.camera': camera } as unknown as Partial<PlotlyType.Layout>);
+		},
+		onError: () => { error = 'The camera could not update. Use Reset or the allocation table below.'; }
+	};
 	onMount(() => {
 		let alive = true;
 		// WebGL point clicks can fire on pointer-down. Defer selection until
@@ -138,7 +150,7 @@
 		const axis = { color: color('--ink-soft'), gridcolor: grid, gridwidth: 1, zeroline: false, showline: true, linecolor: '#315777', linewidth: 1, showbackground: false, showspikes: false, tickformat: '.1%', nticks: 5, tickfont: { size: narrow ? 10 : 11 } };
 		const reset = lastCameraKey !== cameraKey; lastCameraKey = cameraKey;
 		let alive = true;
-		void p.react(chart, traces, {
+		rendering = p.react(chart, traces, {
 			autosize: true, height: narrow ? 400 : 540, margin: { l: 10, r: 10, t: 8, b: narrow ? 38 : 35 },
 			paper_bgcolor: paper, font: { color: ink, family: 'SFMono-Regular, Consolas, monospace', size: 11 },
 			hoverlabel: { bgcolor: color('--paper'), bordercolor: color('--rule-strong'), font: { color: ink, size: 12 } },
@@ -183,12 +195,14 @@
 	</div>
 	<div class="scene-area">
 		<div class="scene-caption"><span>PORTFOLIO / {angle === 'space' ? '3D COORDINATES' : 'ORTHOGRAPHIC'}</span><span>{view === 'discovery' ? 'SAMPLE 01' : 'SAMPLE 02'}</span></div>
-		<div class="frontier-plot" class:narrow bind:this={chart} role="img" aria-label="Portfolio allocations by volatility, return and tail loss at the first cash-buffer breach. Use the portfolio selector for keyboard access to every point."></div>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex (This Plotly application has focus-scoped keyboard controls supplied by graphCameraKeys.) -->
+		<div class="frontier-plot lab-camera" class:narrow bind:this={chart} use:graphCameraKeys={keyboardControls} tabindex="0" role="application" aria-roledescription="interactive 3D graph" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown" aria-label="Portfolio allocations by volatility, return and tail loss at the first cash-buffer breach. Left and right arrows turn horizontally; up and down raise and lower the view along Z. Arrows return flat views to 3D. Tab leaves the graph. Use the portfolio selector to inspect every point."></div>
 		<div class="orientation"><OrientationGizmo camera={orientation}/></div>
 		{#if !plotly && !error}<p role="status">Loading allocation space…</p>{/if}
 		{#if error}<p class="error" role="alert">{error}</p>{/if}
 	</div>
 	<p class="camera-help">{angle === 'space' ? 'Drag to rotate · click to inspect. Faint floor points project return and volatility; dotted guides locate the selection.' : angle === 'returns' ? 'Flat view of volatility and return. Switch to 3D to include tail loss.' : 'Flat view of return and tail loss. Switch to 3D to include volatility.'}</p>
+	<p class="lab-keyboard-hint">Click or Tab into graph · <kbd>←</kbd> <kbd>→</kbd> turn · <kbd>↑</kbd> <kbd>↓</kbd> raise / lower view{angle !== 'space' ? ' · Arrows return to 3D' : ''}</p>
 	<div class="legend" aria-label="Portfolio point legend"><span class="other"><i></i>Explored</span><span class="pareto"><i></i>Pareto</span><span class="current"><i></i>Current</span><span class="selected"><i></i>Selected</span></div>
 </div>
 <style>

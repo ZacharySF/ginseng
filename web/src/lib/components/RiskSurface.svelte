@@ -1,5 +1,6 @@
 <script lang="ts">
- import { onMount } from 'svelte';
+ import { onMount, tick } from 'svelte';
+ import { graphCameraKeys } from '$lib/graph-camera';
  import '$lib/chart-lab.css';
  import type { RiskSurface } from '$lib/numerics.svelte';
  import { themeStore } from '$lib/theme.svelte';
@@ -9,6 +10,7 @@
  let { data }: { data: RiskSurface } = $props();
  let chart: HTMLDivElement;
  let cameraListener: (() => void) | null = null;
+ let rendering: Promise<unknown> = Promise.resolve();
  let orientation = $state<Partial<PlotlyType.Camera>>({eye:{x:1.5,y:1.85,z:1.4},up:{x:0,y:0,z:1},center:{x:0,y:0,z:-.32}});
  let plotly = $state<typeof PlotlyType | null>(null);
  let metric = $state<'risk' | 'deficit'>('risk');
@@ -32,6 +34,16 @@
   if(view==='overhead') return {eye:{x:0,y:0,z:compact?2.2:1.55},up:{x:0,y:1,z:0},projection:{type:'orthographic' as const}};
   if(view==='slice') return {eye:{x:0,y:-2.65,z:0.04},up:{x:0,y:0,z:1},projection:{type:'orthographic' as const}};
   return {eye:compact?{x:2.15,y:2.25,z:1.6}:{x:1.5,y:1.85,z:1.4},up:{x:0,y:0,z:1},center:{x:0,y:0,z:compact?0:-.32},projection:{type:'perspective' as const}};
+ };
+ const keyboardControls = {
+  read: () => !plotly || error ? null : preset === 'perspective' ? (chart as unknown as PlotlyType.PlotlyHTMLElement).layout?.scene?.camera ?? cameraFor('perspective', narrow) : cameraFor('perspective', narrow),
+  apply: async (camera: Partial<PlotlyType.Camera>) => {
+   preset = 'perspective';
+   await tick();
+   await rendering;
+   if (plotly && chart.isConnected) await plotly.relayout(chart, { 'scene.camera': camera } as unknown as Partial<PlotlyType.Layout>);
+  },
+  onError: () => { error = 'The camera could not update. Use Reset view or the cash slice table below.'; }
  };
  onMount(() => {
   let active=true;
@@ -68,7 +80,7 @@
   }
   const meshTrace={type:'scatter3d',mode:'lines',...mesh,connectgaps:false,hoverinfo:'skip',showlegend:false};
   const selected={type:'scatter3d',mode:'lines',x:d.days,y:d.days.map(()=>d.additional_cash[index]),z:z[index],showlegend:false,hoverinfo:'skip'};
-  void p.react(chart,[{
+  rendering=p.react(chart,[{
    type:'surface',x:d.days,y:d.additional_cash,z,showscale:view!=='slice',opacity:view==='slice'?.12:.93,
    colorscale:[[0,'#07192f'],[.08,'#103363'],[.2,'#1252b8'],[.4,'#1182cf'],[.65,'#23b7d8'],[.85,'#86e7df'],[1,'#e0fff0']],
    cmin:0,cmax:metric==='risk'?1:scaleTop,
@@ -129,12 +141,14 @@
  </div>
  <div class="scene-shell">
   <div class="scene-stamp" aria-hidden="true"><span>SAMPLED CASH SURFACE</span><span>{data.paths.toLocaleString()} PATHS / {data.days.length*data.additional_cash.length} NODES</span></div>
-  <div class="plot" class:narrow bind:this={chart} role="img" aria-label={`${label} across forecast days and additional opening cash. Blue mesh lines join the calculated grid nodes. Exact values are available in the cash slice table.`}></div>
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex (This Plotly application has focus-scoped keyboard controls supplied by graphCameraKeys.) -->
+  <div class="plot lab-camera" class:narrow bind:this={chart} use:graphCameraKeys={keyboardControls} tabindex="0" role="application" aria-roledescription="interactive 3D graph" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown" aria-label={`${label} across forecast days and additional opening cash. Left and right arrows turn horizontally; up and down raise and lower the view along Z. Arrows return flat views to 3D. Tab leaves the graph. Exact values are available in the cash slice table.`}></div>
   <div class="orientation"><OrientationGizmo camera={orientation}/></div>
  </div>
  {#if !plotly && !error}<p class="chart-message" role="status">Loading interactive 3D view…</p>{/if}
  {#if error}<p class="chart-message" role="alert">{error}</p>{/if}
  <div class="plot-caption"><span class="selection-key"><i aria-hidden="true"></i> Selected cash level</span><span class="height-scale">Height scale 0–{display(scaleTop)}</span><span class="caption-help">{preset==='overhead'?'Color shows the risk level.':preset==='slice'?'Your selected cash level, viewed through time.':'Drag to rotate · pinch to zoom'}</span></div>
+ <p class="lab-keyboard-hint">Click or Tab into graph · <kbd>←</kbd> <kbd>→</kbd> turn · <kbd>↑</kbd> <kbd>↓</kbd> raise / lower view{preset !== 'perspective' ? ' · Arrows return to 3D' : ''}</p>
  {#if data.shortfall_probability.every(row=>row.every(value=>value===0))}<p class="quiet-note">No shortfalls observed on this grid. Use the precision estimate to assess numerical uncertainty.</p>{/if}
  <div class="slice">
   <div class="cash-control">

@@ -1,5 +1,6 @@
 // Render the real Svelte/Plotly components with frozen synthetic engine output.
 import assert from 'node:assert/strict';
+import { checkKeyboardOrbit } from './helpers/graph-camera.mjs';
 import { mkdtemp, readFile, writeFile, symlink, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -80,10 +81,19 @@ try {
  await page.mouse.down();
  await page.mouse.move(box.x + box.width * .65, box.y + box.height * .6, { steps: 12 });
  await page.mouse.up();
+ assert.equal(await plot.evaluate(el => document.activeElement === el), true, 'pointer interaction focuses the chart for keyboard controls');
  assert.notDeepEqual(await plot.evaluate(el => el.layout.scene.camera), original, 'pointer drag rotates actual 3D camera');
  assert.equal(await selector.inputValue(), 'current', 'dragging across a point does not select it');
  await page.waitForFunction(previous => document.querySelector('.orientation-gizmo')?.innerHTML !== previous, originalAxes);
  await page.getByRole('button', { name: 'Reset camera' }).click();
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.eye?.x === 1.3);
+ await checkKeyboardOrbit(page, '.frontier-plot', {
+  reset: 'Reset camera', flat: 'Risk / return', perspective: '3D', control: '#allocation-select',
+  metrics: () => plot.evaluate(el => el.data.filter(trace => trace.customdata).map(trace => ({
+   id: trace.customdata, x: trace.x, y: trace.y, z: trace.z
+  })))
+ });
+ assert.equal(await page.getByRole('button', { name: 'Discovery sample', exact: true }).getAttribute('aria-pressed'), 'true', 'keyboard camera controls preserve the selected sample');
  await page.getByRole('button', { name: 'Risk / return', exact: true }).click();
  await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'orthographic');
  assert.equal(await plot.evaluate(el => el.layout.scene.zaxis.showticklabels), false, 'risk/return projection hides only tail axis');
@@ -97,10 +107,12 @@ try {
  await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'perspective');
 
  // Exercise keyboard selection and the Plotly click event's application wiring.
+ const cameraBeforeSelector = await plot.evaluate(el => el.layout.scene.camera);
  await selector.focus();
  await page.keyboard.press('ArrowDown');
  await page.keyboard.press('Enter');
  assert.equal(await selector.inputValue(), 'equal-weight');
+ assert.deepEqual(await plot.evaluate(el => el.layout.scene.camera), cameraBeforeSelector, 'native selector arrows do not orbit the camera');
  await plot.evaluate(el => el.emit('plotly_click', { points: [{ customdata: 'pure-2' }] }));
  await page.waitForFunction(() => document.querySelector('#allocation-select').value === 'pure-2');
  assert.equal(await page.locator('.weight-row').last().innerText(), 'CASH\n100.00%');
@@ -188,7 +200,7 @@ try {
  await page.getByText('Disable stress weighting and choose a horizon of 60 days or less to use this research model.', { exact: true }).waitFor();
  assert.equal(await build.isDisabled(), true);
  assert.deepEqual(errors, []);
- console.log('Browser passed: 3D rendering/rotation, selection, holdout, Pareto filter, export/table, themes/mobile, repair route, stale-result clearing, unsupported mode and errors.');
+ console.log('Browser passed: 3D rendering, pointer and keyboard camera controls, focus/native-control isolation, selection, holdout, Pareto filter, export/table, themes/mobile, repair route, stale-result clearing, unsupported mode and errors.');
 } finally {
  if (browser) await browser.close();
  await server.close();

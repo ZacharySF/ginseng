@@ -1,5 +1,6 @@
 // Real component/browser test using frozen synthetic engine output and mocked transport.
 import assert from 'node:assert/strict';
+import { checkKeyboardOrbit } from './helpers/graph-camera.mjs';
 import {mkdtemp,readFile,writeFile,symlink,rm,mkdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {dirname,join,resolve} from 'node:path';
@@ -54,12 +55,18 @@ try{
  const original=await page.locator('.plot').evaluate(el=>el.layout.scene.camera);
  const plot=page.locator('.plot');const box=await plot.boundingBox();
  await page.mouse.move(box.x+box.width*.5,box.y+box.height*.5);await page.mouse.down();await page.mouse.move(box.x+box.width*.65,box.y+box.height*.6,{steps:12});await page.mouse.up();
+ assert.equal(await plot.evaluate(el=>document.activeElement===el),true,'pointer interaction focuses the chart for keyboard controls');
  const rotated=await plot.evaluate(el=>el.layout.scene.camera);
  assert.notDeepEqual(rotated,original,'drag changes 3D camera');
  await page.waitForFunction(before=>document.querySelector('.orientation-gizmo')?.innerHTML!==before,gizmoBefore);
  assert.notEqual(await page.locator('.orientation-gizmo').innerHTML(),gizmoBefore,'orientation triad follows the real camera');
  await page.getByRole('button',{name:'Reset view'}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout.scene.camera.eye.x===1.5);
+ await checkKeyboardOrbit(page,'.plot',{
+  reset:'Reset view',flat:'Overhead',perspective:'3D view',control:'#cash-slice',
+  metrics:()=>plot.evaluate(el=>({grid:el.data[0].z,selectedCash:el.data[1].y,selectedValues:el.data[1].z}))
+ });
+ assert.equal(await page.getByRole('button',{name:'Shortfall chance',exact:true}).getAttribute('aria-pressed'),'true','camera controls preserve the selected surface metric');
  await page.getByRole('button',{name:'Overhead',exact:true}).click();
  await page.waitForFunction(()=>{const c=document.querySelector('.plot')?.layout.scene.camera;return c?.eye.z===1.55&&c?.projection.type==='orthographic';});
  assert.equal(await plot.evaluate(el=>el.data[0].showscale),true,'overhead colors retain the numerical scale');
@@ -68,7 +75,10 @@ try{
  await page.getByRole('button',{name:'Cash slice',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout.scene.camera.eye.y===-2.65);
  assert.equal(await plot.evaluate(el=>el.data[0].opacity),.12,'cash slice keeps selected line legible through the surface');
+ const cameraBeforeSlider=await plot.evaluate(el=>el.layout.scene.camera);
  await page.getByRole('slider').focus(); await page.keyboard.press('Home'); for(let i=0;i<8;i++) await page.keyboard.press('ArrowRight');
+ assert.equal(await page.getByRole('slider').inputValue(),'8','native slider arrows change the cash selection');
+ assert.deepEqual(await plot.evaluate(el=>el.layout.scene.camera),cameraBeforeSlider,'native slider arrows do not orbit the camera');
  await page.getByRole('button',{name:'Deficit severity',exact:true}).click();
  await page.getByRole('button',{name:'Show exact cash slice table'}).click();
  assert.equal(await page.locator('tbody tr').count(),30);
@@ -105,5 +115,5 @@ try{
  fail=true;await page.getByRole('button',{name:'Refine estimate',exact:true}).click();await page.getByRole('alert').first().waitFor();
  assert.equal(await page.getByText('Precision target reached',{exact:true}).count(),0);
  assert.deepEqual(errors,[]);
- console.log('Browser passed: precision,exact wire-mesh geometry,navy instrument frame,camera-synced triad,3D rotation/reset,perspective and orthographic presets,metric toggle,exact slice,selected inspector,both themes,mobile layout and error state.');
+ console.log('Browser passed: precision,exact wire-mesh geometry,navy instrument frame,camera-synced triad,pointer and keyboard rotation/reset,focus/native-slider isolation,perspective and orthographic presets,metric toggle,exact slice,selected inspector,both themes,mobile layout and error state.');
 }finally{if(browser)await browser.close();await server.close();await rm(temp,{recursive:true,force:true});}
