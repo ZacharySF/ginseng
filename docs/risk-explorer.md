@@ -17,7 +17,13 @@ The **Cash events** pages (`/future` and `/demo/future`) now include a Risk labo
 
 These surfaces answer where liquidity risk first rises, how additional cash changes it, and whether a low probability conceals a large potential deficit. They are cash sensitivity analyses, not recommended funding plans: borrowing costs, sale taxes and settlement delays are excluded.
 
-The cash slider highlights a cross-section of the surface and shows the selected cash amount's horizon-end value. An expandable table exposes every day in that slice using the same engine values. Drag rotates the plot, touch gestures permit zooming, and Reset view restores the initial camera. Cobalt, paper, ledger typography and dark-mode colors follow the website theme. The camera adapts at mobile widths. Plotly is loaded only after a surface result is requested; it is not part of the initial page bundle. [Plotly surface documentation](https://plotly.com/javascript/3d-surface-plots/) describes the underlying rendering capability.
+External **X / Y / Z** cards explain the dimensions while short axis labels keep the larger plot readable. Choose **3D view** to rotate the surface, **Overhead** to inspect the day-versus-cash grid through color, or **Cash slice** to view the selected cash level through time with the surrounding surface faded. **Reset view** restores the selected preset. Camera changes preserve the selected cash amount, metric and calculated values.
+
+The cash slider highlights a cross-section and its final-day point. A compact readout shows the selected amount's horizon-end result and its reduction from **$0 extra cash**: percentage points for shortfall chance, dollars for deficit severity. An expandable table exposes every day in that slice using the same engine values. **Model & reading notes** holds the detailed scope explanation.
+
+Surface height fits the current grid, with an explicit **Height scale** label. For probability, the maximum rounds up to the next five percentage points, with a minimum of 5% and maximum of 100%. The probability color scale stays fixed at **0–100%** across scenarios; height and color therefore need not share the same maximum. Deficit severity uses a dollar scale fitted to the grid. The display does not change the estimates.
+
+Cobalt, paper, restrained grids and light/dark colors follow the same theme as the portfolio laboratory. The camera adapts at mobile widths. Plotly is loaded only after a surface result is requested; it is not part of the initial page bundle. [Plotly surface documentation](https://plotly.com/javascript/3d-surface-plots/) describes the underlying rendering capability.
 
 ## Calculation
 

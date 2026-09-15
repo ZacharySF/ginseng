@@ -22,8 +22,12 @@ Coordinates are return fractions shown as percentages, without annualization. Z 
 
 1. Open `/demo/research` after signing in.
 2. Use a 30-day horizon and **Load repair case** to add the $1,500 day-3 deposit and $3,000 day-17 balance. The bills make a cash-pressure comparison more informative.
-3. Run the portfolio experiment. Drag the plot to rotate, use **Reset camera** to restore the view, and select a point for its weights and metric details.
-4. Compare discovery results with the independent numerical holdout. Export JSON to inspect the underlying values and provenance outside the chart.
+3. Run the portfolio experiment. Drag the **3D** view to rotate, use **Reset** to restore the selected camera preset, and select a point for its weights and metric details.
+4. Compare discovery results with the independent numerical holdout. Use **Export JSON** to inspect the underlying values and provenance outside the chart.
+
+External **X / Y / Z** cards explain each quantity and its preferred direction; short labels inside the plot keep the scene readable. **Risk / return** gives a flat projection hiding the tail-loss axis, while **Tail / return** hides volatility. These camera presets preserve the points, selected portfolio, weights and simulation sample. **Focus on Pareto candidates** hides background candidates while keeping current and selected portfolio markers visible.
+
+The compact portfolio inspector shows allocation weights and both samples' values, highlighting the active sample's column. The full allocation table remains available below. **Understand the axes & sample check** and **Sampling & optimization record** disclosures hold the longer explanations and diagnostics. The larger scene, restrained grid and selection markers use the same paper, cobalt and light/dark styling as the cash surface.
 
 The existing `/demo/future` surfaces vary extra **bank cash**. Here CASH is a **portfolio sleeve**: changing its weight does not alter bank cash, bills or pressure events. It changes the portfolio return at those events, keeping all allocations comparable on the same scenarios.
 

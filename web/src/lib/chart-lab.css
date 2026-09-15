@@ -1,0 +1,43 @@
+/* Shared visual language for the two numerical workbenches. */
+:root {
+	--lab-scene: #f2f3fa;
+	--lab-grid: #d9dced;
+	--lab-point: #767fa6;
+	--lab-selection: #070c56;
+}
+:root[data-theme='dark'] {
+	--lab-scene: #08080c;
+	--lab-grid: #292936;
+	--lab-point: #9393ad;
+	--lab-selection: #f0f0f5;
+}
+.lab-view { min-width: 0; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); }
+.lab-kicker { font: .65rem/1.4 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.lab-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: .8rem 1rem; border-bottom: 1px solid var(--rule); }
+.lab-switch { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--rule); background: var(--paper-soft); }
+.lab-switch button, .lab-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 2.5rem; padding: .5rem .8rem; font: .7rem/1.3 var(--font-mono); color: var(--ink-soft); background: transparent; border: 1px solid transparent; cursor: pointer; }
+.lab-switch button:hover, .lab-button:hover { color: var(--ink); background: var(--paper-deep); }
+.lab-switch button[aria-pressed='true'] { color: var(--on-accent); background: var(--cobalt); border-color: var(--cobalt); }
+.lab-switch--camera { padding: 0; border: 0; background: transparent; }
+.lab-switch--camera button[aria-pressed='true'] { color: var(--cobalt); background: var(--paper); border-color: var(--rule-strong); }
+.lab-button { border-color: var(--control-border); color: var(--ink); background: var(--paper); }
+.lab-button:disabled, .lab-switch button:disabled { cursor: wait; opacity: .6; }
+.lab-axis-key { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
+.lab-axis-key > div { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .6rem; padding: .9rem 1rem; }
+.lab-axis-key > div + div { border-left: 1px solid var(--rule); }
+.lab-axis-key .axis-letter { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border: 1px solid var(--rule-strong); color: var(--cobalt); background: var(--paper-soft); font: .72rem var(--font-mono); }
+.lab-axis-key strong { display: block; font-size: .9rem; font-weight: 600; line-height: 1.25; }
+.lab-axis-key small { display: block; margin-top: .25rem; font: .65rem/1.4 var(--font-mono); color: var(--ink-soft); }
+.lab-help { padding: .7rem 1rem; font-size: .85rem; line-height: 1.45; color: var(--ink-soft); }
+.lab-disclosure { border-top: 1px solid var(--rule); }
+.lab-disclosure > summary { display: list-item; padding: .95rem 1rem; font: .72rem/1.5 var(--font-mono); color: var(--ink-soft); cursor: pointer; }
+.lab-disclosure[open] > summary { color: var(--ink); }
+.lab-disclosure > :not(summary) { margin: 0 1rem 1rem; }
+@media (max-width: 42rem) {
+	.lab-toolbar { padding: .65rem .75rem; gap: .55rem; }
+	.lab-switch button, .lab-button { padding: .5rem .6rem; font-size: .66rem; min-height: 2.65rem; }
+	.lab-axis-key > div { grid-template-columns: 1fr; gap: .45rem; padding: .75rem; }
+	.lab-axis-key strong { font-size: .82rem; }
+	.lab-axis-key small { font-size: .59rem; }
+	.lab-axis-key .axis-letter { width: 1.35rem; height: 1.35rem; font-size: .65rem; }
+}

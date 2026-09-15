@@ -47,12 +47,19 @@ try {
   args: ['--no-sandbox', '--enable-unsafe-swiftshader']
  });
  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+ const shots = process.env.FRONTIER_SCREENSHOTS;
+ if (shots) await mkdir(shots, { recursive: true });
  const errors = [];
  page.on('pageerror', error => errors.push(error.message));
  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}`);
  await page.waitForFunction(() => document.querySelector('.frontier-plot')?._fullLayout?.scene?._scene?.glplot);
  const plot = page.locator('.frontier-plot');
  const selector = page.getByLabel('Select a portfolio', { exact: true });
+ await page.waitForFunction(() => {
+  const el = document.querySelector('.frontier-plot');
+  return el?._fullLayout?.width <= el.clientWidth + 1 && el._fullLayout.scene.dragmode === 'orbit';
+ });
+ await page.waitForTimeout(350); // Let the initial WebGL camera relayout finish.
  assert.equal(await selector.inputValue(), 'current');
  const current = fixture.points.find(point => point.id === 'current');
  assert.deepEqual(await plot.evaluate(el => {
@@ -67,7 +74,19 @@ try {
  await page.mouse.move(box.x + box.width * .65, box.y + box.height * .6, { steps: 12 });
  await page.mouse.up();
  assert.notDeepEqual(await plot.evaluate(el => el.layout.scene.camera), original, 'pointer drag rotates actual 3D camera');
+ assert.equal(await selector.inputValue(), 'current', 'dragging across a point does not select it');
  await page.getByRole('button', { name: 'Reset camera' }).click();
+ await page.getByRole('button', { name: 'Risk / return', exact: true }).click();
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'orthographic');
+ assert.equal(await plot.evaluate(el => el.layout.scene.zaxis.showticklabels), false, 'risk/return projection hides only tail axis');
+ assert.equal(await selector.inputValue(), 'current', 'camera presets preserve selected portfolio');
+ if (shots) { await page.waitForTimeout(350); await page.screenshot({ path: join(shots, 'frontier-risk-return.png'), fullPage: true }); }
+ await page.getByRole('button', { name: 'Tail / return', exact: true }).click();
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.xaxis?.showticklabels === false);
+ assert.equal(await plot.evaluate(el => el.layout.scene.zaxis.showticklabels), true);
+ if (shots) { await page.waitForTimeout(350); await page.screenshot({ path: join(shots, 'frontier-tail-return.png'), fullPage: true }); }
+ await page.getByRole('button', { name: '3D', exact: true }).click();
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.scene?.camera?.projection?.type === 'perspective');
 
  // Exercise keyboard selection and the Plotly click event's application wiring.
  await selector.focus();
@@ -89,7 +108,7 @@ try {
  await page.waitForFunction(() => !document.querySelector('.frontier-plot')?.data.some(row => row.name === 'Other explored allocations'));
 
  const downloadEvent = page.waitForEvent('download');
- await page.getByRole('button', { name: 'Export experiment JSON' }).click();
+ await page.getByRole('button', { name: 'Export JSON' }).click();
  const download = await downloadEvent;
  assert.deepEqual(JSON.parse(await readFile(await download.path(), 'utf8')), fixture, 'export retains exact engine results');
  await page.getByRole('button', { name: 'Show all allocation values' }).click();
@@ -98,11 +117,10 @@ try {
  await page.getByLabel('Focus on Pareto candidates').uncheck();
  await page.getByRole('button', { name: 'Discovery sample', exact: true }).click();
  await page.waitForTimeout(500);
- const shots = process.env.FRONTIER_SCREENSHOTS;
- if (shots) { await mkdir(shots, { recursive: true }); await page.screenshot({ path: join(shots, 'frontier-light.png'), fullPage: true }); }
+ if (shots) await page.screenshot({ path: join(shots, 'frontier-light.png'), fullPage: true });
 
  await page.evaluate(async root => { const module = await import('/@fs' + root + '/src/lib/theme.svelte.ts'); module.themeStore.toggle(); }, root);
- await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.paper_bgcolor === '#000');
+ await page.waitForFunction(() => document.querySelector('.frontier-plot')?.layout?.paper_bgcolor === '#08080c');
  if (shots) await page.screenshot({ path: join(shots, 'frontier-dark.png'), fullPage: true });
  await page.getByRole('button', { name: 'Fresh-sample check', exact: true }).click();
  await page.waitForTimeout(500);
@@ -110,11 +128,11 @@ try {
  await page.setViewportSize({ width: 390, height: 844 });
  await page.waitForFunction(() => {
   const el = document.querySelector('.frontier-plot');
-  return el?._fullLayout?.width <= el.clientWidth + 1 && el.layout.scene.camera.eye.x === 2.5;
+  return el?._fullLayout?.width <= el.clientWidth + 1 && el.layout.scene.camera.eye.x === 1.45;
  });
  await page.waitForTimeout(700);
  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'no mobile horizontal overflow');
- assert.ok(Math.abs(await plot.evaluate(el => el._fullLayout.scene._scene.getCamera().eye.x) - 2.5) < 1e-6);
+ assert.ok(Math.abs(await plot.evaluate(el => el._fullLayout.scene._scene.getCamera().eye.x) - 1.45) < 1e-6);
  if (shots) await page.screenshot({ path: join(shots, 'frontier-mobile.png'), fullPage: true });
 
  // The actual route and request stores, with only HTTP transport mocked.
