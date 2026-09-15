@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NumericalRiskPanel from '$lib/components/NumericalRiskPanel.svelte';
 	import CashPathChart from '$lib/components/CashPathChart.svelte';
 	import ForecastAlerts from '$lib/components/ForecastAlerts.svelte';
 	import PersonalEventsWorkbench from '$lib/components/PersonalEventsWorkbench.svelte';
@@ -58,6 +59,12 @@
 				comparisonLabel={financialStore.comparisonName ?? 'Saved inputs'}
 			/>
 		</section>
+        {#if workspace}
+            {@const numericalRequest = {expected_revision: workspace.revision, horizon_days: financialStore.horizonDays, ...(financialStore.scenario ? {overrides:financialStore.scenario} : {})}}
+            {#key JSON.stringify(numericalRequest)}
+                <NumericalRiskPanel request={numericalRequest} endpoint="/finance/numerics" supported={forecast.model_mode === 'history'} />
+            {/key}
+        {/if}
 	{/if}
 </PersonalForecastGate>
 

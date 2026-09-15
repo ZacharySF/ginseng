@@ -1195,3 +1195,17 @@ def backtest_personal_history(
         observed_coverage=report["primary"]["observed_coverage"] or 0,
         mean_absolute_error_cents=round(sum(abs(w.realized_required_cents-w.predicted_reserve_cents) for w in windows) / periods) if periods else 0,
         windows=windows, warning=warning, calibration=report)
+
+
+def historical_numerical_case(workspace: FinanceWorkspace, horizon_days: int):
+    """Use the same canonical schedule and history requirements as the forecast."""
+    from ginseng.inputs import InputCase
+    if workspace.inputs.mode != 'history':
+        raise ValueError('Risk exploration requires complete classified history; scheduled and assumption forecasts are not supported.')
+    requirements = _base_requirements(workspace) + _history_requirements(workspace)
+    schedule = _schedule_for_workspace(workspace, MAX_PERSONAL_EVALUATION_HORIZON)
+    requirements.extend(_unresolved_bill_requirements(schedule))
+    if requirements:
+        raise ValueError(' '.join(item.label for item in requirements))
+    state = _with_horizon(_state_for_workspace(workspace,schedule,history=True),horizon_days)
+    return InputCase('personal-history',state,())

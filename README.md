@@ -67,3 +67,7 @@ The offline CLI supports `--estimator initial-block-cmc` for historical cash-fai
 ### Stop Monte Carlo at a requested numerical precision
 
 `uv run ginseng precision --fixture tiny --estimator initial-block-cmc --absolute-error 0.005` returns a cash-failure estimate and a checkpoint-valid numerical interval, stopping when the error target is met or the path budget is exhausted. See the [method and CLI contract](docs/precision-stopping.md) and [measured stopping results](artifacts/precision/results.md).
+
+### Website risk laboratory
+
+Cash events now includes optional precision refinement and an interactive 3D cash/time sensitivity explorer for historical forecasts. Rotate between shortfall probability and expected worst deficit, select extra opening cash, or inspect exact values in a table. See the [API, model definitions and browser verification](docs/risk-explorer.md).

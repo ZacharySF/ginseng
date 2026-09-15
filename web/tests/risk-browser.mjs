@@ -1,0 +1,61 @@
+// Real component/browser test using frozen synthetic engine output and mocked transport.
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,writeFile,symlink,rm,mkdir} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {dirname,join,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createServer} from 'vite';
+import {svelte} from '@sveltejs/vite-plugin-svelte';
+import {chromium} from 'playwright';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const temp=await mkdtemp(join(tmpdir(),'ginseng-risk-browser-'));
+await symlink(join(root,'node_modules'),join(temp,'node_modules'),'dir');
+await writeFile(join(temp,'package.json'),'{"type":"module"}');
+await writeFile(join(temp,'index.html'),'<html><head><meta name="viewport" content="width=device-width, initial-scale=1"/></head><body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>');
+await writeFile(join(temp,'mock-api.ts'),`export async function requestEngine(path,init){try{const r=await fetch('/mock'+path,init);return r.ok?{status:'ok',data:await r.json()}:{status:'engine-error',message:'The engine is busy. Try again.'};}catch{return {status:'engine-error',message:'Cancelled'};}}`);
+await writeFile(join(temp,'main.ts'),`import {mount} from 'svelte';import Panel from '${root}/src/lib/components/NumericalRiskPanel.svelte';import '${root}/src/app.css';import '@fontsource-variable/archivo-narrow';mount(Panel,{target:document.getElementById('app'),props:{request:{seed:42},endpoint:'/demo/numerics'}});`);
+const fixture=JSON.parse(await readFile(join(root,'tests/fixtures/risk-explorer.json'),'utf8'));
+const server=await createServer({configFile:false,root:temp,plugins:[svelte({configFile:false})],resolve:{alias:{'$lib':join(root,'src/lib'),'./api':join(temp,'mock-api.ts')},dedupe:['svelte']},server:{port:0,host:'127.0.0.1',fs:{allow:[root,temp]}}});
+let browser;
+try{
+ await server.listen();const address=server.httpServer.address();
+ browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox','--enable-unsafe-swiftshader']});
+ const page=await browser.newPage({viewport:{width:1280,height:1100}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ let fail=false;
+ await page.route('**/mock/demo/numerics',async route=>{const {options}=route.request().postDataJSON();await route.fulfill({status:fail?503:200,contentType:'application/json',body:JSON.stringify(fixture[options.action])});});
+ await page.goto(`http://127.0.0.1:${address.port}`);
+ await page.getByRole('button',{name:'Refine estimate',exact:true}).click();
+ await page.getByText('Precision target reached',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Explore in 3D'}).click();
+ await page.waitForFunction(()=>document.querySelector('.plot')?._fullLayout?.scene?._scene?.glplot);
+ const original=await page.locator('.plot').evaluate(el=>el.layout.scene.camera);
+ const plot=page.locator('.plot');const box=await plot.boundingBox();
+ await page.mouse.move(box.x+box.width*.5,box.y+box.height*.5);await page.mouse.down();await page.mouse.move(box.x+box.width*.65,box.y+box.height*.6,{steps:12});await page.mouse.up();
+ const rotated=await plot.evaluate(el=>el.layout.scene.camera);
+ assert.notDeepEqual(rotated,original,'drag changes 3D camera');
+ await page.getByRole('button',{name:'Reset view'}).click();
+ await page.getByRole('slider').focus(); await page.keyboard.press('Home'); for(let i=0;i<8;i++) await page.keyboard.press('ArrowRight');
+ await page.getByRole('button',{name:'Deficit severity',exact:true}).click();
+ await page.getByRole('button',{name:'Show exact cash slice table'}).click();
+ assert.equal(await page.locator('tbody tr').count(),30);
+ assert.equal(await plot.evaluate(el=>el.data[0].z[8][29]),fixture.surface.expected_max_deficit[8][29]);
+ const shots=process.env.RISK_SCREENSHOTS;
+ if(shots){await mkdir(shots,{recursive:true});await page.screenshot({path:join(shots,'risk-light.png'),fullPage:true});}
+ // Theme uses the actual store, so plot colors update along with CSS.
+ await page.evaluate(async root=>{const m=await import('/@fs'+root+'/src/lib/theme.svelte.ts');m.themeStore.toggle();},root);
+ await page.waitForFunction(()=>document.querySelector('.plot')?.layout?.paper_bgcolor==='#000');
+ if(shots) await page.screenshot({path:join(shots,'risk-dark.png'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ await page.waitForFunction(()=>{const el=document.querySelector('.plot');return el?._fullLayout?.width<=el.clientWidth+1;});
+ await page.waitForFunction(()=>document.querySelector('.plot')?.layout?.scene?.camera?.eye?.x===2.6);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'mobile has no horizontal overflow');
+ await page.waitForTimeout(700);
+ assert.ok(Math.abs((await plot.evaluate(el=>el._fullLayout.scene._scene.getCamera().eye.x))-2.6)<1e-6);
+ if(shots) await page.screenshot({path:join(shots,'risk-mobile.png'),fullPage:true});
+ fail=true;await page.getByRole('button',{name:'Refine estimate',exact:true}).click();await page.getByRole('alert').first().waitFor();
+ assert.equal(await page.getByText('Precision target reached',{exact:true}).count(),0);
+ assert.deepEqual(errors,[]);
+ console.log('Browser passed: precision, 3D render/rotation, metric toggle, exact slice, responsive layout and error state.');
+}finally{if(browser)await browser.close();await server.close();await rm(temp,{recursive:true,force:true});}
