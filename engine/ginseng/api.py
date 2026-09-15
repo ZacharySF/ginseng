@@ -69,6 +69,7 @@ from ginseng.provenance import fingerprint, model_card
 from ginseng.calibration import walk_forward
 from ginseng.decision import funding_analysis
 from ginseng.portfolio import portfolio_lab
+from ginseng.frontier import portfolio_frontier
 from ginseng.withdrawals import WithdrawalAssumptions, LONG_TERM_CAPITAL_GAINS_RATE, account_liquidity
 from ginseng.optimizer import (
     SOLVER_TIME_LIMIT_SECONDS,
@@ -651,3 +652,20 @@ def numerical_demo(request: DemoNumericalRequest,
                            seed=request.seed,block_length=request.mean_block_length)
         except ValueError as error:
             raise HTTPException(status_code=422,detail=str(error)) from error
+
+
+@app.post("/analysis/frontier")
+def frontier_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]):
+    """Read-only allocation research under the explicitly synthetic cash model."""
+    if request.horizon_days > 60:
+        raise HTTPException(status_code=422, detail="Portfolio research supports horizons up to 60 days.")
+    if request.drought_view is not None:
+        raise HTTPException(status_code=422, detail="Disable stress weighting before building the portfolio frontier.")
+    with forecast_capacity():
+        state = replace(_cached_persona(request.seed), operating_buffer=request.operating_buffer,
+                        coverage_target=request.coverage_target, forecast_horizon=request.horizon_days)
+        obligations = tuple(Obligation(item.id, item.label, item.amount, item.due_in_days) for item in request.obligations)
+        try:
+            return portfolio_frontier(state, obligations, seed=request.seed, block_length=request.mean_block_length)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error

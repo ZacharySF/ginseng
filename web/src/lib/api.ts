@@ -232,7 +232,7 @@ export function postScenario(request: ScenarioRequest): Promise<ScenarioResult> 
 	);
 }
 
-export function postAnalysis<T>(kind: 'calibration' | 'funding' | 'portfolio', request: ScenarioRequest, signal?: AbortSignal): Promise<EngineResult<T>> {
+export function postAnalysis<T>(kind: 'calibration' | 'funding' | 'portfolio' | 'frontier', request: ScenarioRequest, signal?: AbortSignal): Promise<EngineResult<T>> {
 	return requestEngine<T>(`/analysis/${kind}`, {
 		method: 'POST', headers: { 'content-type': 'application/json' },
 		body: JSON.stringify(request), signal

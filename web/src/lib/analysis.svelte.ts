@@ -7,7 +7,7 @@ export class AnalysisStore<T> {
 	error = $state('');
 	#sequence = 0;
 	#controller: AbortController | null = null;
-	constructor(private kind: 'calibration' | 'funding' | 'portfolio') {}
+	constructor(private kind: 'calibration' | 'funding' | 'portfolio' | 'frontier') {}
 	reset() {
 		this.#sequence++;
 		this.#controller?.abort();

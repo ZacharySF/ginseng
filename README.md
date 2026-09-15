@@ -71,3 +71,5 @@ The offline CLI supports `--estimator initial-block-cmc` for historical cash-fai
 ### Website risk laboratory
 
 Cash events now includes optional precision refinement and an interactive 3D cash/time sensitivity explorer for historical forecasts. Rotate between shortfall probability and expected worst deficit, select extra opening cash, or inspect exact values in a table. See the [API, model definitions and browser verification](docs/risk-explorer.md).
+
+The demo **Research** page adds a [liquidity-aware portfolio frontier](docs/portfolio-frontier.md): explore hypothetical allocations by expected return, volatility and tail loss at the first cash-buffer breach. Inspect portfolio weights in 3D, compare independently simulated estimates and export the experiment. Start with **Load repair case**. Demo asset returns are synthetic.
