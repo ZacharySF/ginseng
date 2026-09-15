@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ginseng.dependencies import require_identity, supabase_http_error
 from ginseng.finance_api import FinanceWorkspace, get_finance_repository
-from ginseng.finance_models import ScenarioOverrides
+from ginseng.finance_models import ScenarioOverrides, PlanningPolicy
 from ginseng.finance_repository import FinanceRepository
 from ginseng.personal_forecast import (
     DEFAULT_FORECAST_PATHS,
@@ -23,6 +23,7 @@ from ginseng.personal_forecast import (
     evaluate_personal_forecast,
 )
 from ginseng.supabase import AuthenticatedIdentity, SupabaseError
+from ginseng.resources import forecast_capacity
 from ginseng.workspace import MAX_EXPECTED_REVISION, MAX_WORKSPACE_REVISION, StrictInt
 
 router = APIRouter(tags=["finance"])
@@ -43,6 +44,7 @@ class BacktestRequest(BaseModel):
 
     expected_revision: Annotated[StrictInt, Field(ge=0, le=MAX_EXPECTED_REVISION)]
     horizon_days: Literal[14, 30, 60]
+    policy: PlanningPolicy | None = None
 
 
 def _current_workspace(
@@ -66,31 +68,32 @@ def forecast_finance(
     repository: Annotated[FinanceRepository, Depends(get_finance_repository)],
 ) -> ForecastResponse:
     """Evaluate canonical saved finances and an optional read-only scenario."""
-    workspace = _current_workspace(request.expected_revision, identity, repository)
-    baseline = evaluate_personal_forecast(
-        workspace,
-        request.horizon_days,
-        seed=request.seed,
-        paths=request.paths,
-    )
-    if request.overrides is None:
-        return ForecastResponse(baseline=baseline, preview=None, changes=[])
+    with forecast_capacity():
+        workspace = _current_workspace(request.expected_revision, identity, repository)
+        baseline = evaluate_personal_forecast(
+            workspace,
+            request.horizon_days,
+            seed=request.seed,
+            paths=request.paths,
+        )
+        if request.overrides is None:
+            return ForecastResponse(baseline=baseline, preview=None, changes=[])
 
-    try:
-        preview_workspace = apply_scenario_overrides(workspace, request.overrides)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
-    preview = evaluate_personal_forecast(
-        preview_workspace,
-        request.horizon_days,
-        seed=request.seed,
-        paths=request.paths,
-    )
-    return ForecastResponse(
-        baseline=baseline,
-        preview=preview,
-        changes=describe_scenario_changes(workspace, request.overrides),
-    )
+        try:
+            preview_workspace = apply_scenario_overrides(workspace, request.overrides)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+        preview = evaluate_personal_forecast(
+            preview_workspace,
+            request.horizon_days,
+            seed=request.seed,
+            paths=request.paths,
+        )
+        return ForecastResponse(
+            baseline=baseline,
+            preview=preview,
+            changes=describe_scenario_changes(workspace, request.overrides),
+        )
 
 
 @router.post("/finance/backtest", response_model=BacktestSummary)
@@ -100,8 +103,13 @@ def backtest_finance(
     repository: Annotated[FinanceRepository, Depends(get_finance_repository)],
 ) -> BacktestSummary:
     """Run a bounded, training-only rolling-origin accuracy check."""
-    workspace = _current_workspace(request.expected_revision, identity, repository)
-    try:
-        return backtest_personal_history(workspace, request.horizon_days)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
+    with forecast_capacity():
+        workspace = _current_workspace(request.expected_revision, identity, repository)
+        if request.policy is not None:
+            workspace = workspace.model_copy(update={
+                "inputs": workspace.inputs.model_copy(update={"policy": request.policy})
+            })
+        try:
+            return backtest_personal_history(workspace, request.horizon_days)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error

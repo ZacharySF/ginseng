@@ -24,10 +24,11 @@ export type FundingAnalysis = FundingAnalysisReport | { status: 'unavailable'; r
 export interface FundingAnalysisReport {
 	status: string; reason?: string; evaluation_horizon_days: number; evaluation_draw_id: string;
 	evaluation_weight_hash: string; paths: number;
-	anchors: (LossMetrics & { id: string; label: string; feasible: boolean })[];
+	anchors: (LossMetrics & { id: string; label: string; feasible: boolean; meets_policy?: boolean; policy_reason?: string | null })[];
 	frontier: { limit: number; status: string; plan: OptimalPlan | null }[];
 	base?: OptimalPlan;
 	holdout: (LossMetrics & { status: 'ready'; label: string; paths: number;
+        meets_policy?: boolean; policy_reason?: string | null;
 		within_mean_buffer_limit: boolean; within_tail_deficit_limit: boolean | null })
 		| { status: 'unavailable'; message: string } | null;
 	shadow_checks: { resource: string; solver_dual: number | null; stable: boolean;

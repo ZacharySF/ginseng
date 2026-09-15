@@ -6,10 +6,11 @@
 		response?: ScenarioResponse | null;
 		loading?: boolean;
 		onRetry: () => void;
-		onLoadExample: () => void;
+		onLoadExample?: () => void;
+        deterministic?: boolean;
 	}
 
-	let { response = null, loading = false, onRetry, onLoadExample }: Props = $props();
+	let { response = null, loading = false, onRetry, onLoadExample, deterministic = false }: Props = $props();
 	const status = $derived(response?.optimizer_status);
 	// An older engine cannot supply the risk-limit details required by this panel.
 	const plan = $derived(status ? response?.optimal_plan : null);
@@ -42,12 +43,13 @@
 		<div class="state">
 			<strong>No additional funding needed</strong>
 			<p>{status.message}</p>
-			<button type="button" onclick={onLoadExample}>Load repair example <span aria-hidden="true">↗</span></button>
+			{#if onLoadExample}<button type="button" onclick={onLoadExample}>Load repair example <span aria-hidden="true">↗</span></button>{/if}
 		</div>
 	{:else if plan && response}
 		<p class="intro">Minimizes modeled tail cost under the selected buffer deficit limits below.</p>
-		{#if response.stress && !response.stress.recommendation_supported}<p class="coverage-note analysis-alert">The stress tail is too concentrated under the support policy. This computed mix is not a recommendation.</p>{/if}
-		<p class="run-context">{count.format(plan.evaluation_paths)} futures · {plan.evaluation_horizon_days}-day evaluation</p>
+		{#if response.stress?.status === 'active' && !response.stress.recommendation_supported}<p class="coverage-note analysis-alert">The stress tail is too concentrated under the support policy. This computed mix is not a recommendation.</p>{/if}
+		{#if plan.meets_policy === false}<p class="coverage-note analysis-alert">Outside your policy: {plan.policy_reason ?? 'This mix does not meet every funding limit.'}</p>{:else if plan.meets_policy}<p class="coverage-note">Meets your policy on the evaluated paths. Historical validation is separate.</p>{/if}
+        <p class="run-context">{count.format(plan.evaluation_paths)} futures · {plan.evaluation_horizon_days}-day evaluation</p>
 		<div class="cost-grid">
 			<div>
 				<p class="eyebrow">Average cost</p>
@@ -78,17 +80,17 @@
 
 		<div class="risk-section">
 			<h3>Risk with this mix</h3>
-			<div class="risk-grid">
+			{#if !deterministic}<div class="risk-grid">
 				<div><span>Runs out of cash</span><strong>{formatPercent(plan.cash_shortfall_probability)}</strong><small>Futures that fall below $0.</small></div>
 				<div><span>Breaches the buffer</span><strong>{formatPercent(plan.buffer_breach_probability)}</strong><small>Futures that fall below {formatCurrency(response.operating_buffer)}.</small></div>
 			</div>
-			<div class="buffer-limit">
+			{/if}<div class="buffer-limit">
 				<div><span>Average buffer deficit</span><strong>{count.format(plan.dollar_days_below_buffer)} dollar-days</strong></div>
 				<div><span>Allowed by this optimization</span><strong>{count.format(plan.buffer_tolerance_dollar_days)} dollar-days</strong></div>
 			</div>
 			<p class="explanation">A $100 buffer deficit lasting 3 days is 300 dollar-days. The limit applies to the average across all futures.</p>
 			{#if plan.tail_deficit !== undefined}<p class="explanation">Tail buffer deficit: <strong>{formatCurrency(plan.tail_deficit)}</strong>. {plan.tail_deficit_limit == null ? 'No additional tail-deficit limit is set.' : `Allowed tail deficit: ${formatCurrency(plan.tail_deficit_limit)}.`} This averages each path's largest buffer deficit in the worst {plan.cost_coverage_target === 1 ? 'modeled case' : `${formatPercent(1 - plan.cost_coverage_target)} of deficits`}.</p>{/if}
-			<p class="coverage-note">The {formatPercent(plan.cost_coverage_target)} setting selects the cost tail. It does not require {formatPercent(plan.cost_coverage_target)} of these funding paths to stay above the buffer.</p>
+			<p class="coverage-note">{plan.buffer_coverage_target != null ? `The optimizer conservatively enforces ${formatPercent(plan.buffer_coverage_target)} buffer coverage using the tail average of each future's worst signed buffer margin. This is a scenario-model requirement, not a guarantee about real outcomes.` : `The ${formatPercent(plan.cost_coverage_target)} setting selects the cost tail; this older result has no buffer-coverage constraint.`}</p>
 		</div>
 
 		<details>

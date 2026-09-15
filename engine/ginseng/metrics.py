@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 import numpy as np
-from ginseng.risk import probabilities, quantile
+from ginseng.risk import MONEY_TOLERANCE, probabilities, quantile
 
 from ginseng.simulate import (
     DrawBundle,
@@ -61,12 +61,12 @@ def severity_metrics(
     available_cash = immediate_funding + cash_matrix  # B_{j,t}
     min_cash_per_path = np.min(available_cash, axis=1)
     w = probabilities(len(cash_matrix), weights)
-    cash_shortfall_probability = float(np.clip(w[min_cash_per_path < 0.0].sum(), 0.0, 1.0))
+    cash_shortfall_probability = float(w[min_cash_per_path < -MONEY_TOLERANCE].sum() / w.sum())
 
     max_deficit_per_path = np.maximum(0.0, -min_cash_per_path)  # H_j (spec 27.2)
-    short_mask = max_deficit_per_path > 0.0
+    short_mask = max_deficit_per_path > MONEY_TOLERANCE
     avg_cash_deficit_when_short = (
-        float(np.dot(w, max_deficit_per_path) / cash_shortfall_probability) if cash_shortfall_probability > 0 else 0.0
+        float(np.dot(w[short_mask], max_deficit_per_path[short_mask]) / w[short_mask].sum()) if cash_shortfall_probability > 0 else 0.0
     )
 
     below_buffer = np.maximum(0.0, operating_buffer - available_cash)

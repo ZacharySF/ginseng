@@ -22,7 +22,7 @@ from typing import Sequence
 import numpy as np
 
 from ginseng.metrics import severity_metrics
-from ginseng.risk import probabilities, weight_hash
+from ginseng.risk import probabilities, weight_hash, balance_risk
 from ginseng.simulate import (
     DrawBundle,
     PathBundle,
@@ -69,6 +69,7 @@ class FundingConfig:
     lot_selection: str = "fifo"
     specific_lot_ids: tuple[str, ...] = ()
     use_business_days: bool = False
+    max_credit_utilization: float | None = None
 
     def __post_init__(self):
         fractions = (self.hybrid_cash_fraction, self.hybrid_liquidation_fraction,
@@ -131,6 +132,9 @@ class PlanResult:
     withdrawal_penalty_reserve: float = 0.0
     withdrawal_net_cash: float = 0.0
     withdrawal_accounts: tuple[AccountWithdrawal, ...] = ()
+    buffer_breach_probability: float = 0.0
+    dollar_days_below_buffer: float = 0.0
+    tail_deficit: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -268,10 +272,12 @@ def settlement_forecast_day(
     return (cursor - as_of).days + 1
 
 
-def _select_primary_credit_account(state: FinancialState) -> CreditAccount | None:
+def _select_primary_credit_account(state: FinancialState, max_utilization: float | None = None) -> CreditAccount | None:
     if not state.credit_accounts:
         return None
-    return max(state.credit_accounts, key=lambda account: account.available_credit)
+    return max(state.credit_accounts, key=lambda account: min(account.available_credit,
+        max(0, account.credit_limit * max_utilization - account.current_balance))
+        if max_utilization is not None else account.available_credit)
 
 
 def plan_evaluation_horizon(
@@ -586,7 +592,7 @@ def build_candidates(
     """Generate actual funding alternatives for the computed gap."""
     del obligations
     gap = max(0.0, gap)
-    account = _select_primary_credit_account(state)
+    account = _select_primary_credit_account(state, config.max_credit_utilization)
     account_id = account.account_id if account is not None else None
     timing = {
         "settlement_days": config.settlement_days,
@@ -601,7 +607,7 @@ def build_candidates(
             label="Credit Bridge",
             kind=PlanKind.CREDIT,
             credit_account_id=account_id,
-            credit_draw=gap,
+            credit_draw=gap / (1 - account.cash_advance_fee_pct) if account else gap,
             pay_in_full=True,
             **timing,
         ),
@@ -621,7 +627,7 @@ def build_candidates(
             label="Hybrid",
             kind=PlanKind.HYBRID,
             credit_account_id=account_id,
-            credit_draw=gap * config.hybrid_credit_fraction,
+            credit_draw=gap * config.hybrid_credit_fraction / (1 - account.cash_advance_fee_pct) if account else gap * config.hybrid_credit_fraction,
             pay_in_full=True,
             liquidation_target=_taxable_gross_for_net(state, gap * config.hybrid_liquidation_fraction, config, withdrawal_assumptions),
             withdrawal_assumptions=withdrawal_assumptions,
@@ -675,12 +681,15 @@ def comparison_draw_bundle(
     return extend_draw_bundle(bundle, horizon)
 
 
-def optimizer_comparison_bundle(state: FinancialState, bundle: DrawBundle, specs: Sequence[PlanSpec]) -> DrawBundle:
-    account = _select_primary_credit_account(state)
+def optimizer_comparison_bundle(state: FinancialState, bundle: DrawBundle | PathBundle, specs: Sequence[PlanSpec],
+                                config: FundingConfig = FundingConfig()) -> DrawBundle | PathBundle:
+    account = _select_primary_credit_account(state, config.max_credit_utilization)
     available_levers = PlanSpec("bounds", "Available funding", PlanKind.HYBRID,
         credit_account_id=account.account_id if account else None,
         credit_draw=account.available_credit if account else 0,
-        liquidation_target=sum(u.capacity for u in withdrawal_units(state)))
+        liquidation_target=sum(u.capacity for u in withdrawal_units(state)),
+        settlement_days=config.settlement_days, external_transfer_days=config.external_transfer_days,
+        trailing_days=config.trailing_days, use_business_days=config.use_business_days)
     return comparison_draw_bundle(state, bundle, [*specs, available_levers])
 
 
@@ -759,6 +768,7 @@ def evaluate_plan_paths(
                 credit_payment_due_amount = (
                     owed if spec.pay_in_full else min(credit_account.minimum_payment, owed)
                 )
+            interest_exposure += spec.credit_draw * credit_account.cash_advance_fee_pct
 
     investment_sold = 0.0
     realized_gain_loss = 0.0
@@ -814,7 +824,7 @@ def evaluate_plan_paths(
         if credit_due_day > horizon_days:
             reasons.append("the credit repayment date falls beyond the available evaluation paths")
         else:
-            adjustment[0] += spec.credit_draw
+            adjustment[0] += spec.credit_draw * (1 - credit_account.cash_advance_fee_pct)
             adjustment[credit_due_day - 1] -= credit_payment_due_amount
 
     per_path_adjustment = np.broadcast_to(adjustment, (n_paths, horizon_days)).copy()
@@ -848,6 +858,7 @@ def evaluate_plan_paths(
         weights,
     )
     available_cash = state.immediate_funding + adjusted_cash
+    risk = balance_risk(available_cash, resolved_operating_buffer, state.coverage_target, weights)
     overdraft_dollar_days = np.sum(np.maximum(0.0, -available_cash), axis=1)
     overdraft_interest_exposure = (
         float(np.dot(probabilities(n_paths, weights), overdraft_dollar_days))
@@ -861,7 +872,7 @@ def evaluate_plan_paths(
         kind=spec.kind,
         evaluation_horizon_days=horizon_days,
         evaluation_draw_id=eval_bundle.bootstrap_draw_id,
-        cash_shortfall_probability=severity["cash_shortfall_probability"],
+        cash_shortfall_probability=risk["cash_shortfall_probability"],
         avg_cash_deficit_when_short=severity["avg_cash_deficit_when_short"],
         new_debt=new_debt,
         interest_exposure=interest_exposure,
@@ -877,6 +888,9 @@ def evaluate_plan_paths(
         withdrawal_penalty_reserve=withdrawal_quote.penalty_reserve,
         withdrawal_net_cash=withdrawal_quote.net_cash,
         withdrawal_accounts=withdrawal_quote.accounts,
+        buffer_breach_probability=risk["buffer_breach_probability"],
+        dollar_days_below_buffer=risk["dollar_days_below_buffer"],
+        tail_deficit=risk["tail_deficit"],
     )
     return PlanEvaluation(result, adjusted_cash, spending_reduction)
 

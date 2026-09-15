@@ -5,12 +5,18 @@
 	import type { CalibrationReport } from '$lib/analysis-types';
 	import type { ScenarioResponse } from '$lib/types';
 	import { formatCurrency, formatPercent } from '$lib/format';
-	let { response }: { response: ScenarioResponse } = $props();
+	let { response, report: externalReport = null, loading = false, error = null, onRun, allowHistorical = true }: {
+        response: ScenarioResponse; report?: CalibrationReport | null; loading?: boolean;
+        error?: string | null; onRun?: () => void | Promise<void>; allowHistorical?: boolean;
+    } = $props();
 	const analysis = new AnalysisStore<CalibrationReport>('calibration');
 	const revision = $derived(JSON.stringify(scenarioStore.request));
 	$effect(() => { revision; analysis.reset(); });
 	const card = $derived(response.model_card);
-	const rows = $derived(analysis.data?.windows ?? []);
+	const report = $derived(onRun ? externalReport : analysis.data);
+    const busy = $derived(onRun ? loading : analysis.loading);
+    const failure = $derived(onRun ? error : analysis.error);
+    const rows = $derived(report?.windows ?? []);
 	const high = $derived(Math.max(1, ...rows.flatMap(r => [r.predicted_reserve, r.realized_required])));
 	const x = (i: number) => 55 + i * 535 / Math.max(1, rows.length - 1);
 	const y = (value: number) => 205 - value / high * 165;
@@ -19,11 +25,11 @@
 <section class="analysis-panel" id="model-evidence" aria-label="Model evidence">
 	<h2>What the model knows</h2>
 	<p><strong>{card?.evidence_statement ?? 'More simulations improve numerical precision. They do not create more historical evidence.'}</strong></p>
-	{#if card}
+	{#if card?.version}
 		<p>{card.history_days} days of history · {card.simulation_paths.toLocaleString()} simulated futures. {card.source}</p>
 		<details><summary>Model card · version {card.version}</summary>
 			<p>{card.purpose}</p><p><strong>Predicted quantity:</strong> {card.target}</p>
-			<p>History: {card.history_start} through {card.history_end}.</p>
+			<p>{card.history_days ? `History: ${card.history_start} through ${card.history_end}.` : "No historical sample is used by this forecast."}</p>
 			<h3>Assumptions and limitations</h3><ul>{#each card.limitations as limitation}<li>{limitation}</li>{/each}</ul>
 			<h3>When recommendations stop</h3><ul>{#each card.recommendation_gates as gate}<li>{gate}</li>{/each}</ul>
 			<h3>Outside this model's purpose</h3><ul>{#each card.prohibited_uses as use}<li>{use}</li>{/each}</ul>
@@ -34,12 +40,12 @@
 		<p>Paths, probability weights, stress assumptions, model configuration, and inputs have separate fingerprints. A weight change is a different run even when its futures are unchanged.</p>
 		{#each Object.entries(response.provenance ?? {}) as [name, hash]}<strong>{name.replaceAll('_', ' ')}</strong><code class="fingerprint">{hash}</code>{/each}
 	</details>
+	{#if allowHistorical}
 	<h3>Test against later history</h3>
 	<p>Train on the past, predict the next window, then compare with what happened. Today's added events and stress assumptions are excluded from this historical check.</p>
-	<button class="primary" type="button" disabled={analysis.loading} onclick={() => analysis.run(scenarioStore.request)}>{analysis.loading ? 'Checking historical windows…' : analysis.data ? 'Run historical check again' : 'Run historical check'}</button>
-	{#if analysis.error}<p class="analysis-alert" role="alert">{analysis.error}</p>{/if}
-	{#if analysis.data}
-		{@const report = analysis.data}
+	<button class="primary" type="button" disabled={busy} onclick={() => onRun ? onRun() : analysis.run(scenarioStore.request)}>{busy ? 'Checking historical windows…' : report ? 'Run historical check again' : 'Run historical check'}</button>
+	{#if failure}<p class="analysis-alert" role="alert">{failure}</p>{/if}
+	{#if report}
 		{@const sample = report.primary}
 		<div class="analysis-grid">
 			<div><small>Nominal coverage</small><strong class="analysis-value">{formatPercent(report.nominal_coverage)}</strong></div>
@@ -74,4 +80,5 @@
 			{#each Object.entries(report.formal_tests) as [name, test]}<p><strong>{name.replaceAll('_',' ')}:</strong> {test.status === 'computed' ? `p-value ${test.p_value?.toFixed(3)}. ${test.caveat}` : test.reason}</p>{/each}
 		</details>
 	{/if}
+{/if}
 </section>

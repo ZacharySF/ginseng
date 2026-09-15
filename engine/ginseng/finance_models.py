@@ -70,7 +70,7 @@ TransactionCategory = Literal[
     "investment_buy",
     "investment_sell",
 ]
-HoldingAccount = Literal["taxable", "retirement"]
+HoldingAccount = Literal["taxable", "traditional", "roth", "retirement"]
 PlanningPriority = Literal[
     "avoid_interest_bearing_debt",
     "minimize_taxable_sales",
@@ -175,6 +175,7 @@ class HistoricalTransaction(_FinanceModel):
 
 
 class ModelAssumptions(_FinanceModel):
+    income_payments_per_month: Annotated[FiniteNumber, Field(gt=0, le=30)] = 2.0
     monthly_variable_income_cents: Annotated[StrictInt, Field(ge=0, le=MAX_BILL_CENTS)] = 0
     monthly_essential_spending_cents: Annotated[StrictInt, Field(ge=0, le=MAX_BILL_CENTS)] = 0
     monthly_discretionary_spending_cents: Annotated[StrictInt, Field(ge=0, le=MAX_BILL_CENTS)] = 0
@@ -198,6 +199,9 @@ class PersonalCreditAccount(_FinanceModel):
     payment_due_day: Annotated[StrictInt, Field(ge=1, le=28)]
     grace_period_eligible: StrictBool
     minimum_payment_cents: Annotated[StrictInt, Field(ge=0, le=MAX_ABS_BALANCE_CENTS)]
+    cash_advance_limit_cents: Annotated[StrictInt, Field(ge=0, le=MAX_ABS_BALANCE_CENTS)] = 0
+    cash_advance_apr: Annotated[FiniteNumber, Field(ge=0, le=1)] = 0.0
+    cash_advance_fee_pct: Annotated[FiniteNumber, Field(ge=0, le=0.5)] = 0.0
 
     @model_validator(mode="after")
     def name_is_trimmed(self) -> "PersonalCreditAccount":
@@ -370,6 +374,7 @@ def _validate_event_rules(
 
 
 class FinanceInputs(_FinanceModel):
+    roth_contribution_basis_cents: Annotated[StrictInt, Field(ge=0, le=MAX_ABS_BALANCE_CENTS)] = 0
     mode: FinanceMode = "scheduled"
     income_events: list[CashBill] = Field(default_factory=list, max_length=MAX_FINANCE_INCOME_EVENTS)
     event_rules: list[EventRule] = Field(default_factory=list, max_length=MAX_EVENT_RULES)

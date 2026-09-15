@@ -2,17 +2,31 @@
 
 from dataclasses import asdict, replace
 from time import monotonic
+from types import SimpleNamespace
 
 import numpy as np
 
-from ginseng.funding import PlanKind, PlanSpec, evaluate_plan_paths, _select_primary_credit_account
+from ginseng.funding import PlanKind, PlanSpec, evaluate_plan_paths
 from ginseng.optimizer import OptimalPlan, OptimizationFailure, optimize_funding
-from ginseng.risk import cvar, quantile, weight_hash
+from ginseng.risk import cvar, quantile, weight_hash, balance_risk
+from ginseng.policy import policy_assessment, FundingPolicy
 from ginseng.simulate import draw_bundle
 from ginseng.stress import scenario_weights
 from ginseng.withdrawals import WithdrawalAssumptions
 
 ANALYSIS_BUDGET_SECONDS = 40.0
+
+
+def _increase_credit_capacity(account, utilization_limit, bump):
+    """Increase spendable borrowing capacity, not just the nominal card limit."""
+    if utilization_limit <= 0:
+        return None
+    current_capacity = max(0.0, min(account.available_credit,
+        account.credit_limit * utilization_limit - account.current_balance))
+    limit = max(account.credit_limit + bump,
+                (account.current_balance + current_capacity + bump) / utilization_limit)
+    return replace(account, credit_limit=limit,
+        cash_advance_limit=account.cash_advance_limit + bump if account.cash_advance_limit is not None else None)
 
 
 def loss_metrics(evaluation, state, q, weights, tax_rate, overdraft_apr) -> dict:
@@ -24,21 +38,21 @@ def loss_metrics(evaluation, state, q, weights, tax_rate, overdraft_apr) -> dict
     return {
         "expected_cost": float(weights @ cost), "cvar_cost": cvar(cost, q, weights),
         "var_cost": quantile(cost, q, weights), "tail_deficit": cvar(worst_deficit, q, weights),
-        "cash_shortfall_probability": float(weights @ (balances.min(axis=1) < 0)),
-        "buffer_breach_probability": float(weights @ (balances.min(axis=1) < state.operating_buffer)),
-        "dollar_days_below_buffer": float(weights @ np.maximum(0.0, state.operating_buffer - balances).sum(axis=1)),
+        **balance_risk(balances, state.operating_buffer, q, weights),
     }
 
 
-def frozen_plan_evaluation(state, bundle, obligations, plan, weights, q, tax_rate, overdraft_apr):
-    account = _select_primary_credit_account(state)
+def frozen_plan_evaluation(state, bundle, obligations, plan, weights, q, tax_rate, overdraft_apr, decision_horizon_days=None):
     spec = PlanSpec("optimized", "Optimized", PlanKind.HYBRID,
-                    credit_account_id=account.account_id if account else None,
+                    credit_account_id=plan.credit_account_id,
                     credit_draw=plan.credit_draw, liquidation_target=plan.liquidation_amount,
+                    settlement_days=plan.settlement_days, external_transfer_days=plan.external_transfer_days,
+                    use_business_days=plan.use_business_days,
                     withdrawal_allocations=plan.withdrawal_allocations,
                     withdrawal_assumptions=WithdrawalAssumptions(long_term_rate=tax_rate),
                     discretionary_reduction_fraction=plan.deferral_fraction)
-    evaluated = evaluate_plan_paths(state, bundle, obligations, spec, weights)
+    evaluated = evaluate_plan_paths(state, bundle, obligations, spec, weights,
+                                    decision_horizon_days=decision_horizon_days or plan.decision_horizon_days)
     return loss_metrics(evaluated, state, q, weights, tax_rate, overdraft_apr)
 
 
@@ -54,10 +68,16 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
 
     q = parameters["coverage_target"]
     base = solve()
+    policy = parameters.get("funding_policy", FundingPolicy(max_credit_utilization=1.0))
+    if isinstance(base, OptimalPlan):
+        policy = replace(policy, buffer_tolerance_dollar_days=base.buffer_tolerance_dollar_days,
+                         tail_deficit_limit=base.tail_deficit_limit)
     anchors = []
     for spec in specs:
-        evaluation = evaluate_plan_paths(state, bundle, obligations, spec, weights)
+        evaluation = evaluate_plan_paths(state, bundle, obligations, spec, weights,
+                                         decision_horizon_days=parameters.get("decision_horizon_days"))
         anchors.append({"id": spec.id, "label": spec.label, "feasible": evaluation.result.feasible,
+                        **policy_assessment(evaluation.result, policy),
                         **loss_metrics(evaluation, state, q, weights, parameters["capital_gains_rate"], parameters["overdraft_apr"])})
     result = {
         "status": "ready", "evaluation_horizon_days": bundle.horizon_days,
@@ -79,17 +99,23 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
         result["holdout"] = {"status": "unavailable", "message": "Fresh scenarios do not support the active stress assumption."}
     else:
         observed = frozen_plan_evaluation(state, holdout, obligations, base, holdout_weights, q,
-                                         parameters["capital_gains_rate"], parameters["overdraft_apr"])
+                                         parameters["capital_gains_rate"], parameters["overdraft_apr"], parameters.get("decision_horizon_days"))
         result["holdout"] = {"status": "ready", "evaluation_draw_id": holdout.bootstrap_draw_id,
             "evaluation_weight_hash": weight_hash(holdout_weights), "paths": holdout.n_paths,
             "label": "Fresh simulation check, not new historical evidence. The selected actions were not re-optimized.",
             **observed,
             "within_mean_buffer_limit": observed["dollar_days_below_buffer"] <= base.buffer_tolerance_dollar_days + 1e-6,
             "within_tail_deficit_limit": observed["tail_deficit"] <= base.tail_deficit_limit + 1e-6 if base.tail_deficit_limit is not None else None}
+        checked_policy = replace(policy,
+                                 buffer_tolerance_dollar_days=base.buffer_tolerance_dollar_days,
+                                 tail_deficit_limit=base.tail_deficit_limit)
+        result["holdout"].update(policy_assessment(SimpleNamespace(**observed,
+            credit_draw=base.credit_draw, credit_utilization=base.credit_utilization), checked_policy))
 
     # Verify marginal values near the current solution, never extrapolate
     # them over the entire credit limit or the entire deficit allowance.
-    account = _select_primary_credit_account(state)
+    account = next((account for account in state.credit_accounts
+                    if account.account_id == base.credit_account_id), None)
     for resource in ("credit_capacity", "mean_buffer_allowance"):
         dual = base.implied_credit_price if resource == "credit_capacity" else base.implied_liquidity_price
         checks = []
@@ -97,7 +123,11 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
             continue
         for bump in (1.0, 10.0, 100.0):
             if resource == "credit_capacity":
-                nudged = replace(state, credit_accounts=tuple(replace(a, credit_limit=a.credit_limit + bump)
+                increased = _increase_credit_capacity(account, policy.max_credit_utilization, bump)
+                if increased is None:
+                    checks.append({"bump": bump, "value_per_unit": None, "status": "credit_disabled_by_policy"})
+                    continue
+                nudged = replace(state, credit_accounts=tuple(increased
                     if a.account_id == account.account_id else a for a in state.credit_accounts))
                 solution = solve(nudged)
             else:

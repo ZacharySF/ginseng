@@ -1,5 +1,6 @@
 import { requestEngine, type EngineResult } from './api';
 import type { ScenarioResponse } from './types';
+import type { CalibrationReport } from './analysis-types';
 import type { CashAccount, CashBill, CashWorkspace } from './workspace';
 
 export type { CashAccount, CashBill, CashWorkspace } from './workspace';
@@ -19,7 +20,7 @@ export type TransactionCategory =
 	| 'credit_payment'
 	| 'investment_buy'
 	| 'investment_sell';
-export type HoldingAccount = 'taxable' | 'retirement';
+export type HoldingAccount = 'taxable' | 'traditional' | 'roth' | 'retirement';
 export type PlanningPriority =
 	| 'avoid_interest_bearing_debt'
 	| 'minimize_taxable_sales'
@@ -50,6 +51,7 @@ export interface HistoricalTransaction {
 }
 
 export interface ModelAssumptions {
+    income_payments_per_month: number;
 	monthly_variable_income_cents: number;
 	monthly_essential_spending_cents: number;
 	monthly_discretionary_spending_cents: number;
@@ -64,6 +66,9 @@ export interface ModelAssumptions {
 }
 
 export interface PersonalCreditAccount {
+    cash_advance_limit_cents: number;
+    cash_advance_apr: number;
+    cash_advance_fee_pct: number;
 	id: string;
 	name: string;
 	credit_limit_cents: number;
@@ -134,6 +139,7 @@ export interface AlertPreferences {
 }
 
 export interface FinanceInputs {
+    roth_contribution_basis_cents: number;
 	mode: FinanceMode;
 	income_events: CashBill[];
 	event_rules: EventRule[];
@@ -213,14 +219,15 @@ export interface ForecastResponse {
 export interface BacktestWindow {
 	start_date: string;
 	end_date: string;
-	actual_change_cents: number;
-	predicted_change_cents: number;
+	realized_required_cents: number;
+	predicted_reserve_cents: number;
 	covered: boolean;
 }
 
 export interface BacktestSummary {
 	periods: number;
-	covered_80_percent: number;
+	observed_coverage: number;
+	calibration: CalibrationReport;
 	mean_absolute_error_cents: number;
 	windows: BacktestWindow[];
 	warning: string | null;
@@ -229,11 +236,13 @@ export interface BacktestSummary {
 export interface BacktestRequest {
 	expected_revision: number;
 	horizon_days: ForecastHorizonDays;
+	policy?: PlanningPolicy;
 }
 
 export function defaultFinanceInputs(): FinanceInputs {
 	return {
 		mode: 'scheduled',
+        roth_contribution_basis_cents: 0,
 		income_events: [],
 		event_rules: [],
 		transactions: [],
@@ -241,6 +250,7 @@ export function defaultFinanceInputs(): FinanceInputs {
 		history_end: null,
 		history_complete: false,
 		assumptions: {
+            income_payments_per_month: 2,
 			monthly_variable_income_cents: 0,
 			monthly_essential_spending_cents: 0,
 			monthly_discretionary_spending_cents: 0,
@@ -305,7 +315,7 @@ export function forecastFinance(request: ForecastRequest): Promise<EngineResult<
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(request)
 		},
-		{ requiresAuth: true }
+		{ requiresAuth: true, timeoutMs: 45000 }
 	);
 }
 
@@ -317,7 +327,7 @@ export function runBacktest(request: BacktestRequest): Promise<EngineResult<Back
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify(request)
 		},
-		{ requiresAuth: true }
+		{ requiresAuth: true, timeoutMs: 60000 }
 	);
 }
 

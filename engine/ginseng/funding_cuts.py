@@ -33,7 +33,8 @@ class CutSolution:
 
 def solve_funding_cuts(base, savings, credit_effect, availability, capacities, net_rates,
                        charge_rates, credit_capacity, interest_rate, overdraft_rate,
-                       buffer, allowance, tail_limit, q, weights, time_limit, objective_kind="cvar"):
+                       buffer, allowance, tail_limit, q, weights, time_limit, objective_kind="cvar",
+                       buffer_coverage_target=None):
     """All monetary inputs/outputs share the caller's numerical dollar scale."""
     from ginseng.risk import quantile
 
@@ -73,12 +74,20 @@ def solve_funding_cuts(base, savings, credit_effect, availability, capacities, n
                 -net_rates * (active_weights @ availability[index]),
                 [-active_weights @ savings[path_indices, index]],
             ))
-        return cost, cost_gradient, mean, mean_gradient, tail, tail_gradient, quantile(stochastic, q, weights)
+        coverage, coverage_gradient = None, None
+        if buffer_coverage_target is not None:
+            index = np.argmin(balance, axis=1)
+            margin = buffer - balance[path_indices, index]
+            tw = tail_probabilities(margin, buffer_coverage_target, weights)
+            coverage = tw @ margin
+            coverage_gradient = np.concatenate(([-tw @ credit_effect[index]],
+                -net_rates * (tw @ availability[index]), [-tw @ savings[path_indices, index]]))
+        return cost, cost_gradient, mean, mean_gradient, tail, tail_gradient, quantile(stochastic, q, weights), coverage, coverage_gradient
 
     rows, rhs, mean_rows = [], [], []
 
     def add_planes(x, observation):
-        cost, cg, mean, mg, tail, tg, _ = observation
+        cost, cg, mean, mg, tail, tg, _, coverage, coverage_gradient = observation
         rows.append(np.append(cg, -1.0))
         rhs.append(float(cg @ x - cost))
         mean_rows.append(len(rows))
@@ -87,6 +96,9 @@ def solve_funding_cuts(base, savings, credit_effect, availability, capacities, n
         if tail_limit is not None:
             rows.append(np.append(tg, 0.0))
             rhs.append(float(tail_limit + tg @ x - tail))
+        if coverage is not None:
+            rows.append(np.append(coverage_gradient, 0.0))
+            rhs.append(float(coverage_gradient @ x - coverage))
 
     zero = np.zeros(dimensions)
     add_planes(zero, evaluate(zero))
@@ -106,7 +118,7 @@ def solve_funding_cuts(base, savings, credit_effect, availability, capacities, n
             raise CutSolveFailure({1: "solver_timeout", 2: "infeasible", 3: "unbounded"}.get(result.status, "solver_error"))
         x = np.clip(result.x[:-1], 0, upper)
         observation = evaluate(x)
-        cost, _, mean, _, tail, _, stochastic_var = observation
+        cost, _, mean, _, tail, _, stochastic_var, coverage, _ = observation
         # At a $1,000 scale these floors are a micro-dollar of feasibility
         # and a hundredth of a cent of objective accuracy; larger values retain
         # a relative 1e-7 objective gap. Final caller checks are independent.
@@ -114,6 +126,7 @@ def solve_funding_cuts(base, savings, credit_effect, availability, capacities, n
         gap_tolerance = max(1e-7, 1e-7 * abs(cost))
         if (mean <= allowance + feasibility_tolerance
                 and (tail is None or tail <= tail_limit + feasibility_tolerance)
+                and (coverage is None or coverage <= feasibility_tolerance)
                 and cost <= result.fun + gap_tolerance):
             return CutSolution(float(x[0]), x[1:-1], float(x[-1]), float(cost), float(stochastic_var),
                 float(-np.sum(result.ineqlin.marginals[mean_rows])),

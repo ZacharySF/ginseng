@@ -178,7 +178,7 @@ def account_liquidity(state, assumptions=DEFAULT_ASSUMPTIONS) -> dict:
             "availability_delay_days": AVAILABILITY_DELAY_DAYS,
             "assumptions": [
                 {"label": "Ordinary income / short-term gain rate", "value": f"{assumptions.ordinary_rate * 100:g}%",
-                 "source": "Selected demo marginal federal rate; not inferred from income or a tax return.", "url": None},
+                 "source": "Selected model marginal federal rate; not inferred from income or a tax return.", "url": None},
                 {"label": "Long-term capital gains rate", "value": f"{assumptions.long_term_rate * 100:g}%",
                  "source": "Selected marginal rate, applied only to positive lot gains held more than one year.", "url": "https://www.irs.gov/taxtopics/tc409"},
                 {"label": "Traditional IRA early-withdrawal penalty", "value": f"{assumptions.early_penalty * 100:g}%",
@@ -190,5 +190,5 @@ def account_liquidity(state, assumptions=DEFAULT_ASSUMPTIONS) -> dict:
                 {"label": "Other tax effects", "value": "Excluded",
                  "source": "State tax, NIIT, netting, loss deductions, bracket crossings, IRA nondeductible basis and exceptions require more household information. Losses create no cash rebate.", "url": None},
             ],
-            "scope": "Fixed demonstration assumptions for taxable brokerage and IRAs, not employer retirement plans. No tax rules are fetched at runtime.",
+            "scope": "Fixed planning assumptions for taxable brokerage and IRAs, not employer retirement plans. No tax rules are fetched at runtime.",
             "tie_break": "At equal modeled cost, use taxable funds before Roth contributions before traditional withdrawals."}

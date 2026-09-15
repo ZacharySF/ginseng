@@ -71,10 +71,10 @@
 		<div class="hero-copy" data-parallax-strength="22 14">
 			<a class="hero-kicker" href={resolve('/welcome')} aria-label="Ginseng home, personal ledger and synthetic demo">Personal ledger</a>
 			<h1>Ginseng</h1>
-			<p class="hero-tagline">Your ledger, clearly separated.</p>
+			<p class="hero-tagline">A timing problem, modeled.</p>
 			<p class="hero-body">
-				Save balances and known bills in your personal ledger. Probabilistic reserve and funding
-				comparisons remain in a separate synthetic demo.
+				Save your cash, bills, and income inputs. Estimate the reserve your plan needs and compare
+				funding choices, or explore a separate synthetic demo.
 			</p>
 		</div>
 	</section>

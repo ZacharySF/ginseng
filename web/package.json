@@ -12,7 +12,8 @@
 		"test:scenario": "node tests/scenario-store.test.mjs",
 		"test:analysis": "node tests/analysis-panel.test.mjs",
 		"test:history-income": "node tests/historical-income.test.mjs",
-		"test:onboarding": "node tests/onboarding-finance.test.mjs"
+		"test:onboarding": "node tests/onboarding-finance.test.mjs",
+		"test:finance": "node tests/finance-store.test.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.6",

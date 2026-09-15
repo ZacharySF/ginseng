@@ -47,6 +47,7 @@
 			{comparisonLabel}
 		/>
 		<ForecastBacktest
+            response={current}
 			modelMode={forecast.model_mode}
 			accuracy={financialStore.accuracy}
 			error={financialStore.accuracyError}

@@ -175,10 +175,13 @@ class CreditAccount:
     payment_due_day: int
     grace_period_eligible: bool
     minimum_payment: float
+    cash_advance_limit: float | None = None
+    cash_advance_fee_pct: float = 0.0
 
     @property
     def available_credit(self) -> float:
-        return max(0.0, self.credit_limit - self.current_balance)
+        available = max(0.0, self.credit_limit - self.current_balance)
+        return min(available, self.cash_advance_limit) if self.cash_advance_limit is not None else available
 
 
 @dataclass(frozen=True)

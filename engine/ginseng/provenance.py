@@ -52,14 +52,19 @@ def fingerprint(state, bundle, obligations, weights, view, config, cash_matrix) 
     return {**hashes, "run_hash": digest(hashes)}
 
 
-def model_card(state, bundle, config, stress, hashes) -> dict:
-    start = min(t.txn_date for t in state.transactions)
+def model_card(state, bundle, config, stress, hashes, *, source="demo") -> dict:
+    start = state.history_start or min(t.txn_date for t in state.transactions)
+    end = state.history_end or state.as_of
+    has_history = source in ("demo", "history")
     return {
         "version": MODEL_VERSION,
         "evidence_statement": EVIDENCE_STATEMENT,
-        "source": "Synthetic demonstration history; not the user's bank transactions.",
-        "history_start": start.isoformat(), "history_end": state.as_of.isoformat(),
-        "history_days": (state.as_of - start).days + 1,
+        "source": {"demo": "Synthetic demonstration history; not the user's bank transactions.",
+                   "history": "Classified personal history, limited to the saved coverage dates.",
+                   "assumptions": "Reviewed personal assumptions; no historical evidence is invented.",
+                   "scheduled": "Known personal income and bills; a deterministic schedule."}[source],
+        "history_start": start.isoformat() if has_history else None, "history_end": end.isoformat() if has_history else None,
+        "history_days": (end - start).days + 1 if has_history else 0,
         "simulation_paths": bundle.n_paths,
         "purpose": "Compare hypothetical liquidity choices under explicit assumptions.",
         "target": "Starting cash required to preserve the operating buffer at every modeled end-of-day balance.",
@@ -69,12 +74,14 @@ def model_card(state, bundle, config, stress, hashes) -> dict:
             "A deterministic bill can correctly move the reserve almost dollar for dollar; stress weights do not remove that property.",
             "Bootstrap futures replay historical blocks; they cannot establish probabilities for unseen regimes.",
             "Non-overlapping historical windows may still be dependent; intervals assume independent windows.",
-            "Market, cash-flow, and asset histories in this demo are synthetic, including their dependence.",
-            "Sales execute at recorded prices; settlement plus transfer uses a three-calendar-day approximation, not a trading calendar.",
+            ("Market, cash-flow, and asset histories in this demo are synthetic, including their dependence."
+             if source == "demo" else "Assumed correlations and payment frequencies are policy inputs, not estimated facts."),
+            "Sales execute at recorded prices. Settlement and transfer assumptions are listed in the account-access panel; exchange holidays are not modeled.",
             "Taxable gains use lot holding periods. Traditional IRA withdrawals assume ordinary income plus an early penalty; Roth access is capped at remaining regular contributions.",
             "Tax and penalty reserves are earmarked from proceeds, not actual withholding or final tax bills. Losses create no rebate; Roth earnings, conversions and unclassified retirement accounts are excluded.",
             "Funding controls are chosen today and held fixed across futures; this is not an adaptive trading policy.",
-            "The credit model bridges cash using the primary card's purchase APR and statement timing; real cash advances may have different fees and terms.",
+            ("The demo bridges cash using purchase APR and statement timing as a proxy; real cash advances may have different fees and terms."
+             if source == "demo" else "Only explicitly recorded cash-advance capacity funds cash today. Fees are withheld immediately; principal and interest are repaid at the recorded due date."),
             "A daily two-state Gaussian income fit could learn payday versus non-payday, rather than droughts; regime switching is not fitted.",
         ],
         "recommendation_gates": ["Unavailable funding operation", "Every named plan fails policy limits",

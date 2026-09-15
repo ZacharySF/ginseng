@@ -10,7 +10,7 @@ Start in **Data** (`/data`) with the opening date and settled checking or saving
 
 **Events** (`/future`) handles bills, scheduled income, recurrence, and paid, received, or skipped occurrences. Changes are an unsaved what-if until you commit them. A paid occurrence uses its settlement date once; a payment before the opening snapshot is already reflected in that balance. Overdue one-time bills must be reconciled, not silently moved to today.
 
-**Reserve** (`/liquidity`) shows the coverage curve, buffer tradeoffs, downside distribution, and persistence sensitivity when the chosen model supports them. **Funding** (`/plans`) compares cash, credit, taxable sales, and spending deferral while keeping restricted capital separate. A covered reserve is shown as covered, not as a missing funding calculation.
+**Reserve** (`/liquidity`) shows the coverage curve, buffer tradeoffs, downside distribution, and persistence sensitivity when the chosen model supports them. **Funding** (`/plans`) compares available cash advances, taxable sales, traditional IRA withdrawals, documented Roth contributions, and spending deferral. It shows gross withdrawals, tax and penalty reserves, and spendable proceeds separately. Undocumented retirement access stays restricted. A covered reserve is shown as covered unless an explicit deficit limit still requires action.
 
 Save named scenarios and compare them from any personal forecast screen. Scenarios retain events, assumptions, and policy; they use the current saved balances, credit, and holdings rather than pretending to be historical account snapshots. History mode also offers a walk-forward backtest against held-out variable cash flows, using only earlier records to train each forecast.
 
@@ -24,7 +24,7 @@ History mode and the demo resample stretches of income, spending, and available 
 
 A 95% coverage target means choosing enough cash to stay above the selected buffer in roughly 95% of those simulated paths. It isn't a promise about what will happen to your money.
 
-Funding comparisons reuse the same paths so a plan doesn't look better just because it got a luckier simulation. The CVaR optimizer minimizes average cost across the worst simulated outcomes under an average buffer-erosion limit. That is not the same constraint as the reserve's coverage target or a hard shortfall-probability cap; the interface shows the optimizer's remaining shortfall risk. Taxable sales use the selected FIFO or HIFO lots, and losses do not create an immediate tax-credit cash inflow. Unusable or oversized solves return no optimized plan.
+Funding comparisons reuse the same paths, weights, and evaluation horizon. The CVaR optimizer minimizes average cost across the worst simulated outcomes, subject to a conservative buffer-coverage constraint and a separate average deficit limit. Named plans and the optimizer are checked against the same policy before being recommended; the interface shows remaining shortfall risk. Named taxable sales follow the selected FIFO or HIFO policy, while the continuous optimizer selects lots by withdrawal charges. Losses never create an immediate cash rebate. Unusable or oversized solves return an explicit explanation.
 
 Ginseng doesn't move money or connect to a live bank account. The optional Capital One Nessie integration uses simulated data too. This is a hackathon project, not financial advice.
 
@@ -77,7 +77,7 @@ bun run --cwd web dev --host 127.0.0.1 --port 5174 --strictPort
 
 Open [127.0.0.1:5174](http://127.0.0.1:5174) and sign in with an account from the hosted project. Local Supabase accounts are separate and won't work here. Save an account and bill, then reload to check persistence. Restart both servers after changing environment settings.
 
-The database needs migrations `0001` (onboarding), `0002` (cash workspace), and `0003` (complete financial inputs). The current RPCs are `get_finance_workspace` and `save_finance_workspace`; the cash-only additions writer preserves supplemental data and uses the same validation and revision check. Back up hosted data and reconcile migration history before applying missing migrations in order. Do not replay existing migrations or reset hosted data. Migration `0003` does not rewrite existing cash or profile rows.
+The database needs migrations `0001` (onboarding), `0002` (cash workspace), `0003` (complete financial inputs), `0004` (six-step guided onboarding), and `0005` (account types, payment arrivals, and cash-advance terms). The current RPCs are `get_finance_workspace` and `save_finance_workspace`; the cash-only additions writer preserves supplemental data and uses the same validation and revision check. Back up hosted data and reconcile migration history before applying missing migrations in order. Do not replay existing migrations or reset hosted data. Migrations `0003`, `0004`, and `0005` do not rewrite existing cash or profile rows. Apply `0005` before saving the new input fields.
 
 ### Optional isolated local database
 
@@ -106,6 +106,10 @@ Run the engine tests and frontend checks from the repository root:
 ```sh
 uv run pytest -q
 bun run --cwd web check
+bun run --cwd web test:optimizer
+bun run --cwd web test:scenario
+bun run --cwd web test:analysis
+bun run --cwd web test:finance
 bun run --cwd web build
 ```
 

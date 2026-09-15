@@ -202,7 +202,7 @@
 
 	.secondary-action {
 		background: var(--paper);
-		color: var(--cobalt-deep);
+		color: var(--link);
 	}
 
 	.requirements a:hover,

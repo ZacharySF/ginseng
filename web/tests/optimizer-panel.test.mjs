@@ -49,7 +49,7 @@ test('shows funding amounts, average and tail costs, and the actual risk contrac
 		assert.ok(output.includes(value), value);
 	}
 	assert.match(output, /worst 5%/);
-	assert.match(output, /does not require 95%/);
+	assert.match(output, /older result has no buffer-coverage constraint/);
 	assert.match(output, /1,500 dollar-days/);
 	assert.match(output, /1,900 dollar-days/);
 	assert.match(output, /not binding/);
@@ -114,4 +114,28 @@ test('an older response produces an explicit unavailable state', () => {
 	const output = text({ response: response({ optimizer_status: undefined }) });
 	assert.match(output, /Optimized mix unavailable/);
 	assert.doesNotMatch(output, /NaN|undefined|\$1,234/);
+});
+
+test('shows the enforced buffer target separately from the cost tail', () => {
+ const data=response();
+ Object.assign(data.optimal_plan,{buffer_coverage_target:.95,meets_policy:true});
+ const output=text({response:data});
+ assert.match(output,/Meets your policy on the evaluated paths/);
+ assert.match(output,/conservatively enforces 95% buffer coverage/);
+ assert.doesNotMatch(output,/older result has no buffer-coverage constraint/);
+});
+
+test('solver success cannot conceal an outside-policy result', () => {
+ const data=response();
+ Object.assign(data.optimal_plan,{meets_policy:false,policy_reason:'Buffer breach exceeds your limit.'});
+ const output=text({response:data});
+ assert.match(output,/Outside your policy: Buffer breach exceeds your limit/);
+ assert.doesNotMatch(output,/Meets your policy on the evaluated paths/);
+});
+
+test('personal empty state never offers a synthetic repair action', () => {
+ const output=text({onLoadExample:undefined,response:response({optimal_plan:null,
+  optimizer_status:{code:'not_needed',message:'Current cash covers the reserve.'}})});
+ assert.match(output,/No additional funding needed/);
+ assert.doesNotMatch(output,/Load repair example/);
 });

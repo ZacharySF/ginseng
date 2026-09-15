@@ -62,7 +62,8 @@ def training_state(state: FinancialState, cutoff, horizon: int) -> FinancialStat
     return replace(state, as_of=cutoff, transactions=transactions,
                    fixed_income_schedule=tuple(incomes), fixed_obligations=tuple(bills),
                    holdings=(), credit_accounts=(), planned_discretionary_events=(),
-                   portfolio_daily_returns=(), asset_daily_returns=(), forecast_horizon=horizon)
+                   portfolio_daily_returns=(), asset_daily_returns=(), forecast_horizon=horizon,
+                   history_end=cutoff if state.history_end is not None else None)
 
 
 def expected_shortfall_test(rows: list[dict], predictions: list[np.ndarray], q: float, seed: int) -> dict:
@@ -134,18 +135,25 @@ def formal_tests(rows: list[dict], q: float, predictions: list[np.ndarray] | Non
     return tests
 
 
-def walk_forward(state: FinancialState, horizon: int, paths: int, seed: int, q: float, buffer: float) -> dict:
-    start = min(t.txn_date for t in state.transactions)
-    history_days = (state.as_of - start).days + 1
-    primary_starts = list(range(MIN_TRAINING_DAYS, history_days - horizon + 1, horizon))
+def walk_forward(state: FinancialState, horizon: int, paths: int, seed: int, q: float, buffer: float,
+                 *, training_days=MIN_TRAINING_DAYS, source="demo", max_windows=None) -> dict:
+    start = state.history_start or min(t.txn_date for t in state.transactions)
+    end = state.history_end or state.as_of
+    history_days = (end - start).days + 1
+    def bounded(values):
+        values = list(values)
+        if max_windows is not None and len(values) > max_windows:
+            return [values[i] for i in np.linspace(0, len(values) - 1, max_windows, dtype=int)]
+        return values
+    primary_starts = bounded(range(training_days, history_days - horizon + 1, horizon))
     spacings = sorted({max(1, horizon // 2), horizon, 2 * horizon})
-    starts_by_spacing = {s: list(range(MIN_TRAINING_DAYS, history_days - horizon + 1, s)) for s in spacings}
-    descriptive_starts = range(MIN_TRAINING_DAYS, history_days - horizon + 1, 7)
+    starts_by_spacing = {s: bounded(range(training_days, history_days - horizon + 1, s)) for s in spacings}
+    descriptive_starts = bounded(range(training_days, history_days - horizon + 1, 7))
     starts = sorted(set(descriptive_starts).union(*(set(v) for v in starts_by_spacing.values())))
     realized_daily = np.zeros(history_days)
     for kind in (*VARIABLE_TYPES, *FIXED_TYPES):
         sign = 1 if kind in (T.INCOME_VARIABLE, T.INCOME_FIXED) else -1
-        realized_daily += sign * state.daily_series(kind, start, state.as_of).to_numpy()
+        realized_daily += sign * state.daily_series(kind, start, end).to_numpy()
     by_start = {}
     primary_predictions = []
     for offset in starts:
@@ -185,10 +193,11 @@ def walk_forward(state: FinancialState, horizon: int, paths: int, seed: int, q: 
     pit_counts, pit_edges = np.histogram([r["pit"] for r in primary_rows], bins=np.linspace(0, 1, 11))
     return {
         "status": "ready" if primary_starts else "insufficient_history",
-        "source": "Synthetic history; this does not validate a real household.",
+        "source": ("Synthetic history; this does not validate a real household." if source == "demo"
+                   else "Classified personal history. Reconstructed forecasts use only records available before each held-out period."),
         "target": "Starting cash required to preserve the buffer at each end of day, including routine variable flows and fixed monthly flows inferred from prior records.",
         "excluded": "Irregular expenses, investment transactions, transfers, and today's added scenario events are outside this historical target.",
-        "history_days": history_days, "training_days_minimum": MIN_TRAINING_DAYS,
+        "history_days": history_days, "training_days_minimum": training_days,
         "horizon_days": horizon, "paths_per_forecast": paths, "nominal_coverage": q,
         "primary": primary, "spacing_results": [sample(v, s) for s, v in starts_by_spacing.items()],
         "expected_tail_failures": len(primary_rows) * (1 - q),

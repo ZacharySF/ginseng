@@ -7,6 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 import ginseng.api as api
+import ginseng.scenario_service as scenario_service
 from ginseng.generate import canonical_shocks
 from ginseng.metrics import compute_scenario_metrics
 from ginseng.funding import _next_charge_payment_offset, _day_of_month_offset
@@ -31,11 +32,11 @@ def test_invalid_or_ambiguous_inputs_are_rejected_before_work(payload):
 
 def test_every_plan_receives_the_selected_buffer_and_horizon(monkeypatch):
     seen = []
-    evaluate = api.evaluate_plan
+    evaluate = scenario_service.evaluate_plan
     def observed(state, *args, **kwargs):
         seen.append((state.operating_buffer, state.forecast_horizon))
         return evaluate(state, *args, **kwargs)
-    monkeypatch.setattr(api, 'evaluate_plan', observed)
+    monkeypatch.setattr(scenario_service, 'evaluate_plan', observed)
     result = api.scenario(repair_request(operating_buffer=777, horizon_days=60), None)
     assert seen == [(777, 60)] * 4
     assert {p['evaluation_horizon_days'] for p in result.plans} == {60}

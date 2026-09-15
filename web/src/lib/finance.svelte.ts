@@ -12,7 +12,7 @@ type Status = 'idle' | 'loading' | 'ready' | 'error';
 
 // Canonical snapshots are replaced, never edited in place. Editors own their drafts.
 // https://svelte.dev/docs/svelte/$state#$state.raw
-class FinancialStore {
+export class FinancialStore {
 	workspace = $state.raw<FinanceWorkspace | null>(null);
 	forecast = $state.raw<ForecastRun | null>(null);
 	baseline = $state.raw<ForecastRun | null>(null);
@@ -41,10 +41,12 @@ class FinancialStore {
 			: null
 	);
 	#comparisonSequence = 0;
+	#comparisonTask: Promise<void> | null = null;
 	#owner: string | null = null;
 	#epoch = 0;
 	#loadSequence = 0;
 	#forecastSequence = 0;
+	#refreshTask: Promise<void> | null = null;
 	#accuracySequence = 0;
 	#conflict = $state(false);
 	readonly requiresReconciliation = $derived(this.saveUncertain || this.#conflict);
@@ -77,6 +79,8 @@ class FinancialStore {
 
 	reset(): void {
 		this.#epoch += 1;
+		this.#refreshTask = null;
+		this.#comparisonTask = null;
 		this.#loadSequence += 1;
 		this.#forecastSequence += 1;
 		this.#accuracySequence += 1;
@@ -113,6 +117,7 @@ class FinancialStore {
 
 	#markConflict(): void {
 		this.#conflict = true;
+		this.#clearAccuracy();
 		this.#forecastSequence += 1;
 		this.#comparisonSequence += 1;
 		this.comparison = null;
@@ -148,9 +153,7 @@ class FinancialStore {
 			this.#conflict = false;
 			this.saveUncertain = false;
 		}
-		this.accuracy = null;
-		this.#accuracySequence += 1;
-		this.accuracyLoading = false;
+		this.#clearAccuracy();
 		await this.refresh();
 	}
 
@@ -158,15 +161,36 @@ class FinancialStore {
 	async reload(): Promise<void> { await this.#fetchWorkspace(true); }
 
 	async refresh(): Promise<void> {
+		if (!this.workspace || this.saving || this.saveUncertain || this.#conflict) return;
+		++this.#forecastSequence;
+		this.forecastStatus = 'loading';
+		this.forecastError = null;
+		void this.compareScenario(this.#comparisonId);
+		if (!this.#refreshTask) {
+			const task = this.#drainForecasts(this.#epoch).finally(() => {
+				if (this.#refreshTask === task) this.#refreshTask = null;
+			});
+			this.#refreshTask = task;
+		}
+		return this.#refreshTask;
+	}
+
+	async #drainForecasts(epoch: number): Promise<void> {
+		while (epoch === this.#epoch) {
+			const sequence = this.#forecastSequence;
+			await this.#refreshOne(sequence);
+			if (sequence === this.#forecastSequence) return;
+		}
+	}
+
+	async #refreshOne(sequence: number): Promise<void> {
 		const workspace = this.workspace;
 		const owner = this.#owner;
 		const epoch = this.#epoch;
 		if (!workspace || !this.#current(owner, epoch) || this.saving) return;
 		if (this.#conflict || this.saveUncertain) return;
-		const sequence = ++this.#forecastSequence;
 		this.forecastStatus = 'loading';
 		this.forecastError = null;
-		void this.compareScenario(this.#comparisonId);
 		const result = await forecastFinance({
 			expected_revision: workspace.revision,
 			horizon_days: this.horizonDays,
@@ -189,14 +213,20 @@ class FinancialStore {
 	async setHorizonDays(horizon: ProjectionHorizonDays): Promise<void> {
 		if (![14, 30, 60].includes(horizon) || horizon === this.horizonDays || this.saving) return;
 		this.horizonDays = horizon;
-		this.accuracy = null;
-		this.#accuracySequence += 1;
-		this.accuracyLoading = false;
+		this.#clearAccuracy();
 		await this.refresh();
+	}
+
+	#clearAccuracy(): void {
+		++this.#accuracySequence;
+		this.accuracy = null;
+		this.accuracyError = null;
+		this.accuracyLoading = false;
 	}
 
 	async previewScenario(overrides: ScenarioOverrides): Promise<void> {
 		if (!this.workspace || this.saving || this.saveUncertain || this.#conflict) return;
+		this.#clearAccuracy();
 		this.scenario = structuredClone($state.snapshot(overrides));
 		this.scenarioName = null;
 		await this.refresh();
@@ -204,6 +234,7 @@ class FinancialStore {
 
 	async discardScenario(): Promise<void> {
 		if (this.saving) return;
+		this.#clearAccuracy();
 		this.scenario = null;
 		this.scenarioName = null;
 		await this.refresh();
@@ -218,6 +249,7 @@ class FinancialStore {
 	async loadScenario(id: string): Promise<void> {
 		const saved = this.workspace?.inputs.scenarios.find((entry) => entry.id === id);
 		if (!saved || this.saving || this.saveUncertain || this.#conflict) return;
+		this.#clearAccuracy();
 		this.scenario = structuredClone(saved.overrides);
 		this.scenarioName = saved.name;
 		this.error = saved.base_revision !== this.workspace?.revision
@@ -226,23 +258,40 @@ class FinancialStore {
 	}
 
 	async compareScenario(id: string | null): Promise<void> {
+		if (!this.workspace || !this.#current(this.#owner, this.#epoch)
+			|| this.saving || this.saveUncertain || this.#conflict) return;
+		++this.#comparisonSequence;
+		this.#comparisonId = id;
+		this.comparison = null;
+		this.comparisonError = null;
+		const saved = this.workspace.inputs.scenarios.find(entry => entry.id === id);
+		this.comparisonName = saved?.name ?? null;
+		this.comparisonStatus = id === null ? 'idle' : saved ? 'loading' : 'error';
+		if (id !== null && !saved) this.comparisonError = 'That saved scenario no longer exists. Choose another comparison.';
+		if (!this.#comparisonTask && saved) {
+			const task = this.#drainComparisons(this.#epoch).finally(() => {
+				if (this.#comparisonTask === task) this.#comparisonTask = null;
+			});
+			this.#comparisonTask = task;
+		}
+		return this.#comparisonTask ?? Promise.resolve();
+	}
+
+	async #drainComparisons(epoch: number): Promise<void> {
+		while (epoch === this.#epoch) {
+			const sequence = this.#comparisonSequence;
+			await this.#compareOne(sequence);
+			if (sequence === this.#comparisonSequence) return;
+		}
+	}
+
+	async #compareOne(sequence: number): Promise<void> {
 		const workspace = this.workspace;
 		const owner = this.#owner;
 		const epoch = this.#epoch;
 		if (!workspace || !this.#current(owner, epoch) || this.saving || this.saveUncertain || this.#conflict) return;
-		const sequence = ++this.#comparisonSequence;
-		this.#comparisonId = id;
-		this.comparison = null;
-		this.comparisonError = null;
-		const saved = workspace.inputs.scenarios.find((entry) => entry.id === id);
-		this.comparisonName = saved?.name ?? null;
-		if (id === null) { this.comparisonStatus = 'idle'; return; }
-		if (!saved) {
-			this.comparisonStatus = 'error';
-			this.comparisonError = 'That saved scenario no longer exists. Choose another comparison.';
-			return;
-		}
-		this.comparisonStatus = 'loading';
+		const saved = workspace.inputs.scenarios.find(entry => entry.id === this.#comparisonId);
+		if (!saved) return;
 		const result = await forecastFinance({ expected_revision: workspace.revision,
 			horizon_days: this.horizonDays, overrides: saved.overrides });
 		if (!this.#current(owner, epoch) || sequence !== this.#comparisonSequence
@@ -313,8 +362,7 @@ class FinancialStore {
 		if (!draft.as_of) { this.error = 'Choose the opening date before saving.'; return false; }
 		this.#loadSequence += 1;
 		this.#forecastSequence += 1;
-		this.#accuracySequence += 1;
-		this.accuracyLoading = false;
+		this.#clearAccuracy();
 		this.saving = true;
 		this.error = null;
 		try {
@@ -356,7 +404,8 @@ class FinancialStore {
 		const sequence = ++this.#accuracySequence;
 		this.accuracyLoading = true;
 		this.accuracyError = null;
-		const result = await runBacktest({ expected_revision: workspace.revision, horizon_days: this.horizonDays });
+		const result = await runBacktest({ expected_revision: workspace.revision, horizon_days: this.horizonDays,
+			policy: this.scenario?.policy ?? workspace.inputs.policy });
 		if (!this.#current(owner, epoch) || sequence !== this.#accuracySequence
 			|| this.workspace?.revision !== workspace.revision) return;
 		this.accuracyLoading = false;
