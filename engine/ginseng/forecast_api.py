@@ -26,6 +26,9 @@ from ginseng.supabase import AuthenticatedIdentity, SupabaseError
 from ginseng.resources import forecast_capacity
 from ginseng.workspace import MAX_EXPECTED_REVISION, MAX_WORKSPACE_REVISION, StrictInt
 
+from ginseng.risk_explorer import NumericalOptions, explore
+from ginseng.personal_forecast import historical_numerical_case
+
 router = APIRouter(tags=["finance"])
 
 
@@ -113,3 +116,28 @@ def backtest_finance(
             return backtest_personal_history(workspace, request.horizon_days)
         except ValueError as error:
             raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+
+
+class NumericalRequest(ForecastRequest):
+    options: NumericalOptions
+
+
+@router.post('/finance/numerics')
+def numerical_finance(
+    request: NumericalRequest,
+    identity: Annotated[AuthenticatedIdentity, Depends(require_identity)],
+    repository: Annotated[FinanceRepository, Depends(get_finance_repository)],
+):
+    with forecast_capacity():
+        workspace = _current_workspace(request.expected_revision, identity, repository)
+        try:
+            if request.overrides is not None:
+                workspace = apply_scenario_overrides(workspace,request.overrides)
+            result = explore(historical_numerical_case(workspace,request.horizon_days),request.options,seed=request.seed)
+        except ValueError as error:
+            raise HTTPException(status_code=422,detail=str(error)) from error
+        # A save during the computation also invalidates the result.
+        _current_workspace(request.expected_revision,identity,repository)
+        return result

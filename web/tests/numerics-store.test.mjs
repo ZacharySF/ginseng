@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import { after, test } from 'node:test';
+import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { compileModule } from 'svelte/compiler';
+import ts from 'typescript';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const temp=await mkdtemp(join(tmpdir(),'ginseng-numerics-'));
+after(()=>rm(temp,{recursive:true,force:true}));
+await symlink(join(root,'node_modules'),join(temp,'node_modules'),'dir');
+await writeFile(join(temp,'api.mjs'),`export const calls=[];export function requestEngine(path,init,options){return new Promise(resolve=>calls.push({path,init,options,resolve}));}`);
+const source=ts.transpileModule(await readFile(join(root,'src/lib/numerics.svelte.ts'),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace("'./api'","'./api.mjs'");
+await writeFile(join(temp,'store.mjs'),compileModule(source,{generate:'client'}).js.code);
+const {NumericalStore}=await import(pathToFileURL(join(temp,'store.mjs')).href);
+const {calls}=await import(pathToFileURL(join(temp,'api.mjs')).href);
+test('changed inputs abort pending work and reject late results',async()=>{
+ const store=new NumericalStore(); const request={expected_revision:1};
+ const first=store.run('/finance/numerics',request,'precision'); const one=calls.at(-1);
+ request.expected_revision=2; store.reset();
+ assert.equal(one.init.signal.aborted,true);
+ const second=store.run('/finance/numerics',request,'precision'); const two=calls.at(-1);
+ two.resolve({status:'ok',data:{input_id:'new'}}); await second;
+ one.resolve({status:'ok',data:{input_id:'old'}}); await first;
+ assert.equal(store.data.input_id,'new');
+ assert.equal(JSON.parse(one.init.body).expected_revision,1);
+ assert.equal(two.options.requiresAuth,true);
+});
+test('errors clear stale data and support retry',async()=>{
+ const store=new NumericalStore();store.data={input_id:'old'};
+ const run=store.run('/demo/numerics',{},'surface');
+ assert.equal(store.data,null);assert.equal(store.loading,true);
+ calls.at(-1).resolve({status:'engine-error',message:'busy'});await run;
+ assert.equal(store.error,'busy');assert.equal(store.loading,false);
+ const retry=store.run('/demo/numerics',{},'surface');calls.at(-1).resolve({status:'ok',data:{input_id:'retry'}});await retry;
+ assert.equal(store.error,'');assert.equal(store.data.input_id,'retry');
+});

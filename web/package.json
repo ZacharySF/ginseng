@@ -13,12 +13,16 @@
 		"test:analysis": "node tests/analysis-panel.test.mjs",
 		"test:history-income": "node tests/historical-income.test.mjs",
 		"test:onboarding": "node tests/onboarding-finance.test.mjs",
-		"test:finance": "node tests/finance-store.test.mjs"
+		"test:finance": "node tests/finance-store.test.mjs",
+		"test:numerics": "node tests/numerics-store.test.mjs",
+		"test:risk-browser": "node tests/risk-browser.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.6",
 		"@sveltejs/kit": "^2.9.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"@types/plotly.js": "^3.0.13",
+		"playwright": "^1.63.0",
 		"svelte": "^5.15.0",
 		"svelte-check": "^4.1.1",
 		"typescript": "^5.7.2",
@@ -26,6 +30,7 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/archivo-narrow": "^5.3.0",
-		"@supabase/supabase-js": "^2.116.0"
+		"@supabase/supabase-js": "^2.116.0",
+		"plotly.js-gl3d-dist-min": "^4.1.1"
 	}
 }

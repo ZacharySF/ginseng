@@ -1,4 +1,5 @@
 <script lang="ts">
+	import NumericalRiskPanel from '$lib/components/NumericalRiskPanel.svelte';
 	import { onMount } from 'svelte';
 	import { scenarioStore } from '$lib/scenario.svelte';
 	import { formatCurrency, formatPercent } from '$lib/format';
@@ -50,6 +51,9 @@
 				</section>
 			</main>
 		</div>
+        {#key JSON.stringify(scenarioStore.request)}
+            <NumericalRiskPanel request={scenarioStore.request} endpoint="/demo/numerics" supported={scenarioStore.loadState === 'ready' && !scenarioStore.request.drought_view && scenarioStore.request.horizon_days <= 60} />
+        {/key}
 	</div>
 {:else if scenarioStore.loadState === 'unreachable' || scenarioStore.loadState === 'error'}
 	<div class="terminal-state" role="alert"><p>Local model unavailable</p><span>{scenarioStore.errorMessage}</span><button type="button" onclick={() => scenarioStore.refresh()}>Retry model</button></div>
