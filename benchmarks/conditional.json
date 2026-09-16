@@ -1,0 +1,10 @@
+{
+  "paths": [256, 512, 1024, 2048, 4096, 8192, 16384],
+  "replicates": 32,
+  "root_seed": 42,
+  "cases": ["tiny", "canonical", "repair", "zero-heavy", "drought-heavy"],
+  "reference_paths": 1048576,
+  "reference_batch": 16384,
+  "block_length": 14,
+  "probability_rmse_tolerance": 0.005
+}

@@ -59,3 +59,7 @@ More paths improve numerical precision under the chosen model. They do not creat
 Ginseng began as a HackRice 16 cash-planning app for people with uneven income. Its authenticated SvelteKit/Supabase application, scheduled and assumptions-based personal forecasts, funding policies, and CVaR optimizer remain available. The original usage and setup documentation is preserved in [application.md](docs/application.md). No live money movement is performed.
 
 Existing contributors' work is retained. Codex implemented this numerical release, verification and measurement at the user's request; see the [change record](docs/implementation-notes.md).
+
+### Experimental conditional estimator
+
+The offline CLI supports `--estimator initial-block-cmc` for historical cash-failure probability with MC or Sobol. See the [method, validation and reproduction commands](docs/conditional-monte-carlo.md) and [measured comparison](artifacts/conditional/results.md). The path estimator remains the default.

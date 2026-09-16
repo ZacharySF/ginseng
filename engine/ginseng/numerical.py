@@ -64,10 +64,16 @@ def run_core(
     material_horizon=None,
     replicate=0,
     domain=100,
+    *,
+    estimator="path",
+    conditional_tables=None,
 ):
+    if estimator not in ("path", "initial-block-cmc"):
+        raise ValueError("Unknown estimator.")
     horizon = case.state.forecast_horizon if horizon is None else horizon
     bundle = sample_bundle(
-        prepared, horizon, paths, seed, method, material_horizon, replicate, domain
+        prepared, horizon, paths, seed, method, material_horizon, replicate, domain,
+        trace_initial_block=estimator == "initial-block-cmc",
     )
     matrix = cash_paths(
         case.state, bundle, case.obligations, prepared_history=prepared.joint
@@ -78,10 +84,15 @@ def run_core(
         case.state.operating_buffer,
         case.state.coverage_target,
     )
+    if estimator == "initial-block-cmc":
+        from ginseng.conditional import failure_probability
+        summary["cash_shortfall_probability"] = failure_probability(
+            prepared, case.state, bundle, case.obligations, tables=conditional_tables
+        )
     return bundle, matrix, summary
 
 
-def manifest(case, prepared, bundle, summary):
+def manifest(case, prepared, bundle, summary, estimator="path"):
     inputs = digest(
         dict(
             state=asdict(case.state), obligations=[asdict(x) for x in case.obligations]
@@ -93,9 +104,18 @@ def manifest(case, prepared, bundle, summary):
         block_clipped=prepared.clipped,
         block_resolution=prepared.resolution,
         end_of_day=True,
+        estimator=estimator,
+        estimator_version=1,
     )
+    if estimator == "initial-block-cmc":
+        from ginseng.conditional import _inputs
+        *_, identity = _inputs(prepared, case.state, case.obligations, bundle.horizon_days)
+        model["conditional_table_identity"] = identity
+        model["conditional_table_shape"] = [bundle.horizon_days, bundle.history_length]
+        model["initial_block_trace_hash"] = digest(bundle.initial_block_lengths.tolist())
     env = environment()
     return dict(
+        metric_estimators={key: estimator if key == "cash_shortfall_probability" else "path" for key in summary},
         fixture=case.name,
         input_hash=inputs,
         synthetic_data_seed=case.data_seed,
