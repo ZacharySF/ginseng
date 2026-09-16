@@ -29,13 +29,28 @@ def main(argv=None):
     sim.add_argument("--horizon", type=int)
     sim.add_argument("--material-horizon", type=int)
     sim.add_argument("--block-length", type=int)
+    precision = sub.add_parser("precision", help="Estimate failure probability to a requested numerical precision")
+    precision_source = precision.add_mutually_exclusive_group()
+    precision_source.add_argument("--fixture", choices=["canonical", "tiny", "zero-heavy", "drought-heavy"])
+    precision_source.add_argument("--input", type=Path)
+    precision.add_argument("--sampler", choices=["mc"], default="mc")
+    precision.add_argument("--estimator", choices=["path", "initial-block-cmc"], default="path")
+    precision.add_argument("--absolute-error", type=float, default=0.005)
+    precision.add_argument("--confidence", type=float, default=0.95)
+    precision.add_argument("--max-paths", type=int, default=262144)
+    precision.add_argument("--batch-size", type=int, default=1024)
+    precision.add_argument("--seed", type=int, default=42)
+    precision.add_argument("--replicate", type=int, default=0)
+    precision.add_argument("--horizon", type=int)
+    precision.add_argument("--material-horizon", type=int)
+    precision.add_argument("--block-length", type=int)
     exact = sub.add_parser("exact")
     exact.add_argument("--fixture", choices=["tiny"], default="tiny")
     bench = sub.add_parser("benchmark")
     bench.add_argument("--config", type=Path, required=True)
     report_parser = sub.add_parser("report")
     report_parser.add_argument("--input", type=Path, required=True)
-    for p in (sim, exact, bench, report_parser):
+    for p in (sim, precision, exact, bench, report_parser):
         p.add_argument("--out", type=Path, required=p in (bench, report_parser))
     args = parser.parse_args(argv)
     try:
@@ -67,6 +82,15 @@ def main(argv=None):
                 manifest=manifest(case, prepared, bundle, summary, args.estimator),
                 diagnostics=diagnostics(case, prepared, bundle, x),
             )
+        elif args.command == "precision":
+            from ginseng.precision import PrecisionConfig, run_precision
+
+            case = load_input(args.input) if args.input else fixture(args.fixture or "canonical")
+            config = PrecisionConfig(args.absolute_error, args.confidence, args.max_paths, args.batch_size)
+            result = run_precision(case, config, estimator=args.estimator, sampler=args.sampler,
+                                   seed=args.seed, replicate=args.replicate, horizon=args.horizon,
+                                   material_horizon=args.material_horizon,
+                                   block_length=args.block_length if args.block_length is not None else (7 if case.name == "tiny" else None))
         elif args.command == "exact":
             from ginseng.provenance import digest
             from ginseng.numerical import environment
@@ -90,7 +114,7 @@ def main(argv=None):
 
             result = report(args.input, args.out)
         payload = json.dumps(result, indent=2, allow_nan=False) + "\n"
-        if args.out and args.command in ("simulate", "exact"):
+        if args.out and args.command in ("simulate", "precision", "exact"):
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(payload)
         else:

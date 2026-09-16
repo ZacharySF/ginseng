@@ -1,0 +1,47 @@
+{
+  "config": {
+    "cases": [
+      "tiny",
+      "canonical",
+      "repair",
+      "drought-heavy"
+    ],
+    "replicates": 32,
+    "root_seed": 42,
+    "block_length": 14,
+    "absolute_error": 0.01,
+    "confidence": 0.95,
+    "max_paths": 131072,
+    "batch_size": 1024
+  },
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-x86_64-with-glibc2.42",
+    "cpu": "Intel(R) Core(TM) Ultra 7 256V",
+    "dependencies": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "scipy": "1.18.1",
+      "arch": "8.0.0",
+      "ginseng": "0.1.0"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "dtype": "float64",
+    "git_commit": "d637bcb6decc5cb3ffc8d1597fa1b56dbdd0e6bb",
+    "source_fingerprint": "f34f7e6aa8be81d577693be34268d3392629c58cd0b41233c1bbd366bb093711"
+  },
+  "fixture_hashes": {
+    "tiny": "a33a24c4f6ace89421801d736e27de7b7ea2dccb3d00629e0f32ffa3a1fd86cb",
+    "canonical": "850ed010809939def5750e9192e222df9489b1a42e528056a90820ca27d38896",
+    "repair": "e4178318e91aaf068e6cd15e46597f3a68c871fc57a60baa331d0feafe8cc6e5",
+    "drought-heavy": "3bfcb15dd1a2d4b8f3a2db1f514d7433d27889eeffb6cf181483d32626e98c7c"
+  },
+  "reference_hash": "dd60df99bf1847175436902f099eb855bf56084b3c1b9435ae02856152d7adb3",
+  "reference_file": "artifacts/conditional/references.json",
+  "interval": "Maurer-Pontil two-sided empirical Bernstein + alpha/(k*(k+1)) spending",
+  "timing": "includes history and conditional table preparation, sampling and interval checks; excludes provenance environment collection and JSON"
+}
