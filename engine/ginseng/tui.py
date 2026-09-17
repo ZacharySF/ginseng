@@ -1093,6 +1093,11 @@ def main(argv=None) -> int:
     # A stray warnings.warn() writes straight to the terminal and corrupts
     # the alternate screen; the interactive UI has no channel to show it.
     warnings.simplefilter("ignore")
+    # Fullscreen TUI: NO_COLOR is for piped text output — it would make
+    # Textual strip every color via Monochrome filter.  Guard truecolor
+    # detection too: Rich's _TERM_COLORS maps "kitty" → EIGHT_BIT.
+    os.environ.pop("NO_COLOR", None)
+    os.environ.setdefault("COLORTERM", "truecolor")
     coord = pick_coord()  # must run before Textual takes stdin
     GinsengApp(coord=coord).run()
     return 0
