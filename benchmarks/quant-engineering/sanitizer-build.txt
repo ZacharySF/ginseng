@@ -1,0 +1,4 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /tmp/ginseng-sanitize
+[100%] Built target kernel_sanitize

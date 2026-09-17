@@ -1,0 +1,22 @@
+{
+  "input_identity": "ad8756978dfde2f9af13fbb092f135eef5ec4ec6e02fc3df0a336aa89050de16",
+  "recorded_run": "e0688334106e8b096b7fb90c95aa7729d7b67b22a485ac261e1729e260bc4626",
+  "execution": {
+    "backend": "numpy",
+    "reason": "Explicit selection.",
+    "workers": 1,
+    "block_size": 1024,
+    "input_bytes": 24800,
+    "output_bytes": 10240,
+    "scratch_bound_bytes": 71680,
+    "native": null,
+    "counters": {
+      "path_materializations": 1,
+      "row_reductions": 1,
+      "weight_normalizations": 1,
+      "orderings": 14
+    }
+  },
+  "match": true,
+  "first_divergence": null
+}

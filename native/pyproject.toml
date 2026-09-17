@@ -1,0 +1,14 @@
+[build-system]
+requires = ["scikit-build-core==0.10.7", "pybind11==2.13.6"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "ginseng-native"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = ["numpy>=2.1"]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+wheel.packages = ["ginseng_native"]
+sdist.include = ["src/core.cpp", "src/kernels.hpp", "src/sanitize.cpp", "CMakeLists.txt"]

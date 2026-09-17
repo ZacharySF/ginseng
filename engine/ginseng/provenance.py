@@ -25,11 +25,19 @@ def digest(value) -> str:
 @lru_cache(maxsize=1)
 def source_fingerprint() -> str:
     root = Path(__file__).parent
-    return digest({p.relative_to(root).as_posix(): sha256(p.read_bytes()).hexdigest()
-                   for p in sorted(root.rglob("*.py"))})
+    sources = {p.relative_to(root).as_posix(): sha256(p.read_bytes()).hexdigest()
+               for p in sorted(root.rglob("*.py"))}
+    native = root.parents[1] / "native"
+    if native.exists():
+        sources.update({"native/" + p.relative_to(native).as_posix(): sha256(p.read_bytes()).hexdigest()
+                        for p in sorted(native.rglob("*")) if p.suffix in (".cpp", ".hpp", ".toml") or p.name == "CMakeLists.txt"})
+    return digest(sources)
 
 
 def fingerprint(state, bundle, obligations, weights, view, config, cash_matrix) -> dict:
+    from ginseng.execution import current_context
+    context = current_context()
+    implementation = dict(backend=context.backend, native=context.native) if context else dict(backend="numpy", native=None)
     inputs = digest({"state": asdict(state), "obligations": [asdict(item) for item in obligations]})
     paths = sha256()
     paths.update(inputs.encode())
@@ -47,7 +55,7 @@ def fingerprint(state, bundle, obligations, weights, view, config, cash_matrix) 
         "weight_hash": weight_hash(weights),
         "view_hash": digest(asdict(view) if view is not None else None),
         "model_hash": digest({"version": MODEL_VERSION, "source": source_fingerprint(), "config": config,
-                              "libraries": libraries}),
+                              "libraries": libraries, "implementation": implementation}),
     }
     return {**hashes, "run_hash": digest(hashes)}
 

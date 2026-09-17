@@ -15,7 +15,8 @@
 		"test:onboarding": "node tests/onboarding-finance.test.mjs",
 		"test:finance": "node tests/finance-store.test.mjs",
 		"test:numerics": "node tests/numerics-store.test.mjs",
-		"test:risk-browser": "node tests/risk-browser.mjs"
+		"test:risk-browser": "node tests/risk-browser.mjs",
+		"test:frontier-browser": "node tests/frontier-browser.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.6",

@@ -9,8 +9,8 @@
 	import { financialStore } from '$lib/finance.svelte';
 	import type { ChatContext, DemoChatContext } from '$lib/chat';
 
-	type AppRoute = '/' | '/future' | '/liquidity' | '/plans' | '/data' | '/demo' | '/demo/future' | '/demo/liquidity' | '/demo/plans';
-	type NavIcon = 'workspace' | 'data' | 'demo' | 'events' | 'reserve' | 'funding';
+	type AppRoute = '/' | '/future' | '/liquidity' | '/plans' | '/data' | '/demo' | '/demo/future' | '/demo/liquidity' | '/demo/plans' | '/demo/research';
+	type NavIcon = 'workspace' | 'data' | 'demo' | 'events' | 'reserve' | 'funding' | 'research';
 
 	interface NavItem {
 		label: string;
@@ -40,6 +40,7 @@
 		{ label: 'Events', shortLabel: 'Events', href: '/demo/future', icon: 'events' },
 		{ label: 'Reserve', shortLabel: 'Reserve', href: '/demo/liquidity', icon: 'reserve' },
 		{ label: 'Funding', shortLabel: 'Funding', href: '/demo/plans', icon: 'funding' },
+		{ label: 'Research', shortLabel: 'Research', href: '/demo/research', icon: 'research' },
 		{ label: 'Back to my workspace', shortLabel: 'Back', href: '/', icon: 'workspace', kind: 'back' }
 	];
 	const demoRoot = resolve('/demo');
@@ -176,6 +177,9 @@
 							<circle cx="8" cy="7" r="1.5" />
 							<circle cx="15" cy="12" r="1.5" />
 							<circle cx="10" cy="17" r="1.5" />
+						{:else if item.icon === 'research'}
+							<path d="M12 3v11m0 0-8 5m8-5 8 5M7 11l4-4 6 3" />
+							<circle cx="7" cy="11" r="1" /><circle cx="11" cy="7" r="1" /><circle cx="17" cy="10" r="1" />
 						{:else}
 							<path d="M5 5h14v14H5z" />
 							<path d="M8 9h8M8 13h8M8 17h5" />
@@ -522,7 +526,7 @@
 		}
 
 		.mobile-nav--demo {
-			grid-template-columns: repeat(5, minmax(0, 1fr));
+			grid-template-columns: repeat(6, minmax(0, 1fr));
 		}
 
 		.mobile-nav--personal {

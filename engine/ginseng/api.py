@@ -9,6 +9,8 @@ it never substitutes data for a saved workspace.
 from __future__ import annotations
 
 import asyncio
+from ginseng.execution import execution_scope
+
 from collections.abc import AsyncIterator, Awaitable
 from dataclasses import asdict, replace
 from functools import lru_cache
@@ -69,6 +71,7 @@ from ginseng.provenance import fingerprint, model_card
 from ginseng.calibration import walk_forward
 from ginseng.decision import funding_analysis
 from ginseng.portfolio import portfolio_lab
+from ginseng.frontier import portfolio_frontier
 from ginseng.withdrawals import WithdrawalAssumptions, LONG_TERM_CAPITAL_GAINS_RATE, account_liquidity
 from ginseng.optimizer import (
     SOLVER_TIME_LIMIT_SECONDS,
@@ -437,6 +440,7 @@ def _summary(computed) -> dict:
 
 
 @app.post("/scenario", response_model=ScenarioResponse)
+@execution_scope
 def scenario(
     request: ScenarioRequest,
     _: Annotated[AuthenticatedIdentity, Depends(require_identity)],
@@ -575,6 +579,7 @@ def calibration_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIde
 
 
 @app.post("/analysis/funding")
+@execution_scope
 def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
@@ -595,6 +600,7 @@ def decision_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdenti
 
 
 @app.post("/analysis/portfolio")
+@execution_scope
 def portfolio_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]) -> dict:
     if not _SCENARIO_GATE.acquire(blocking=False):
         raise HTTPException(status_code=503, detail="The scenario engine is busy. Try again shortly.")
@@ -651,3 +657,20 @@ def numerical_demo(request: DemoNumericalRequest,
                            seed=request.seed,block_length=request.mean_block_length)
         except ValueError as error:
             raise HTTPException(status_code=422,detail=str(error)) from error
+
+
+@app.post("/analysis/frontier")
+def frontier_analysis(request: ScenarioRequest, _: Annotated[AuthenticatedIdentity, Depends(require_identity)]):
+    """Read-only allocation research under the explicitly synthetic cash model."""
+    if request.horizon_days > 60:
+        raise HTTPException(status_code=422, detail="Portfolio research supports horizons up to 60 days.")
+    if request.drought_view is not None:
+        raise HTTPException(status_code=422, detail="Disable stress weighting before building the portfolio frontier.")
+    with forecast_capacity():
+        state = replace(_cached_persona(request.seed), operating_buffer=request.operating_buffer,
+                        coverage_target=request.coverage_target, forecast_horizon=request.horizon_days)
+        obligations = tuple(Obligation(item.id, item.label, item.amount, item.due_in_days) for item in request.obligations)
+        try:
+            return portfolio_frontier(state, obligations, seed=request.seed, block_length=request.mean_block_length)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error

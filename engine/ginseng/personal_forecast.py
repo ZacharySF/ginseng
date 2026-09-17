@@ -10,6 +10,8 @@ mode bootstraps only classified user transactions.
 from __future__ import annotations
 
 import calendar
+from ginseng.execution import execution_scope
+
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from math import ceil, exp, log1p, sqrt
@@ -665,7 +667,7 @@ def _ar1_cumulative_variance(days: int, persistence_days: int) -> float:
     return days + 2.0 * (days * sum_autocorrelation - weighted_autocorrelation)
 
 
-def _assumption_bundle(state: FinancialState, inputs: FinanceInputs, seed: int, paths: int) -> PathBundle:
+def _uncached_assumption_components(state: FinancialState, inputs: FinanceInputs, seed: int, paths: int):
     """Draw prospective paths from reviewed assumptions, never invented history.
 
     Income/spending and income/market correlations apply to the latent
@@ -700,8 +702,6 @@ def _assumption_bundle(state: FinancialState, inputs: FinanceInputs, seed: int, 
     essential = essential_base * spending_multiplier
     discretionary = discretionary_base * spending_multiplier
 
-    known_income, known_obligations = _known_daily(state, days)
-    daily_cash = income - essential - discretionary + known_income[np.newaxis, :] - known_obligations[np.newaxis, :]
 
     portfolio_values: np.ndarray | None = None
     if assumptions.market_assumptions_enabled and state.marketable_backup_capital > 0.0:
@@ -727,6 +727,29 @@ def _assumption_bundle(state: FinancialState, inputs: FinanceInputs, seed: int, 
         )
         portfolio_values = state.marketable_backup_capital * np.exp(cumulative_log_returns)
 
+    from ginseng.execution import snapshot
+    return (snapshot(income - essential - discretionary), snapshot(discretionary),
+            None if portfolio_values is None else snapshot(portfolio_values))
+
+
+def _assumption_bundle(state: FinancialState, inputs: FinanceInputs, seed: int, paths: int) -> PathBundle:
+    from ginseng.execution import current_context
+    from ginseng.provenance import digest
+    context = current_context()
+    days = MAX_PERSONAL_EVALUATION_HORIZON
+    key = ('assumption_components',digest(inputs.assumptions.model_dump(mode='json')),seed,paths,days,state.marketable_backup_capital)
+    def create():
+        if context:
+            context.counters['assumption_preparations'] += 1
+        return _uncached_assumption_components(state,inputs,seed,paths)
+    if context:
+        if key not in context.cache:
+            context.check(paths*days*8*16)
+        stochastic,discretionary,portfolio_values = context.remember(key,create,lambda arrays:sum(a.nbytes for a in arrays if a is not None))
+    else:
+        stochastic,discretionary,portfolio_values = create()
+    known_income, known_obligations = _known_daily(state,days)
+    daily_cash = stochastic + known_income[np.newaxis,:] - known_obligations[np.newaxis,:]
     return PathBundle(
         source="assumptions",
         seed=seed,
@@ -919,6 +942,7 @@ def _warnings_for_mode(
     return warnings
 
 
+@execution_scope
 def evaluate_personal_forecast(
     workspace: FinanceWorkspace,
     horizon_days: int,

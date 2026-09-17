@@ -1,0 +1,3461 @@
+{
+  "status": "ready",
+  "symbols": [
+    "VTI",
+    "VXUS",
+    "CASH"
+  ],
+  "points": [
+    {
+      "id": "current",
+      "label": "Current allocation",
+      "weights": [
+        0.7000000000000001,
+        0.3,
+        0.0
+      ],
+      "source": "anchor",
+      "discovery": {
+        "mean_return": 0.0008580710595962239,
+        "volatility": 0.04566884516952285,
+        "pressure_cvar": 0.080476971833015
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0007915542964546749,
+        "volatility": 0.04678838899604196,
+        "pressure_cvar": 0.07702837630066564
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "equal-weight",
+      "label": "Equal weight",
+      "weights": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "source": "anchor",
+      "discovery": {
+        "mean_return": 0.002256575477913486,
+        "volatility": 0.029985625159908307,
+        "pressure_cvar": 0.05153298634836749
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0023702363318111814,
+        "volatility": 0.03095662757381479,
+        "pressure_cvar": 0.04952845469829833
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "pure-0",
+      "label": "100% VTI",
+      "weights": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "source": "anchor",
+      "discovery": {
+        "mean_return": -0.0029321171763147832,
+        "volatility": 0.05158409703666196,
+        "pressure_cvar": 0.09182673352623862
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0033541460054384697,
+        "volatility": 0.05237858205862685,
+        "pressure_cvar": 0.08846423150723065
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "pure-1",
+      "label": "100% VXUS",
+      "weights": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "source": "anchor",
+      "discovery": {
+        "mean_return": 0.00970184361005524,
+        "volatility": 0.05467968874442138,
+        "pressure_cvar": 0.08294770416115343
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.010464855000872013,
+        "volatility": 0.05702647557883539,
+        "pressure_cvar": 0.0833389405995153
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "pure-2",
+      "label": "100% CASH",
+      "weights": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "source": "anchor",
+      "discovery": {
+        "mean_return": 0.0,
+        "volatility": 0.0,
+        "pressure_cvar": 0.0
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0,
+        "volatility": 0.0,
+        "pressure_cvar": 0.0
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-0",
+      "label": "Allocation 1",
+      "weights": [
+        0.43788133671064744,
+        0.39431686899748075,
+        0.1678017942918718
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0025416812072632322,
+        "volatility": 0.03737161642432154,
+        "pressure_cvar": 0.06457566438902772
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0026577509220724054,
+        "volatility": 0.03854434724602656,
+        "pressure_cvar": 0.061906245880485794
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-1",
+      "label": "Allocation 2",
+      "weights": [
+        0.03772184778420707,
+        0.5758664491555564,
+        0.38641170306023653
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005476361352174631,
+        "volatility": 0.03237789356122321,
+        "pressure_cvar": 0.04986803410142431
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.005899834305216779,
+        "volatility": 0.03375589732286164,
+        "pressure_cvar": 0.04982300031457024
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-2",
+      "label": "Allocation 3",
+      "weights": [
+        0.300337109351431,
+        0.3599419763490514,
+        0.3397209142995176
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002611477166218637,
+        "volatility": 0.029854879623963663,
+        "pressure_cvar": 0.0508058153164061
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0027593660756040873,
+        "volatility": 0.03087123265991973,
+        "pressure_cvar": 0.048957436757490314
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-3",
+      "label": "Allocation 4",
+      "weights": [
+        0.09569198383300112,
+        0.2328399641992105,
+        0.6714680519677884
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0019783968093992224,
+        "volatility": 0.015519593300190383,
+        "pressure_cvar": 0.025414394051190017
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0021156715784270254,
+        "volatility": 0.016124870442137954,
+        "pressure_cvar": 0.024709911468008203
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-4",
+      "label": "Allocation 5",
+      "weights": [
+        0.24744909871924609,
+        0.3100695895462397,
+        0.4424813117345143
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0022826969133933235,
+        "volatility": 0.02525292402766717,
+        "pressure_cvar": 0.042885038114479676
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0024148528887627902,
+        "volatility": 0.026122462359502524,
+        "pressure_cvar": 0.0413231119138887
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-5",
+      "label": "Allocation 6",
+      "weights": [
+        0.013420478418586982,
+        0.454543710703335,
+        0.5320358108780779
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0043705615798924485,
+        "volatility": 0.025161662192451032,
+        "pressure_cvar": 0.03844278596532602
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00471171977998994,
+        "volatility": 0.02623800358892547,
+        "pressure_cvar": 0.03851193909541176
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-6",
+      "label": "Allocation 7",
+      "weights": [
+        0.8392083507710408,
+        0.06752827140030254,
+        0.09326337782865678
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0018055084914194693,
+        "volatility": 0.045011098746896135,
+        "pressure_cvar": 0.07996209284541421
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.002108153768805594,
+        "volatility": 0.045782193225023166,
+        "pressure_cvar": 0.07674619326745868
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-7",
+      "label": "Allocation 8",
+      "weights": [
+        0.6220594740483185,
+        0.10507159721530775,
+        0.27286892873637375
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0008045630645047831,
+        "volatility": 0.03496065465647531,
+        "pressure_cvar": 0.062040544117194035
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0009869192704560995,
+        "volatility": 0.03562835417591199,
+        "pressure_cvar": 0.059536968526714244
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-8",
+      "label": "Allocation 9",
+      "weights": [
+        0.23063436981101132,
+        0.006270081939832836,
+        0.7630955482491558
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0006154156427689121,
+        "volatility": 0.012049410400405334,
+        "pressure_cvar": 0.021436998971394092
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0007079658518744855,
+        "volatility": 0.012241883887272093,
+        "pressure_cvar": 0.020623144280418303
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-9",
+      "label": "Allocation 10",
+      "weights": [
+        0.24910588640088205,
+        0.4510151496361861,
+        0.29987896396293195
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.003645270799298795,
+        "volatility": 0.03236667241911336,
+        "pressure_cvar": 0.053915082447761914
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003884270630336554,
+        "volatility": 0.033573126194738304,
+        "pressure_cvar": 0.052111674310980204
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-10",
+      "label": "Allocation 11",
+      "weights": [
+        0.7889721070362133,
+        0.16350762445264125,
+        0.04752026851114525
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0007270332651829771,
+        "volatility": 0.04529071392418771,
+        "pressure_cvar": 0.08028236704566273
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0009352440597839621,
+        "volatility": 0.0461941804348834,
+        "pressure_cvar": 0.07708502145316988
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-11",
+      "label": "Allocation 12",
+      "weights": [
+        0.30390361902649204,
+        0.6761343473347855,
+        0.01996203363872236
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005668668675937059,
+        "volatility": 0.04598114363988299,
+        "pressure_cvar": 0.07567815423874538
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.006056310796171762,
+        "volatility": 0.04775283271712196,
+        "pressure_cvar": 0.07344952242563721
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-12",
+      "label": "Allocation 13",
+      "weights": [
+        0.18102091989064542,
+        0.18425024121830083,
+        0.6347288388910537
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.001256792476931245,
+        "volatility": 0.016435484066049243,
+        "pressure_cvar": 0.0282179457335258
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0013209814628732048,
+        "volatility": 0.01697044219117176,
+        "pressure_cvar": 0.027131721774302543
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-13",
+      "label": "Allocation 14",
+      "weights": [
+        0.44964890986883393,
+        0.4250833565009074,
+        0.12526773363025875
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002805668954071537,
+        "volatility": 0.03930530986221384,
+        "pressure_cvar": 0.06775146688841076
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00294024759417967,
+        "volatility": 0.04055709364949085,
+        "pressure_cvar": 0.06502690002168339
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-14",
+      "label": "Allocation 15",
+      "weights": [
+        0.4551533675610393,
+        0.33788266530196837,
+        0.20696396713699228
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0019435217704250965,
+        "volatility": 0.03560972750894802,
+        "pressure_cvar": 0.06203827592735057
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0020092422500265408,
+        "volatility": 0.03666030531006395,
+        "pressure_cvar": 0.05930709502849865
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-15",
+      "label": "Allocation 16",
+      "weights": [
+        0.03001081288890203,
+        0.4236485072763969,
+        0.5463406798347011
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004022176343282235,
+        "volatility": 0.023875783320129688,
+        "pressure_cvar": 0.03681914912704781
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.004332759551812094,
+        "volatility": 0.024891077688945006,
+        "pressure_cvar": 0.036767829221565226
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-16",
+      "label": "Allocation 17",
+      "weights": [
+        0.605072938273204,
+        0.19767558421676662,
+        0.1972514775100294
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0001436728483632579,
+        "volatility": 0.0371893306777174,
+        "pressure_cvar": 0.06573042274225692
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 3.9143347133142165e-05,
+        "volatility": 0.0380262487548029,
+        "pressure_cvar": 0.06305456820370736
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-17",
+      "label": "Allocation 18",
+      "weights": [
+        0.33093694850792377,
+        0.5229916124179657,
+        0.14607143907411052
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004103636922052444,
+        "volatility": 0.03913784826028669,
+        "pressure_cvar": 0.06569358464906928
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.004363020546736417,
+        "volatility": 0.04055896195723987,
+        "pressure_cvar": 0.06338033408679
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-18",
+      "label": "Allocation 19",
+      "weights": [
+        0.08582842927967381,
+        0.8369522781870822,
+        0.07721929253324403
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00786832110034347,
+        "volatility": 0.04784717287391282,
+        "pressure_cvar": 0.07433426891349185
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.008470703150655835,
+        "volatility": 0.04987069810982111,
+        "pressure_cvar": 0.07399946576446034
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-19",
+      "label": "Allocation 20",
+      "weights": [
+        0.15280354935037127,
+        0.8464956907368523,
+        0.0007007599127762799
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00776453089646254,
+        "volatility": 0.05020289248187259,
+        "pressure_cvar": 0.07927120209648608
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00834592924775379,
+        "volatility": 0.05229148469938104,
+        "pressure_cvar": 0.07834061461052866
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-20",
+      "label": "Allocation 21",
+      "weights": [
+        0.47188535207556054,
+        0.033053557493989756,
+        0.4950610904304498
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.001062942700509442,
+        "volatility": 0.025176761303057123,
+        "pressure_cvar": 0.04474021014206966
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.001236871682251578,
+        "volatility": 0.025602298232643452,
+        "pressure_cvar": 0.042957225662263135
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-21",
+      "label": "Allocation 22",
+      "weights": [
+        0.2959447752841515,
+        0.5726683733877429,
+        0.13138685132810543
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004688194240181323,
+        "volatility": 0.04034042093261663,
+        "pressure_cvar": 0.06693136408985297
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00500024950523824,
+        "volatility": 0.04186153962666644,
+        "pressure_cvar": 0.06477226322829877
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-22",
+      "label": "Allocation 23",
+      "weights": [
+        0.1150300891632199,
+        0.1862341611188485,
+        0.6987357497179317
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0014695330057964005,
+        "volatility": 0.013827843193064926,
+        "pressure_cvar": 0.023179835350767
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.001563085778245741,
+        "volatility": 0.014332415369348421,
+        "pressure_cvar": 0.022371252424817977
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-23",
+      "label": "Allocation 24",
+      "weights": [
+        0.14717922249803225,
+        0.09336870996690741,
+        0.7594520675350603
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0004743018958884062,
+        "volatility": 0.010828443529175965,
+        "pressure_cvar": 0.018946664368555247
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00048342941019684503,
+        "volatility": 0.011131525352330618,
+        "pressure_cvar": 0.01811658513392665
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-24",
+      "label": "Allocation 25",
+      "weights": [
+        0.14085812211106538,
+        0.1679187525366339,
+        0.6912231253523007
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0012161089570406894,
+        "volatility": 0.013958751669188932,
+        "pressure_cvar": 0.02376005367871692
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0012847866896107895,
+        "volatility": 0.014433294331973863,
+        "pressure_cvar": 0.022895848325180428
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-25",
+      "label": "Allocation 26",
+      "weights": [
+        0.6313931264501443,
+        0.025633441898279874,
+        0.34297343165157584
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.001602626986587011,
+        "volatility": 0.033200507257097896,
+        "pressure_cvar": 0.05905278523752574
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.001849534480305282,
+        "volatility": 0.03374038687361255,
+        "pressure_cvar": 0.056765743984559525
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-26",
+      "label": "Allocation 27",
+      "weights": [
+        0.1357841481464183,
+        0.5537134390474923,
+        0.31050241280608964
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004973906157373241,
+        "volatility": 0.033901496088366775,
+        "pressure_cvar": 0.054144730357452
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.005339090993559016,
+        "volatility": 0.035289251278244824,
+        "pressure_cvar": 0.053249177026153255
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-27",
+      "label": "Allocation 28",
+      "weights": [
+        0.396490347483693,
+        0.2463379000078718,
+        0.3571717525084352
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.001227375623005845,
+        "volatility": 0.02895166764758231,
+        "pressure_cvar": 0.050680363993362884
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0012480038895943478,
+        "volatility": 0.029756291341394767,
+        "pressure_cvar": 0.04846512404757851
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-28",
+      "label": "Allocation 29",
+      "weights": [
+        0.11707628033518441,
+        0.7459937356874926,
+        0.1369299839773231
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0068942331852110995,
+        "volatility": 0.04374455880640845,
+        "pressure_cvar": 0.06876023530312916
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.007414025337510599,
+        "volatility": 0.04557424358518621,
+        "pressure_cvar": 0.06808504773342725
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-29",
+      "label": "Allocation 30",
+      "weights": [
+        0.4986360667594948,
+        0.1137108155088632,
+        0.3876531177316421
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0003588548272367248,
+        "volatility": 0.028960247608701657,
+        "pressure_cvar": 0.051309052904005045
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00048253097515774774,
+        "volatility": 0.029551179457421757,
+        "pressure_cvar": 0.04926905035864478
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-30",
+      "label": "Allocation 31",
+      "weights": [
+        0.12698786434976658,
+        0.1414371576747107,
+        0.7315749779755227
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0009998578861672854,
+        "volatility": 0.012106648183776055,
+        "pressure_cvar": 0.020682397650692262
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0010541835088533882,
+        "volatility": 0.012510819699773981,
+        "pressure_cvar": 0.019918513182758463
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-31",
+      "label": "Allocation 32",
+      "weights": [
+        0.25026203205033576,
+        0.24530500153449203,
+        0.5044329664151722
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0016461131588977724,
+        "volatility": 0.022281208245157665,
+        "pressure_cvar": 0.038333667613018305
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.001727665876932598,
+        "volatility": 0.02299850076798246,
+        "pressure_cvar": 0.036825066620215986
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-32",
+      "label": "Allocation 33",
+      "weights": [
+        0.0945165850996982,
+        0.2505486869968289,
+        0.6549347279034728
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0021536504753304725,
+        "volatility": 0.016409600188676852,
+        "pressure_cvar": 0.026750896883010078
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.002304933253720844,
+        "volatility": 0.0170562955809992,
+        "pressure_cvar": 0.026060346097555503
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-33",
+      "label": "Allocation 34",
+      "weights": [
+        0.20251945689260942,
+        0.583821622966151,
+        0.21365892014123966
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005070335304093471,
+        "volatility": 0.03764160807838659,
+        "pressure_cvar": 0.061110752980748625
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.005430328803354626,
+        "volatility": 0.039138722916354354,
+        "pressure_cvar": 0.05964655047761455
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-34",
+      "label": "Allocation 35",
+      "weights": [
+        0.17074182500941426,
+        0.6681184862874668,
+        0.16113968870311893
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005981346029122404,
+        "volatility": 0.04111822020161436,
+        "pressure_cvar": 0.06578646345435835
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.006419070072083836,
+        "volatility": 0.04279675209103073,
+        "pressure_cvar": 0.0646423868245549
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-35",
+      "label": "Allocation 36",
+      "weights": [
+        0.7758384423953324,
+        0.15989815138786997,
+        0.06426340621679763
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0007235423646906095,
+        "volatility": 0.04450834021106067,
+        "pressure_cvar": 0.07889896836215021
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0009289644432443666,
+        "volatility": 0.04539507711737227,
+        "pressure_cvar": 0.07575509864519916
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-36",
+      "label": "Allocation 37",
+      "weights": [
+        0.15925175631439387,
+        0.4744925392917696,
+        0.36625570439383653
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0041365076002990095,
+        "volatility": 0.03041574678313929,
+        "pressure_cvar": 0.049301775490026234
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00443134198038295,
+        "volatility": 0.0316295245466842,
+        "pressure_cvar": 0.04815693482958393
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-37",
+      "label": "Allocation 38",
+      "weights": [
+        0.6333750913899303,
+        0.27539049580890385,
+        0.09123441280116577
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0008146655375191979,
+        "volatility": 0.041473699951410405,
+        "pressure_cvar": 0.07306584317197867
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0007574890745286706,
+        "volatility": 0.04249524881097562,
+        "pressure_cvar": 0.06993044483912098
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-38",
+      "label": "Allocation 39",
+      "weights": [
+        0.7790938200759429,
+        0.09802360794282605,
+        0.12288257198123101
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0013333846574507045,
+        "volatility": 0.042782297468808836,
+        "pressure_cvar": 0.07598409129177812
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.001587391580685521,
+        "volatility": 0.043558276467820504,
+        "pressure_cvar": 0.07291694732655937
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-39",
+      "label": "Allocation 40",
+      "weights": [
+        0.00422608077476483,
+        0.26448085456086395,
+        0.731293064664371
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002553560524775086,
+        "volatility": 0.01455740481061366,
+        "pressure_cvar": 0.02217016318020116
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.002753578901536823,
+        "volatility": 0.01518113673097532,
+        "pressure_cvar": 0.02223691874025939
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-40",
+      "label": "Allocation 41",
+      "weights": [
+        0.20965094782583318,
+        0.4972708098840157,
+        0.29307824229015117
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004209722484189432,
+        "volatility": 0.03332890069761103,
+        "pressure_cvar": 0.05465824180032881
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.004500667032416011,
+        "volatility": 0.03462444073489578,
+        "pressure_cvar": 0.05311135418514952
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-41",
+      "label": "Allocation 42",
+      "weights": [
+        0.33989364772285613,
+        0.32237208663037237,
+        0.3377342656467716
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0021309955661265806,
+        "volatility": 0.029759763691176448,
+        "pressure_cvar": 0.05128907770818559
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00223352422213187,
+        "volatility": 0.030708470995077192,
+        "pressure_cvar": 0.04923036443310759
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-42",
+      "label": "Allocation 43",
+      "weights": [
+        0.5159673727792958,
+        0.058454897856829675,
+        0.4255777293638744
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0009457565188954714,
+        "volatility": 0.028146910560419548,
+        "pressure_cvar": 0.049995676413684575
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0011189078721817497,
+        "volatility": 0.028649581192691995,
+        "pressure_cvar": 0.04797524217317921
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-43",
+      "label": "Allocation 44",
+      "weights": [
+        0.7363090213012887,
+        0.243739668079712,
+        0.019951310618999435
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00020577981284310276,
+        "volatility": 0.04536966884697937,
+        "pressure_cvar": 0.08018194201810884
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 8.101232184883251e-05,
+        "volatility": 0.04639471965302691,
+        "pressure_cvar": 0.0769095691834654
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-44",
+      "label": "Allocation 45",
+      "weights": [
+        0.9378022638637477,
+        0.06061806920136719,
+        0.0015796669348853616
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0021616390985266126,
+        "volatility": 0.049899741583212344,
+        "pressure_cvar": 0.08869142751507449
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0025111664126046098,
+        "volatility": 0.0507372325854399,
+        "pressure_cvar": 0.08516953780977121
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-45",
+      "label": "Allocation 46",
+      "weights": [
+        0.08419879566405986,
+        0.8457834643923308,
+        0.07001773994360937
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00795877816451351,
+        "volatility": 0.048285931696094915,
+        "pressure_cvar": 0.07496389324977083
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.008568586262861604,
+        "volatility": 0.050329137429381755,
+        "pressure_cvar": 0.07464855385293284
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-46",
+      "label": "Allocation 47",
+      "weights": [
+        0.11360619021388985,
+        0.3801396167692458,
+        0.5062541930168645
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0033549484502197247,
+        "volatility": 0.023913054295971355,
+        "pressure_cvar": 0.038546109232964296
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003597054220478211,
+        "volatility": 0.02487758320551354,
+        "pressure_cvar": 0.03774556227890415
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-47",
+      "label": "Allocation 48",
+      "weights": [
+        0.07902882206881248,
+        0.013651393510780785,
+        0.9073197844204067
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -9.927808171097174e-05,
+        "volatility": 0.0044508514132362755,
+        "pressure_cvar": 0.007897626439846957
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00012221435420644889,
+        "volatility": 0.004536235758481372,
+        "pressure_cvar": 0.007579228945997305
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-48",
+      "label": "Allocation 49",
+      "weights": [
+        0.13058134916005268,
+        0.1690404856387137,
+        0.7003781652012337
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0012571245386560409,
+        "volatility": 0.013590388378203448,
+        "pressure_cvar": 0.023043643482763956
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0013309952608161705,
+        "volatility": 0.014062146326225126,
+        "pressure_cvar": 0.02220243550608912
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-49",
+      "label": "Allocation 50",
+      "weights": [
+        0.1605423500103072,
+        0.47869214673283894,
+        0.3607655032568538
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004173467362972458,
+        "volatility": 0.030681027984986967,
+        "pressure_cvar": 0.049730007563504264
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.004470961423624533,
+        "volatility": 0.031905482069088734,
+        "pressure_cvar": 0.04857603939213899
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-50",
+      "label": "Allocation 51",
+      "weights": [
+        0.4409274069499866,
+        0.5052636840561879,
+        0.05380890899382544
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0036091384211275035,
+        "volatility": 0.0427145574871,
+        "pressure_cvar": 0.07285910465711383
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003808576290144775,
+        "volatility": 0.04415157617614156,
+        "pressure_cvar": 0.07019043156451281
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-51",
+      "label": "Allocation 52",
+      "weights": [
+        0.15873802401594905,
+        0.01098464215735479,
+        0.8302773338266962
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.00035886720642835685,
+        "volatility": 0.008465640987946513,
+        "pressure_cvar": 0.015044299581716557
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0004174778217511075,
+        "volatility": 0.00860856990185388,
+        "pressure_cvar": 0.014445089564536849
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-52",
+      "label": "Allocation 53",
+      "weights": [
+        0.5227270673094226,
+        0.02959377435316644,
+        0.4476791583374109
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0012455828419769277,
+        "volatility": 0.02770316827907471,
+        "pressure_cvar": 0.0492516806811034
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0014436083472160544,
+        "volatility": 0.02816326986511133,
+        "pressure_cvar": 0.047306400985209454
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-53",
+      "label": "Allocation 54",
+      "weights": [
+        0.6685907431957323,
+        0.08530312329789538,
+        0.2461061335063724
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0011327888403638328,
+        "volatility": 0.036748689014092305,
+        "pressure_cvar": 0.06526662373300075
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0013498661541291206,
+        "volatility": 0.03741668067209391,
+        "pressure_cvar": 0.06263242249369506
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-54",
+      "label": "Allocation 55",
+      "weights": [
+        0.6986388989428209,
+        0.2039279243614207,
+        0.09743317669575816
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -7.001428575421518e-05,
+        "volatility": 0.04208279624503855,
+        "pressure_cvar": 0.07443521257357302
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00020926071306192988,
+        "volatility": 0.0429992924604474,
+        "pressure_cvar": 0.07144121295969223
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-55",
+      "label": "Allocation 56",
+      "weights": [
+        0.09424056098337864,
+        0.33630594760832994,
+        0.5694534914082914
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0029864633412625434,
+        "volatility": 0.020956385539513983,
+        "pressure_cvar": 0.03367477896406603
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0032032963764793533,
+        "volatility": 0.02180610691121975,
+        "pressure_cvar": 0.033021191571090985
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-56",
+      "label": "Allocation 57",
+      "weights": [
+        0.5054360636598253,
+        0.11267209813335566,
+        0.381891838206819
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0003888706884792926,
+        "volatility": 0.029270579778912526,
+        "pressure_cvar": 0.05186365100380085
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0005162091843195579,
+        "volatility": 0.029864561465570174,
+        "pressure_cvar": 0.049802531581581676
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-57",
+      "label": "Allocation 58",
+      "weights": [
+        0.026583163381207527,
+        0.8645834207828305,
+        0.10883341583596204
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.008310108186330786,
+        "volatility": 0.04788458188750197,
+        "pressure_cvar": 0.07318008795725817
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00895857632338324,
+        "volatility": 0.049932626558768164,
+        "pressure_cvar": 0.0733049197350189
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-58",
+      "label": "Allocation 59",
+      "weights": [
+        0.33608622480400163,
+        0.6482671408306021,
+        0.015646634365396175
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005303942225405554,
+        "volatility": 0.04570538733302091,
+        "pressure_cvar": 0.07584742178830439
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.005656739362212891,
+        "volatility": 0.04742787950867482,
+        "pressure_cvar": 0.0733954978956742
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-59",
+      "label": "Allocation 60",
+      "weights": [
+        0.17317414419787325,
+        0.8015418163239562,
+        0.025284039478170484
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00726866646619845,
+        "volatility": 0.04836927337440489,
+        "pressure_cvar": 0.07687447624663482
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.007807167520959267,
+        "volatility": 0.05036426375031748,
+        "pressure_cvar": 0.07575924279596487
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-60",
+      "label": "Allocation 61",
+      "weights": [
+        0.3369876399167358,
+        0.5208708444661471,
+        0.14214151561711716
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0040653202268423234,
+        "volatility": 0.039266870505321114,
+        "pressure_cvar": 0.06599089461191021
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.004320532115211131,
+        "volatility": 0.04068610264391136,
+        "pressure_cvar": 0.0636460062369621
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-61",
+      "label": "Allocation 62",
+      "weights": [
+        0.14991342496661195,
+        0.0747826178065014,
+        0.7753039572268866
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00028596553440442843,
+        "volatility": 0.010192799746031907,
+        "pressure_cvar": 0.01792013484480767
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00027975773641730555,
+        "volatility": 0.010455679752050135,
+        "pressure_cvar": 0.017141327499493833
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-62",
+      "label": "Allocation 63",
+      "weights": [
+        0.8000029204946036,
+        0.16069902918875342,
+        0.03929805031664308
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0007866254548072294,
+        "volatility": 0.04576116094093476,
+        "pressure_cvar": 0.0811353167623799
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0010016345608748803,
+        "volatility": 0.04666758143784602,
+        "pressure_cvar": 0.07789459634689624
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-63",
+      "label": "Allocation 64",
+      "weights": [
+        0.18818557457954957,
+        0.42880818634687595,
+        0.3830062390735745
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0036084478070894516,
+        "volatility": 0.029000240058504354,
+        "pressure_cvar": 0.04766701721652376
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003856213600049824,
+        "volatility": 0.03012140783905217,
+        "pressure_cvar": 0.04628336429060266
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-64",
+      "label": "Allocation 65",
+      "weights": [
+        0.21995138765365232,
+        0.06400290290740566,
+        0.716045709438942
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -2.3977087096345738e-05,
+        "volatility": 0.01324193312261319,
+        "pressure_cvar": 0.023422678852273268
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -6.796796972825613e-05,
+        "volatility": 0.013530067829207827,
+        "pressure_cvar": 0.02248054025554654
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-65",
+      "label": "Allocation 66",
+      "weights": [
+        0.10495909532803369,
+        0.5929665796897381,
+        0.30207432498222825
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00544511665591741,
+        "volatility": 0.035107388389934824,
+        "pressure_cvar": 0.055398656287507335
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00585326114648717,
+        "volatility": 0.03656915566181856,
+        "pressure_cvar": 0.05476249377594142
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-66",
+      "label": "Allocation 67",
+      "weights": [
+        0.77347598756375,
+        0.12430826252221536,
+        0.10221574991403458
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0010619029061744868,
+        "volatility": 0.043276787971025216,
+        "pressure_cvar": 0.07681393213349398
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0012934834512842112,
+        "volatility": 0.04409541517209913,
+        "pressure_cvar": 0.07370909851036687
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-67",
+      "label": "Allocation 68",
+      "weights": [
+        0.13140684133512698,
+        0.475001914257823,
+        0.3935912444070502
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004223094030042271,
+        "volatility": 0.02954546273531112,
+        "pressure_cvar": 0.04744688951569406
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0045300684258932555,
+        "volatility": 0.03074463836104895,
+        "pressure_cvar": 0.04653985222598035
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-68",
+      "label": "Allocation 69",
+      "weights": [
+        0.7982812510177876,
+        0.169708530912191,
+        0.0320102180700213
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0006941685414370055,
+        "volatility": 0.04596243842078656,
+        "pressure_cvar": 0.08145930763646372
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0009015767009106513,
+        "volatility": 0.04688472093855216,
+        "pressure_cvar": 0.07821940432374128
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-69",
+      "label": "Allocation 70",
+      "weights": [
+        0.8083378002621143,
+        0.017546488576597664,
+        0.17411571116128807
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0021999078603372833,
+        "volatility": 0.04212149041213493,
+        "pressure_cvar": 0.07494511447157538
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0025276615450655383,
+        "volatility": 0.04278941803537658,
+        "pressure_cvar": 0.07212202461257003
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-70",
+      "label": "Allocation 71",
+      "weights": [
+        0.2934829611203627,
+        0.3186602939295396,
+        0.3878567449500978
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0022310659051818895,
+        "volatility": 0.027588461525331398,
+        "pressure_cvar": 0.047195671121816045
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0023503490688017697,
+        "volatility": 0.028503040796014956,
+        "pressure_cvar": 0.04543681353315478
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-71",
+      "label": "Allocation 72",
+      "weights": [
+        0.019373051267230303,
+        0.1831027712929684,
+        0.7975241774398014
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0017196303952738187,
+        "volatility": 0.010483288683346664,
+        "pressure_cvar": 0.016298767750515253
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0018511639093176096,
+        "volatility": 0.010926373623601498,
+        "pressure_cvar": 0.016220074656205237
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-72",
+      "label": "Allocation 73",
+      "weights": [
+        0.003626535961955631,
+        0.8466927730894174,
+        0.14968069094862688
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.008203847441892943,
+        "volatility": 0.04637816645976997,
+        "pressure_cvar": 0.07042990271523637
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.008848353169556612,
+        "volatility": 0.048367808586649255,
+        "pressure_cvar": 0.07072814895645288
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-73",
+      "label": "Allocation 74",
+      "weights": [
+        0.10646328746490225,
+        0.6745142681431799,
+        0.21902244439191781
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00623186910845322,
+        "volatility": 0.03956996384642461,
+        "pressure_cvar": 0.062209545112494276
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.006701600601761433,
+        "volatility": 0.04122471193552489,
+        "pressure_cvar": 0.061593134694437196
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-74",
+      "label": "Allocation 75",
+      "weights": [
+        0.08519112382507167,
+        0.6491857465026115,
+        0.26562312967231677
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.006048508229008252,
+        "volatility": 0.037608408163066084,
+        "pressure_cvar": 0.05880101512817594
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.006507891238106007,
+        "volatility": 0.03919006152475874,
+        "pressure_cvar": 0.058370987844574444
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-75",
+      "label": "Allocation 76",
+      "weights": [
+        0.4465878653584256,
+        0.47508198362935117,
+        0.07833015101222317
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0032997231563755957,
+        "volatility": 0.04151518146281541,
+        "pressure_cvar": 0.07110123477246791
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0034737431675385556,
+        "volatility": 0.04288359068009857,
+        "pressure_cvar": 0.06842697964319888
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-76",
+      "label": "Allocation 77",
+      "weights": [
+        0.3977783456855013,
+        0.41023205077526864,
+        0.19198960353922992
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00281367448070336,
+        "volatility": 0.03636751906662069,
+        "pressure_cvar": 0.06239225990964327
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.002958812278842605,
+        "volatility": 0.037555732383802526,
+        "pressure_cvar": 0.06000900364765153
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-77",
+      "label": "Allocation 78",
+      "weights": [
+        0.31153364386498567,
+        0.20591829459925218,
+        0.4825480615357621
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0010843339424747701,
+        "volatility": 0.023273342646741607,
+        "pressure_cvar": 0.04068332737360864
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0011099757678785882,
+        "volatility": 0.023933863798705966,
+        "pressure_cvar": 0.03889185256322418
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-78",
+      "label": "Allocation 79",
+      "weights": [
+        0.12889926091585258,
+        0.13060917377339057,
+        0.7404915653107568
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0008892020410423117,
+        "volatility": 0.01167551037249769,
+        "pressure_cvar": 0.020050693464694576
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0009344591242173503,
+        "volatility": 0.012055041353194221,
+        "pressure_cvar": 0.01927679647071851
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-79",
+      "label": "Allocation 80",
+      "weights": [
+        0.36406009033581327,
+        0.4275121196057059,
+        0.2084277900584807
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0030801888817334404,
+        "volatility": 0.035764696231580684,
+        "pressure_cvar": 0.06092166145234754
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0032527416450497293,
+        "volatility": 0.036975760205823154,
+        "pressure_cvar": 0.05870481841536783
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-80",
+      "label": "Allocation 81",
+      "weights": [
+        0.33527478296727986,
+        0.06965872522027784,
+        0.5950664918124423
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.00030724689176062596,
+        "volatility": 0.01925199314891697,
+        "pressure_cvar": 0.034125532204510575
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00039559211503815755,
+        "volatility": 0.019636257700033438,
+        "pressure_cvar": 0.03276664679662225
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-81",
+      "label": "Allocation 82",
+      "weights": [
+        0.04772577116630516,
+        0.053340630298938214,
+        0.8989335985347567
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0003775648998324805,
+        "volatility": 0.004558838446106357,
+        "pressure_cvar": 0.007786664087505012
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0003981227570195758,
+        "volatility": 0.004711175897224744,
+        "pressure_cvar": 0.007499361517123598
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-82",
+      "label": "Allocation 83",
+      "weights": [
+        0.6542949304511042,
+        0.045176323789721154,
+        0.30052874575917454
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0014801757756662767,
+        "volatility": 0.034891437556023246,
+        "pressure_cvar": 0.062005970156842706
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0017218370494193353,
+        "volatility": 0.03548040624449836,
+        "pressure_cvar": 0.05953654184079126
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-83",
+      "label": "Allocation 84",
+      "weights": [
+        0.037084743806733586,
+        0.5117875573077963,
+        0.45112769888547016
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004856546028277468,
+        "volatility": 0.028863867288280935,
+        "pressure_cvar": 0.04452802104604603
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0052313949331745,
+        "volatility": 0.030090953733208466,
+        "pressure_cvar": 0.0444593415610532
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-84",
+      "label": "Allocation 85",
+      "weights": [
+        0.2550159249381591,
+        0.38042926083707057,
+        0.3645548142247704
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002943128619585194,
+        "volatility": 0.02902791006166676,
+        "pressure_cvar": 0.04887681452342883
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003125776406794339,
+        "volatility": 0.030069144721599297,
+        "pressure_cvar": 0.04712284471672163
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-85",
+      "label": "Allocation 86",
+      "weights": [
+        0.026748947837853563,
+        0.23669207811432647,
+        0.73655897404782
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002217918476200456,
+        "volatility": 0.013596440520185755,
+        "pressure_cvar": 0.021173364370432532
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00238722840078148,
+        "volatility": 0.014170320437209793,
+        "pressure_cvar": 0.021056024104163892
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-86",
+      "label": "Allocation 87",
+      "weights": [
+        0.02821062138964221,
+        0.897041363917509,
+        0.07474801469284874
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00862023817694724,
+        "volatility": 0.04969706374288609,
+        "pressure_cvar": 0.07596221009187867
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00929278526013619,
+        "volatility": 0.05182243944495989,
+        "pressure_cvar": 0.07608773290232576
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-87",
+      "label": "Allocation 88",
+      "weights": [
+        0.01987252914530442,
+        0.6546661595095029,
+        0.3254613113451926
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.006293200112312913,
+        "volatility": 0.036252377397527784,
+        "pressure_cvar": 0.055398088015238094
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.006784331068994015,
+        "volatility": 0.0378029844485553,
+        "pressure_cvar": 0.05549423824818438
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-88",
+      "label": "Allocation 89",
+      "weights": [
+        0.19910559345551498,
+        0.5822036474446339,
+        0.21869075909985097
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0050646478062403135,
+        "volatility": 0.037442610332625956,
+        "pressure_cvar": 0.06074646695740778
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.005424847520537632,
+        "volatility": 0.038933987123598926,
+        "pressure_cvar": 0.059310437720083375
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-89",
+      "label": "Allocation 90",
+      "weights": [
+        0.5487220064434344,
+        0.0955182702181278,
+        0.35575972333843786
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.000682213900555432,
+        "volatility": 0.030926270583411193,
+        "pressure_cvar": 0.054873832650957376
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0008409088782416086,
+        "volatility": 0.031520472673887384,
+        "pressure_cvar": 0.052662291323982854
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-90",
+      "label": "Allocation 91",
+      "weights": [
+        0.5704654860958069,
+        0.24740022801554717,
+        0.18213428588864575
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0007275666710225684,
+        "volatility": 0.037329825349822564,
+        "pressure_cvar": 0.06576846226127026
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0006755829819366098,
+        "volatility": 0.03824852482934452,
+        "pressure_cvar": 0.06294691479995904
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-91",
+      "label": "Allocation 92",
+      "weights": [
+        0.7087042053332776,
+        0.013354030673022418,
+        0.2779417639937
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0019484450562306786,
+        "volatility": 0.03687976178459229,
+        "pressure_cvar": 0.06562328104578627
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0022373493846856813,
+        "volatility": 0.037462333049377475,
+        "pressure_cvar": 0.06316055472427956
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-92",
+      "label": "Allocation 93",
+      "weights": [
+        0.3799809343775245,
+        0.11219630339402716,
+        0.5078227622284482
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -2.5637635205318587e-05,
+        "volatility": 0.022932940247428504,
+        "pressure_cvar": 0.040559596633532924
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00010039348653281222,
+        "volatility": 0.023434015127621673,
+        "pressure_cvar": 0.03892791307995265
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-93",
+      "label": "Allocation 94",
+      "weights": [
+        0.5591749382340424,
+        0.10474102304149249,
+        0.3360840387244651
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.000623385415855041,
+        "volatility": 0.03174587168819881,
+        "pressure_cvar": 0.056309791049141446
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0007794547666468029,
+        "volatility": 0.032365154996829175,
+        "pressure_cvar": 0.054048012008610494
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-94",
+      "label": "Allocation 95",
+      "weights": [
+        0.10226159024482416,
+        0.8330915355976848,
+        0.06464687415749101
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.007782680825995394,
+        "volatility": 0.048071970980692054,
+        "pressure_cvar": 0.07502143925770899
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.008375181818054113,
+        "volatility": 0.05009713783487299,
+        "pressure_cvar": 0.07453508404688564
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-95",
+      "label": "Allocation 96",
+      "weights": [
+        0.5749847223943331,
+        0.1804414810710636,
+        0.24457379653460343
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 6.469244946719083e-05,
+        "volatility": 0.035076636722739064,
+        "pressure_cvar": 0.062012616698974524
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -4.02887742558268e-05,
+        "volatility": 0.03585666387890824,
+        "pressure_cvar": 0.05950376792584402
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-96",
+      "label": "Allocation 97",
+      "weights": [
+        0.15252481949283778,
+        0.45639274933743096,
+        0.3910824311697312
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0039806304357856365,
+        "volatility": 0.029234025780220108,
+        "pressure_cvar": 0.047376565280758245
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0042644934312334164,
+        "volatility": 0.030401138411997517,
+        "pressure_cvar": 0.04628090869468389
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-97",
+      "label": "Allocation 98",
+      "weights": [
+        0.7031638020105424,
+        0.21407126295013584,
+        0.08276493503932171
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 1.5127252911311447e-05,
+        "volatility": 0.04266360407583403,
+        "pressure_cvar": 0.07543972255485265
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.00011828933105587113,
+        "volatility": 0.04360400123550201,
+        "pressure_cvar": 0.072398776396528
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-98",
+      "label": "Allocation 99",
+      "weights": [
+        0.5963614482644346,
+        0.36099994539633434,
+        0.042638606339230986
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0017537633677256086,
+        "volatility": 0.04314628463038263,
+        "pressure_cvar": 0.07557012396889244
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0017775287144016995,
+        "volatility": 0.04433483711294823,
+        "pressure_cvar": 0.07227366410130748
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-99",
+      "label": "Allocation 100",
+      "weights": [
+        0.3258905824512688,
+        0.4783521714887171,
+        0.195757246060014
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0036853485839092653,
+        "volatility": 0.03670620115664791,
+        "pressure_cvar": 0.06185855759038686
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.003912801518642749,
+        "volatility": 0.03801819976744886,
+        "pressure_cvar": 0.0596290630019108
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-100",
+      "label": "Allocation 101",
+      "weights": [
+        0.16986847962489993,
+        0.12527256837369447,
+        0.7048589520014056
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0007173005801688892,
+        "volatility": 0.013253528926877539,
+        "pressure_cvar": 0.02309509031054592
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0007411955812337736,
+        "volatility": 0.013643691956450089,
+        "pressure_cvar": 0.022077801911938436
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-101",
+      "label": "Allocation 102",
+      "weights": [
+        0.028952706740376175,
+        0.12367490697650722,
+        0.8473723862831165
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0011149818772399414,
+        "volatility": 0.007530218035407645,
+        "pressure_cvar": 0.012004475830062708
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0011971283630956185,
+        "volatility": 0.007839368705978605,
+        "pressure_cvar": 0.011815667034313158
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-102",
+      "label": "Allocation 103",
+      "weights": [
+        0.5046733006871976,
+        0.10546978025699039,
+        0.38985691905581193
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.00045650993973219496,
+        "volatility": 0.028998881911049254,
+        "pressure_cvar": 0.0514005576475221
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0005890219781881734,
+        "volatility": 0.029578471367622695,
+        "pressure_cvar": 0.049354500097387774
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-103",
+      "label": "Allocation 104",
+      "weights": [
+        0.8436564568227801,
+        0.0794862788549832,
+        0.07685726432223672
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.001702536141362657,
+        "volatility": 0.04556904089112416,
+        "pressure_cvar": 0.08094459270822327
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0019979345518382225,
+        "volatility": 0.04636354336490352,
+        "pressure_cvar": 0.0776728109764079
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-104",
+      "label": "Allocation 105",
+      "weights": [
+        0.15013983910831236,
+        0.5943951072523451,
+        0.2554650536393425
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.005326500772045644,
+        "volatility": 0.036526708453377375,
+        "pressure_cvar": 0.058410467878626526
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.00571666766902124,
+        "volatility": 0.03801899284867187,
+        "pressure_cvar": 0.057409237032029825
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-105",
+      "label": "Allocation 106",
+      "weights": [
+        0.028806309813840757,
+        0.7269190642091686,
+        0.24427462597699068
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.006967991602333651,
+        "volatility": 0.040413017680923057,
+        "pressure_cvar": 0.061885386210818315
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.007510482035325006,
+        "volatility": 0.04213949403995441,
+        "pressure_cvar": 0.061949189384862303
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-106",
+      "label": "Allocation 107",
+      "weights": [
+        0.2451887894495836,
+        0.4279585536033922,
+        0.3268526569470241
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.003433064697660601,
+        "volatility": 0.03104417841001343,
+        "pressure_cvar": 0.05182245547077041
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0036561252111317975,
+        "volatility": 0.03219360126873391,
+        "pressure_cvar": 0.050062477955291576
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-107",
+      "label": "Allocation 108",
+      "weights": [
+        0.48821283751714184,
+        0.3795797320997932,
+        0.13220743038306507
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0022511259517974686,
+        "volatility": 0.03895454673997787,
+        "pressure_cvar": 0.06775079866442103
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.002334709718932278,
+        "volatility": 0.040121343386457974,
+        "pressure_cvar": 0.0647886386895732
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-108",
+      "label": "Allocation 109",
+      "weights": [
+        0.40770533914592183,
+        0.0906326300664634,
+        0.5016620307876148
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0003161362249121827,
+        "volatility": 0.023602591955830428,
+        "pressure_cvar": 0.041821141746200156
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0004190459026990175,
+        "volatility": 0.024081233022895124,
+        "pressure_cvar": 0.0401592153075116
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-109",
+      "label": "Allocation 110",
+      "weights": [
+        0.3651534216540102,
+        0.10335321644731886,
+        0.5314933618986709
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -6.795587705376124e-05,
+        "volatility": 0.021883242973341474,
+        "pressure_cvar": 0.03871702415182437
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0001432014666180552,
+        "volatility": 0.022355724000683804,
+        "pressure_cvar": 0.037159623291851115
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-110",
+      "label": "Allocation 111",
+      "weights": [
+        0.7827861280893679,
+        0.05576486485707145,
+        0.16144900705356058
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.001754198653772607,
+        "volatility": 0.04178948376946938,
+        "pressure_cvar": 0.07425830939398975
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.002042007739771123,
+        "volatility": 0.0424969030396001,
+        "pressure_cvar": 0.07129664367656176
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-111",
+      "label": "Allocation 112",
+      "weights": [
+        0.6274632441419303,
+        0.14491683238307052,
+        0.22761992347499924
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0004338353114096113,
+        "volatility": 0.03650235418836985,
+        "pressure_cvar": 0.06466764610980673
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.0005880696958236118,
+        "volatility": 0.037249505708020034,
+        "pressure_cvar": 0.062095886189873245
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-112",
+      "label": "Allocation 113",
+      "weights": [
+        0.7296295624029735,
+        0.17032298223708917,
+        0.10004745535993731
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.00048691243540634167,
+        "volatility": 0.042505371859971476,
+        "pressure_cvar": 0.07529964198656713
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.000664878769756514,
+        "volatility": 0.04337769821879692,
+        "pressure_cvar": 0.0723033950676231
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-113",
+      "label": "Allocation 114",
+      "weights": [
+        0.5613863851318899,
+        0.2266442954078406,
+        0.21196931946026953
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0005528168467635504,
+        "volatility": 0.03609462219821855,
+        "pressure_cvar": 0.0636634194076577
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0004888277870201841,
+        "volatility": 0.0369623715656156,
+        "pressure_cvar": 0.06095816690097755
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-114",
+      "label": "Allocation 115",
+      "weights": [
+        0.0890687803659842,
+        0.609433642739904,
+        0.3014975768941118
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0056514697917843144,
+        "volatility": 0.035554191655798116,
+        "pressure_cvar": 0.05576455660277719
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00607888501005249,
+        "volatility": 0.03704479156073239,
+        "pressure_cvar": 0.055275407326073486
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-115",
+      "label": "Allocation 116",
+      "weights": [
+        0.0038873356294082547,
+        0.9869881187994232,
+        0.009124545571168558
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00956420625000554,
+        "volatility": 0.05405529030787461,
+        "pressure_cvar": 0.08208136754856453
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.010315648859546226,
+        "volatility": 0.05637436568112275,
+        "pressure_cvar": 0.08243212849203774
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-116",
+      "label": "Allocation 117",
+      "weights": [
+        0.18139457592959438,
+        0.1299526209586814,
+        0.6886528031117243
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0007289098534844141,
+        "volatility": 0.013985650814593128,
+        "pressure_cvar": 0.02439351611640526
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0007515114430534282,
+        "volatility": 0.01439343355071964,
+        "pressure_cvar": 0.023316812255464926
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-117",
+      "label": "Allocation 118",
+      "weights": [
+        0.44049629854435735,
+        0.25143496979502844,
+        0.30806873166061405
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0011477959919853347,
+        "volatility": 0.031236848779567703,
+        "pressure_cvar": 0.05477237207599779
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0011537416008806191,
+        "volatility": 0.032080270250922555,
+        "pressure_cvar": 0.052394030367357416
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-118",
+      "label": "Allocation 119",
+      "weights": [
+        0.3269540416029029,
+        0.3312669688533923,
+        0.3417789895437049
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002255232763743243,
+        "volatility": 0.029613889309732976,
+        "pressure_cvar": 0.050857003204116104
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.002370009203024796,
+        "volatility": 0.03057651530601088,
+        "pressure_cvar": 0.04889398931344148
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-119",
+      "label": "Allocation 120",
+      "weights": [
+        0.6911868575999687,
+        0.2250152310762735,
+        0.08379791132375776
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0001564217245705391,
+        "volatility": 0.04245375387452498,
+        "pressure_cvar": 0.07503702332735163
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 3.6410128770409116e-05,
+        "volatility": 0.04340813979628593,
+        "pressure_cvar": 0.07198397926980897
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-120",
+      "label": "Allocation 121",
+      "weights": [
+        0.1881370764572491,
+        0.14179833064646405,
+        0.670064592896287
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0008240652747169498,
+        "volatility": 0.014813277752156413,
+        "pressure_cvar": 0.02579358448367811
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0008528597461069986,
+        "volatility": 0.01525249330212833,
+        "pressure_cvar": 0.02466025570930896
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-121",
+      "label": "Allocation 122",
+      "weights": [
+        0.2545250914350461,
+        0.01603087753152306,
+        0.7294440310334308
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": -0.0005907683256570043,
+        "volatility": 0.013531906839005783,
+        "pressure_cvar": 0.024052845701288805
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": -0.000685953509816595,
+        "volatility": 0.013758529383160599,
+        "pressure_cvar": 0.023098772203324937
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-122",
+      "label": "Allocation 123",
+      "weights": [
+        0.4247746537270181,
+        0.41591800104236604,
+        0.15930734523061574
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.002789682342463674,
+        "volatility": 0.037797678042739674,
+        "pressure_cvar": 0.06503261948540426
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.002927765365150909,
+        "volatility": 0.0390141055935071,
+        "pressure_cvar": 0.06247171735803522
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-123",
+      "label": "Allocation 124",
+      "weights": [
+        0.0034470187078300654,
+        0.03429471592406976,
+        0.9622582653681001
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00032261490778628905,
+        "volatility": 0.0019587492165118975,
+        "pressure_cvar": 0.0030416360929085558
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.00034732742541194664,
+        "volatility": 0.0020416185804303356,
+        "pressure_cvar": 0.0030285509920257997
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-124",
+      "label": "Allocation 125",
+      "weights": [
+        0.4350716991488255,
+        0.16450358134671292,
+        0.40042471950446157
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.00032030681751708036,
+        "volatility": 0.02755585815183067,
+        "pressure_cvar": 0.048641868598234224
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0002622121241381442,
+        "volatility": 0.028204557268782494,
+        "pressure_cvar": 0.04659977037196546
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-125",
+      "label": "Allocation 126",
+      "weights": [
+        0.046524898403900804,
+        0.4084878228842083,
+        0.5449872787118908
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.003826668520498156,
+        "volatility": 0.023474571166023233,
+        "pressure_cvar": 0.03656349801392364
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.004118714533970254,
+        "volatility": 0.0244652196527793,
+        "pressure_cvar": 0.03635775152784665
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "sampled-126",
+      "label": "Allocation 127",
+      "weights": [
+        0.12268087091966484,
+        0.49869637452123006,
+        0.37862275455910516
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.004478559545677705,
+        "volatility": 0.03054492084873885,
+        "pressure_cvar": 0.048790349395520224
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.004807295695686331,
+        "volatility": 0.03179501675880563,
+        "pressure_cvar": 0.04798029853885688
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "sampled-127",
+      "label": "Allocation 128",
+      "weights": [
+        0.6819427867002541,
+        0.26606298652555516,
+        0.051994226774190695
+      ],
+      "source": "sampled",
+      "discovery": {
+        "mean_return": 0.0005817653275473874,
+        "volatility": 0.043498016092856195,
+        "pressure_cvar": 0.07675462416878251
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.0004969749011406632,
+        "volatility": 0.04453229996052659,
+        "pressure_cvar": 0.07351262273762915
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "min-volatility",
+      "label": "Minimum volatility",
+      "weights": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.0,
+        "volatility": 0.0,
+        "pressure_cvar": 0.0
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.0,
+        "volatility": 0.0,
+        "pressure_cvar": 0.0
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "max-return",
+      "label": "Maximum modeled return",
+      "weights": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.00970184361005524,
+        "volatility": 0.05467968874442138,
+        "pressure_cvar": 0.08294770416115343
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.010464855000872013,
+        "volatility": 0.05702647557883539,
+        "pressure_cvar": 0.0833389405995153
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "min-pressure-tail",
+      "label": "Minimum pressure tail",
+      "weights": [
+        3.271185625035074e-12,
+        6.380513922802064e-11,
+        0.9999999999329237
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 6.094359827499777e-13,
+        "volatility": 3.5651213405467247e-12,
+        "pressure_cvar": 5.473180723636098e-12
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 6.567394961344277e-13,
+        "volatility": 3.7171786712976625e-12,
+        "pressure_cvar": 5.47460169753788e-12
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-3",
+      "label": "Trade-off 1",
+      "weights": [
+        0.0,
+        1.3260791328442044e-10,
+        0.9999999998673921
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 1.2865412361412139e-12,
+        "volatility": 7.250959423439331e-12,
+        "pressure_cvar": 1.0999521960543995e-11
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 1.3877225844896696e-12,
+        "volatility": 7.562161928474324e-12,
+        "pressure_cvar": 1.1051403008235989e-11
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-4",
+      "label": "Trade-off 2",
+      "weights": [
+        0.0,
+        0.9999999999985582,
+        1.441834888429087e-12
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.009701843610041254,
+        "volatility": 0.05467968874434254,
+        "pressure_cvar": 0.08294770416103384
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.010464855000856924,
+        "volatility": 0.05702647557875317,
+        "pressure_cvar": 0.08333894059939513
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "optimized-5",
+      "label": "Trade-off 3",
+      "weights": [
+        0.0,
+        0.9999999999982501,
+        1.7498328844511527e-12
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.009701843610038265,
+        "volatility": 0.0546796887443257,
+        "pressure_cvar": 0.08294770416100829
+      },
+      "pareto": false,
+      "evaluation": {
+        "mean_return": 0.010464855000853701,
+        "volatility": 0.0570264755787356,
+        "pressure_cvar": 0.08333894059936944
+      },
+      "evaluation_pareto": false
+    },
+    {
+      "id": "optimized-6",
+      "label": "Trade-off 4",
+      "weights": [
+        1.6557857107227036e-13,
+        9.283426318936332e-11,
+        0.9999999999070001
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 9.001780073456403e-13,
+        "volatility": 5.079850999146414e-12,
+        "pressure_cvar": 7.709460279733904e-12
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 9.709417286867291e-13,
+        "volatility": 5.297833674805396e-12,
+        "pressure_cvar": 7.744273234489291e-12
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-7",
+      "label": "Trade-off 5",
+      "weights": [
+        0.0,
+        9.64071982548365e-10,
+        0.9999999990359281
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 9.353275603520144e-12,
+        "volatility": 5.2715155932961854e-11,
+        "pressure_cvar": 7.996755759847847e-11
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 1.0088873507771856e-11,
+        "volatility": 5.4977627369033764e-11,
+        "pressure_cvar": 8.034473768725513e-11
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-8",
+      "label": "Trade-off 6",
+      "weights": [
+        1.1857438876354083e-13,
+        0.5483466471065578,
+        0.4516533528933237
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.005319973414325626,
+        "volatility": 0.029983423987836298,
+        "pressure_cvar": 0.04548409546196165
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.005738368152184065,
+        "volatility": 0.03127027667996112,
+        "pressure_cvar": 0.04569862865116221
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-9",
+      "label": "Trade-off 7",
+      "weights": [
+        1.6832818131961324e-09,
+        0.9999999915147733,
+        6.801944864934036e-09
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.009701843522797321,
+        "volatility": 0.054679688318031154,
+        "pressure_cvar": 0.08294770354954255
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.010464854906429373,
+        "volatility": 0.057026475133757776,
+        "pressure_cvar": 0.08333893996926248
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-10",
+      "label": "Trade-off 8",
+      "weights": [
+        5.0660792474873025e-12,
+        2.0592019179349263e-10,
+        0.9999999997890138
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 1.9829511589549168e-12,
+        "volatility": 1.1375192228103315e-11,
+        "pressure_cvar": 1.7359517807115555e-11
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 2.137932579399461e-12,
+        "volatility": 1.1862085187017006e-11,
+        "pressure_cvar": 1.739805052629697e-11
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-11",
+      "label": "Trade-off 9",
+      "weights": [
+        0.0,
+        0.024173328806203955,
+        0.975826671193796
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.00023452585561223416,
+        "volatility": 0.0013217900950397877,
+        "pressure_cvar": 0.002005122126407294
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.000252970380845327,
+        "volatility": 0.001378519744826148,
+        "pressure_cvar": 0.0020145796134727833
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-12",
+      "label": "Trade-off 10",
+      "weights": [
+        1.409144177229771e-10,
+        0.4999999998427947,
+        0.5000000000162909
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.004850921803089263,
+        "volatility": 0.027339844366760676,
+        "pressure_cvar": 0.041473852075256945
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.005232427498318228,
+        "volatility": 0.028513237783701354,
+        "pressure_cvar": 0.04166947029309369
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-13",
+      "label": "Trade-off 11",
+      "weights": [
+        1.1611303704520627e-13,
+        3.312945110323573e-12,
+        0.999999999996571
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 3.180121831874219e-14,
+        "volatility": 1.8382235574359534e-13,
+        "pressure_cvar": 2.812025632085233e-13
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 3.4280030125999616e-14,
+        "volatility": 1.9168016632211557e-13,
+        "pressure_cvar": 2.815904487117782e-13
+      },
+      "evaluation_pareto": true
+    },
+    {
+      "id": "optimized-14",
+      "label": "Trade-off 12",
+      "weights": [
+        3.817133118471581e-09,
+        0.16666666571934804,
+        0.8333333304635189
+      ],
+      "source": "optimized",
+      "discovery": {
+        "mean_return": 0.0016169739146261882,
+        "volatility": 0.009113281490822111,
+        "pressure_cvar": 0.013824617490737327
+      },
+      "pareto": true,
+      "evaluation": {
+        "mean_return": 0.001744142477428562,
+        "volatility": 0.009504412630447287,
+        "pressure_cvar": 0.013889823528681258
+      },
+      "evaluation_pareto": true
+    }
+  ],
+  "pressure": {
+    "discovery_count": 1354,
+    "evaluation_count": 1296,
+    "discovery_probability": 0.6611328125,
+    "evaluation_probability": 0.6328125,
+    "minimum_count": 128,
+    "discovery_tail_observations": 67.70000000000006,
+    "evaluation_tail_observations": 64.80000000000005,
+    "discovery_tail_mass_count": 67.70000000000006,
+    "evaluation_tail_mass_count": 64.80000000000005
+  },
+  "metadata": {
+    "version": 1,
+    "horizon_days": 30,
+    "history_days": 730,
+    "paths_per_split": 2048,
+    "paths_per_sample": 2048,
+    "tail_level": 0.95,
+    "seed": 42,
+    "sampler": "mc",
+    "block_length": 15,
+    "block_length_requested": null,
+    "block_length_was_clipped": false,
+    "discovery_domain": 600,
+    "evaluation_domain": 601,
+    "allocation_domain": 602,
+    "discovery_draw_id": "5348c051a9eed7aa589879d61749eeecfa92cadd80dedba1e7ba984d2f598bde",
+    "evaluation_draw_id": "ea436a648cc8579ca724cbe75033260f546112f17e32a04341d4a1b307e77fdb",
+    "input_id": "ee5f2f1376cfadabc17e5c41e01ce8948d2911bb7bf554e446e36d1ae67e376b",
+    "input_hash": "ee5f2f1376cfadabc17e5c41e01ce8948d2911bb7bf554e446e36d1ae67e376b",
+    "solver": {
+      "solver": "CLARABEL",
+      "attempted": 15,
+      "succeeded": 15,
+      "failed": 0,
+      "budget_exhausted": false,
+      "solve_limit_seconds": 0.5,
+      "runs": [
+        {
+          "preference": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "status": "optimal",
+          "seconds": 0.013929027998528909
+        },
+        {
+          "preference": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "status": "optimal",
+          "seconds": 0.005641681000270182
+        },
+        {
+          "preference": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "status": "optimal",
+          "seconds": 0.005191448999539716
+        },
+        {
+          "preference": [
+            0.0,
+            0.25,
+            0.75
+          ],
+          "status": "optimal",
+          "seconds": 0.006312170000455808
+        },
+        {
+          "preference": [
+            0.0,
+            0.5,
+            0.5
+          ],
+          "status": "optimal",
+          "seconds": 0.007687118999456288
+        },
+        {
+          "preference": [
+            0.0,
+            0.75,
+            0.25
+          ],
+          "status": "optimal",
+          "seconds": 0.007354776000283891
+        },
+        {
+          "preference": [
+            0.25,
+            0.0,
+            0.75
+          ],
+          "status": "optimal",
+          "seconds": 0.005357062000257429
+        },
+        {
+          "preference": [
+            0.25,
+            0.25,
+            0.5
+          ],
+          "status": "optimal",
+          "seconds": 0.0060398570021789055
+        },
+        {
+          "preference": [
+            0.25,
+            0.5,
+            0.25
+          ],
+          "status": "optimal",
+          "seconds": 0.006612399000005098
+        },
+        {
+          "preference": [
+            0.25,
+            0.75,
+            0.0
+          ],
+          "status": "optimal",
+          "seconds": 0.004529915997409262
+        },
+        {
+          "preference": [
+            0.5,
+            0.0,
+            0.5
+          ],
+          "status": "optimal",
+          "seconds": 0.005185521000385052
+        },
+        {
+          "preference": [
+            0.5,
+            0.25,
+            0.25
+          ],
+          "status": "optimal",
+          "seconds": 0.00857476699820836
+        },
+        {
+          "preference": [
+            0.5,
+            0.5,
+            0.0
+          ],
+          "status": "optimal",
+          "seconds": 0.004476750000321772
+        },
+        {
+          "preference": [
+            0.75,
+            0.0,
+            0.25
+          ],
+          "status": "optimal",
+          "seconds": 0.00573129899930791
+        },
+        {
+          "preference": [
+            0.75,
+            0.25,
+            0.0
+          ],
+          "status": "optimal",
+          "seconds": 0.004075586999533698
+        }
+      ],
+      "normalization": {
+        "variance": 0.0029898683611868024,
+        "mean_return": 0.009701843610055256,
+        "pressure_cvar": 0.09182673352623862
+      }
+    },
+    "partial_optimization": false,
+    "elapsed_seconds": 0.44248217299900716,
+    "computation_budget_seconds": 8.0,
+    "portfolio_value": 22960.01546316658,
+    "data_source": "Supplied aligned asset returns; demo asset histories are synthetic.",
+    "source": "Supplied aligned asset returns; demo asset histories are synthetic.",
+    "return_convention": "Buy and hold, horizon simple returns; volatility uses sample standard deviation (ddof=1); no annualization.",
+    "pressure_definition": "Original bank cash first falls strictly below its operating buffer at a modeled end of day; the event is fixed across allocations.",
+    "tail_definition": "95% CVaR of signed portfolio loss at the first cash-buffer breach, conditional on a breach; exact fractional upper 5% mass, including ties. Negative loss means a gain.",
+    "cash_sleeve": "Zero-yield hypothetical portfolio cash; it does not top up bank cash or change the pressure event.",
+    "evaluation_scope": "Independent simulation paths from the same fitted history. Frozen discovery allocations and frontier flags; not an out-of-time backtest or a forecast-confidence interval.",
+    "frontier_scope": "Nondominated among explored candidates, not the complete continuous frontier. Lower volatility and pressure tail, higher mean return are preferred.",
+    "execution_scope": "Hypothetical long-only allocations without fees, taxes, settlement, or trade execution.",
+    "pareto_tolerance": 1e-10
+  }
+}

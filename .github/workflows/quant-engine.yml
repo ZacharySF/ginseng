@@ -1,0 +1,33 @@
+name: Quant engine
+on: [push, pull_request]
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.17'
+      - run: uv sync --locked --extra dev
+      - run: uv run --no-sync pytest -q
+      - run: uv run --no-sync ginseng engine replay examples/engine/canonical --backend numpy
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.17'
+      - run: uv sync --locked --extra dev --extra native-build
+      - run: uv build native --wheel --out-dir /tmp/wheels
+      - run: uv pip install --no-deps /tmp/wheels/ginseng_native-*.whl
+      - run: uv run --no-sync python -c "from ginseng.execution import native_info; assert native_info(True)['available']"
+      - run: uv run --no-sync pytest -q
+      - run: uv run --no-sync ginseng engine replay examples/engine/canonical --backend native --workers 2
+      - run: uv run --no-sync ginseng engine benchmark --suite quant-engineering --smoke --output /tmp/benchmark
+      - run: cmake -S native -B /tmp/sanitize -DGINSENG_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake --build /tmp/sanitize && /tmp/sanitize/kernel_sanitize
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quant-engine-smoke
+          path: /tmp/benchmark

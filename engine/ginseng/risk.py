@@ -21,7 +21,20 @@ def balance_risk(balances, buffer, q, weights=None) -> dict:
     }
 
 
+class _NormalizedWeights(np.ndarray):
+    """Internal immutable weights validated and owned by an execution context."""
+
+    def __array_finalize__(self, original):
+        self._normalization_length = getattr(original, '_normalization_length', None)
+
+
 def probabilities(n: int, weights: np.ndarray | None = None) -> np.ndarray:
+    if isinstance(weights, _NormalizedWeights) and weights.shape == (n,) and weights._normalization_length == n:
+        owner = weights
+        while isinstance(owner, np.ndarray):
+            owner = owner.base
+        if isinstance(owner, bytes):
+            return weights
     if n < 1:
         raise ValueError("At least one scenario is required.")
     w = np.full(n, 1.0 / n) if weights is None else np.asarray(weights, dtype=float)
@@ -37,26 +50,31 @@ def weight_hash(weights: np.ndarray) -> str:
     return hashlib.sha256(np.ascontiguousarray(weights, dtype="<f8").tobytes()).hexdigest()
 
 
-def quantile(values: np.ndarray, q: float, weights: np.ndarray | None = None) -> float:
-    """Smallest observed value whose cumulative probability reaches q.
+def quantiles(values: np.ndarray, qs, weights: np.ndarray | None = None) -> np.ndarray:
+    """Inverse empirical CDF: one stable ordering for every requested query.
 
-    Unlike linear interpolation, this preserves the advertised empirical
-    coverage even with a small sample or a large probability atom.
+    Preserve float64-rounded long-double CDF boundaries, including tiny tails.
+    No interpolation or uniform-weight shortcut is used.
     """
     x = np.asarray(values, dtype=float)
-    if x.ndim != 1 or not np.all(np.isfinite(x)) or not 0 <= q <= 1:
-        raise ValueError("Quantiles require finite one-dimensional losses and q in [0, 1].")
+    queries = np.asarray(qs, dtype=float)
+    if (x.ndim != 1 or not np.all(np.isfinite(x)) or queries.ndim != 1
+            or not np.all(np.isfinite(queries)) or np.any((queries < 0) | (queries > 1))):
+        raise ValueError("Quantiles require finite vectors and qs in [0, 1].")
     w = probabilities(len(x), weights)
-    order = np.argsort(x[w > 0], kind="stable")
-    positive_x, positive_w = x[w > 0][order], w[w > 0][order]
-    if q == 1:
-        return float(positive_x[-1])
+    positive = w > 0
+    order = np.argsort(x[positive], kind="stable")
+    positive_x, positive_w = x[positive][order], w[positive][order]
     cumulative = np.cumsum(positive_w.astype(np.longdouble))
-    # Round CDF boundaries once to the public float64 probability precision;
-    # no blanket epsilon may erase a positive upper tail.
     cumulative = (cumulative / cumulative[-1]).astype(float)
-    index = min(int(np.searchsorted(cumulative, q)), len(order) - 1)
-    return float(positive_x[max(0, index)])
+    indices = np.minimum(np.searchsorted(cumulative, queries), len(order) - 1)
+    indices[queries == 1] = len(order) - 1
+    return positive_x[indices]
+
+
+def quantile(values: np.ndarray, q: float, weights: np.ndarray | None = None) -> float:
+    """Smallest observed value whose cumulative probability reaches q."""
+    return float(quantiles(values, [q], weights)[0])
 
 
 def tail_probabilities(values: np.ndarray, q: float, weights: np.ndarray | None = None) -> np.ndarray:

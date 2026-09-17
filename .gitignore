@@ -30,7 +30,13 @@ __pycache__/
 *.pyc
 web/node_modules/
 web/.svelte-kit/
+/artifacts/tui/
 
 .env
 .env.local
 .env.*.local
+
+# Personal dev-environment tooling, not part of the deliverable.
+/tools/
+/config/
+/ginseng-source.txt

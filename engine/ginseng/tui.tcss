@@ -1,0 +1,127 @@
+/* GinsengApp's own chrome. Glass-canvas rules: kitty's phantom_rave profile
+   already gives the whole window 0.86 opacity and a 32px blur, so this
+   stylesheet stays out of its way -- panels are thin alpha-tinted washes
+   over the coord's own background, not opaque boxes, and structure comes
+   from single-line dividers instead of borders wherever a divider reads
+   just as clearly. Every color is a $g-* role or a Textual design token
+   ($primary/$foreground/...), which the active coord already resolves --
+   never a literal hex, so this still passes `rg "#[0-9A-Fa-f]{6}"`. */
+
+Screen { background: $background; color: $foreground; }
+
+/* ---- telemetry strip ------------------------------------------------ */
+
+#telemetry {
+    height: 3; background: $panel 55%; padding: 0 1;
+    text-wrap: nowrap; text-overflow: clip;
+    border-bottom: solid $g-rule;
+}
+
+/* ---- workspace / sidebar --------------------------------------------- */
+
+#workspace { height: 1fr; }
+
+#sidebar {
+    width: 50; padding: 0 1;
+    border: none; border-right: solid $g-rule;
+    background: $panel 15%;
+}
+#sidebar:focus-within { border-right: heavy $primary; }
+
+Portrait { height: auto; content-align: center top; margin: 0; }
+OperatorPanel { height: auto; margin-top: 0; margin-bottom: 1; border-top: solid $g-rule; }
+
+#nav { height: auto; background: transparent; border: none; padding: 0; }
+#nav > .option-list--option { padding: 0; transition: background 90ms linear, color 90ms linear; }
+#nav > .option-list--option-highlighted {
+    background: $primary 22%; color: $foreground; border-left: solid $primary;
+}
+
+/* ---- body: borderless floating panels, single-line dividers only ---- */
+
+#body { padding: 0; background: transparent; }
+#body > * {
+    border: none; border-bottom: solid $g-rule;
+    background: $panel 10%; padding: 0 1;
+    transition: border-bottom 120ms linear;
+}
+#body > *:focus { border-bottom: heavy $primary; }
+
+.rule { color: $primary; margin-top: 1; }
+.banner { color: $foreground; text-style: bold; }
+.hint { color: $foreground; margin-top: 1; }
+.prompt { color: $success; margin-top: 1; }
+.field-label { color: $secondary; margin-top: 0; }
+.field-row { height: auto; }
+.field-col { width: 1fr; height: auto; margin-right: 1; }
+
+/* ---- form controls: thin underline instead of a boxed frame --------- */
+
+Input, Select { height: 3; margin: 0; }
+Input {
+    border: none; border-bottom: solid $g-rule; background: $panel 20%;
+    transition: border-bottom 90ms linear, background 90ms linear;
+}
+Input:focus { border-bottom: heavy $primary; background: $panel 35%; }
+SelectCurrent {
+    border: none; border-bottom: solid $g-rule; background: $panel 20%;
+    transition: border-bottom 90ms linear;
+}
+SelectCurrent:focus { border-bottom: heavy $primary; }
+
+.mono-dim { color: $g-muted; }
+.mono-block { color: $foreground; }
+#surface-row { height: auto; margin-top: 1; }
+.surface-col { width: 1fr; height: auto; margin-right: 1; }
+#log-pane { height: auto; border: none; border-top: solid $g-rule; padding: 0 1; margin-top: 1; }
+#event-log { height: auto; }
+.tier-high { color: $error; }
+
+DataTable { height: 1fr; }
+DataTable > .datatable--header { background: $panel 40%; color: $primary; }
+DataTable > .datatable--cursor { background: $primary 22%; }
+
+Button {
+    border: none; padding: 0 1; height: 1; min-width: 16; width: auto; margin: 0;
+    background: $panel 25%; color: $primary;
+    transition: background 90ms linear, color 90ms linear, text-style 90ms linear;
+}
+Button:hover { background: $primary 30%; color: $foreground; }
+Button:focus { background: $primary 30%; color: $foreground; text-style: bold; }
+
+Footer { background: transparent; color: $foreground; }
+FooterKey { background: transparent; }
+FooterKey > .footer-key--key { background: transparent; color: $primary; }
+
+/* ---- urgency tint: set by GinsengApp.set_urgency() from live P(x) ---- */
+/* idle/safe: untouched. thin: telemetry strip warms. short: sidebar and
+   telemetry both carry the coord's own alarm color -- the same "blood only
+   when it's real" rule the coords themselves already follow, now applied
+   to the instrument's own chrome instead of just the mascot. */
+
+Screen.-urgent-thin #telemetry { background: $warning 15%; }
+Screen.-urgent-short #telemetry { background: $error 20%; }
+Screen.-urgent-short #sidebar { border-right: heavy $error; }
+
+/* ---- scrollbars: a hairline instead of the default thick gutter ----- */
+
+* {
+    scrollbar-size: 1 1;
+    scrollbar-color: $g-rule;
+    scrollbar-color-hover: $primary;
+    scrollbar-color-active: $accent;
+    scrollbar-background: transparent;
+    scrollbar-corner-color: transparent;
+}
+
+/* Boot screen scrolls nothing on purpose -- no hairline gutter to show. */
+#boot-frame, #boot-log {
+    scrollbar-size: 0 0;
+}
+
+/* ---- command palette: a glass overlay, not a boxed dialog ------------ */
+
+CommandPalette { background: $background 55%; }
+CommandPalette > Vertical { background: $panel 70%; }
+CommandPalette #--input { border: none; border-bottom: solid $g-rule; }
+CommandPalette #--input.--list-visible { border-bottom: solid $primary; }

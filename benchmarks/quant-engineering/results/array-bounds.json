@@ -1,0 +1,1037 @@
+{
+  "note": "Per-operation conservative bounds, not total process RSS. Context-owned live cache storage is additionally charged by EvaluationContext.",
+  "rows": [
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 497760,
+      "output_bytes": 96000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 497760,
+      "output_bytes": 96000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 497760,
+      "output_bytes": 96000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 497760,
+      "output_bytes": 96000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 497760,
+      "output_bytes": 576000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 256000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 497760,
+      "output_bytes": 576000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 256000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 497760,
+      "output_bytes": 576000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 512000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 2000,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 497760,
+      "output_bytes": 576000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 1024000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 977760,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 977760,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 977760,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 977760,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 977760,
+      "output_bytes": 1152000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 512000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 977760,
+      "output_bytes": 1152000,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 512000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 977760,
+      "output_bytes": 1152000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 1024000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 30,
+        "case": "stressed",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 977760,
+      "output_bytes": 1152000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 2048000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 192000,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 2112000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 512000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 2112000,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 512000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 2112000,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 1024000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 4000,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 1938000,
+      "output_bytes": 2112000,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 2048000,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 9437184,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 9437184,
+      "path_scratch_bound_bytes": 2457600,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 9437184,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 8388608,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 30,
+        "case": "normal",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 7882080,
+      "output_bytes": 9437184,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 16777216,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 30
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 8388608,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "stressed",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 16777216,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 2
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": false,
+        "workers": 4
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 1572864,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 0,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "weight_normalizations": 1,
+        "path_materializations": 0,
+        "row_reductions": 2,
+        "cache_hits": 1
+      }
+    },
+    {
+      "config": {
+        "backend": "numpy",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 1
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 4915200,
+      "chart_scratch_bound_bytes": 4194304,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 2
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 9830400,
+      "chart_scratch_bound_bytes": 8388608,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    },
+    {
+      "config": {
+        "backend": "native",
+        "n": 32768,
+        "h": 60,
+        "case": "weighted",
+        "full": true,
+        "workers": 4
+      },
+      "input_bytes": 15746640,
+      "output_bytes": 17301504,
+      "path_scratch_bound_bytes": 19660800,
+      "chart_scratch_bound_bytes": 16777216,
+      "whatif_counters": {
+        "history_preparations": 1,
+        "path_materializations": 1,
+        "row_reductions": 1,
+        "weight_normalizations": 1,
+        "cache_hits": 13,
+        "orderings": 60
+      }
+    }
+  ]
+}

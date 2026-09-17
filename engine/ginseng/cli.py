@@ -11,6 +11,17 @@ from ginseng.exact import enumerate_exact
 
 
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "engine":
+        from ginseng.engine_cli import main as engine_main
+        return engine_main(argv[1:])
+    if argv and argv[0] == "tui":
+        try:
+            from ginseng.tui import main as tui_main
+        except ImportError:
+            print("ginseng: the tui command needs the 'tui' extra: uv sync --extra tui", file=sys.stderr)
+            return 2
+        return tui_main(argv[1:])
     parser = argparse.ArgumentParser(prog="ginseng")
     sub = parser.add_subparsers(dest="command", required=True)
     sim = sub.add_parser("simulate")

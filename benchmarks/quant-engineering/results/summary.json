@@ -1,0 +1,3428 @@
+{
+  "baseline": {
+    "commit": "891f9e1c922c5f868715315fe24c0b08e4b3d872",
+    "archive_sha256": "3f2778c8263f2a1f3dc1a40b32ddd69f0e55feea1568b0f746bb00f35f5d8a6f",
+    "git_archive_sha256": "6320d6f2d041d7d02657eadefb1ab670fb633bc96ee7af6c065d4b365e4b83f1",
+    "members": "git archive HEAD engine pyproject.toml, before edits"
+  },
+  "repetitions": 3,
+  "warmup": "One complete untimed pass in every fresh process",
+  "policy": "Fixed round-robin interleaving; one BLAS thread; each backend prepares its own data; no profiler",
+  "summary": [
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002696474999538623,
+          "minimum": 0.002420820004772395,
+          "maximum": 0.0027664180015563034
+        },
+        "draw_generation": {
+          "median": 0.0014720129984198138,
+          "minimum": 0.0009394139997311868,
+          "maximum": 0.00148211199848447
+        },
+        "cash_kernel": {
+          "median": 0.0005784380045952275,
+          "minimum": 0.0003221830047550611,
+          "maximum": 0.0006589690019609407
+        },
+        "summaries": {
+          "median": 0.0004252399958204478,
+          "minimum": 0.00039493399526691064,
+          "maximum": 0.00044808300299337134
+        },
+        "complete_evaluation": {
+          "median": 0.0035193100047763437,
+          "minimum": 0.0034333079966017976,
+          "maximum": 0.0037196920020505786
+        },
+        "three_whatifs": {
+          "median": 0.00948203299776651,
+          "minimum": 0.009302430000388995,
+          "maximum": 0.010212717999820597
+        },
+        "including_preparation_and_draws": {
+          "median": 0.021456443995703012,
+          "minimum": 0.02129233899904648,
+          "maximum": 0.024822086001222488
+        }
+      },
+      "peak_rss_bytes": 139722752
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002719342002819758,
+          "minimum": 0.0026639209972927347,
+          "maximum": 0.003375250998942647
+        },
+        "draw_generation": {
+          "median": 0.0012269789949641563,
+          "minimum": 0.0011529850016813725,
+          "maximum": 0.001269765998586081
+        },
+        "prepared_adapter": {
+          "median": 0.00020910099556203932,
+          "minimum": 0.00019426600192673504,
+          "maximum": 0.0002107050022459589
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0009871209986158647,
+          "minimum": 0.0009725230047479272,
+          "maximum": 0.0012447979970602319
+        },
+        "complete_evaluation": {
+          "median": 0.003832772003079299,
+          "minimum": 0.0034434680055710487,
+          "maximum": 0.0042330489959567785
+        },
+        "three_whatifs": {
+          "median": 0.009532091004075482,
+          "minimum": 0.009032629001012538,
+          "maximum": 0.009796865000680555
+        },
+        "capture_including_evaluation": {
+          "median": 0.012751313995977398,
+          "minimum": 0.01232167000125628,
+          "maximum": 0.013109955994877964
+        },
+        "replay_including_evaluation": {
+          "median": 0.0040071940020425245,
+          "minimum": 0.0037585539976134896,
+          "maximum": 0.004246789998433087
+        },
+        "including_preparation_and_draws": {
+          "median": 0.005260017998807598,
+          "minimum": 0.005211178999161348,
+          "maximum": 0.005302919998939615
+        }
+      },
+      "peak_rss_bytes": 137388032
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0025219550007022917,
+          "minimum": 0.0024841060003382154,
+          "maximum": 0.002616664998640772
+        },
+        "draw_generation": {
+          "median": 0.0011624500039033592,
+          "minimum": 0.001094451996323187,
+          "maximum": 0.0011860439990414307
+        },
+        "prepared_adapter": {
+          "median": 0.00022369700309354812,
+          "minimum": 0.0001960419976967387,
+          "maximum": 0.00024551699607400224
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.00028506899980129674,
+          "minimum": 0.0002697929958230816,
+          "maximum": 0.0003141839988529682
+        },
+        "complete_evaluation": {
+          "median": 0.0034152789958170615,
+          "minimum": 0.0032060169978649355,
+          "maximum": 0.003455865000432823
+        },
+        "three_whatifs": {
+          "median": 0.008241448995249812,
+          "minimum": 0.008087754998996388,
+          "maximum": 0.008353351993719116
+        },
+        "capture_including_evaluation": {
+          "median": 0.012672353004745673,
+          "minimum": 0.01204393199441256,
+          "maximum": 0.012687285998254083
+        },
+        "replay_including_evaluation": {
+          "median": 0.0033382119945599698,
+          "minimum": 0.003133841004455462,
+          "maximum": 0.0033510630019009113
+        },
+        "including_preparation_and_draws": {
+          "median": 0.004625364999810699,
+          "minimum": 0.004586889001075178,
+          "maximum": 0.00500031300180126
+        }
+      },
+      "peak_rss_bytes": 136765440
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.003001698001753539,
+          "minimum": 0.0025461469995207153,
+          "maximum": 0.0030688640035805292
+        },
+        "draw_generation": {
+          "median": 0.0012077369974576868,
+          "minimum": 0.0011105100056738593,
+          "maximum": 0.0015695979964220896
+        },
+        "prepared_adapter": {
+          "median": 0.00021266799740260467,
+          "minimum": 0.00020323599892435595,
+          "maximum": 0.0002504210060578771
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0006387389948940836,
+          "minimum": 0.0005589339998550713,
+          "maximum": 0.0007677120011067018
+        },
+        "complete_evaluation": {
+          "median": 0.0036673440044978634,
+          "minimum": 0.003614715998992324,
+          "maximum": 0.0038142699995660223
+        },
+        "three_whatifs": {
+          "median": 0.008708176996151451,
+          "minimum": 0.008403861000260804,
+          "maximum": 0.009446399002627004
+        },
+        "capture_including_evaluation": {
+          "median": 0.013133704000210855,
+          "minimum": 0.01250833700032672,
+          "maximum": 0.013427124002191704
+        },
+        "replay_including_evaluation": {
+          "median": 0.00348349900014,
+          "minimum": 0.0034392239977023564,
+          "maximum": 0.00701923299493501
+        },
+        "including_preparation_and_draws": {
+          "median": 0.004999867000151426,
+          "minimum": 0.004944587999489158,
+          "maximum": 0.006710841000312939
+        }
+      },
+      "peak_rss_bytes": 137314304
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0025762630029930733,
+          "minimum": 0.002521391994378064,
+          "maximum": 0.0026837530022021383
+        },
+        "draw_generation": {
+          "median": 0.0011382590018911287,
+          "minimum": 0.0011206820054212585,
+          "maximum": 0.0011678500013658777
+        },
+        "prepared_adapter": {
+          "median": 0.00019124599930364639,
+          "minimum": 0.00018824599828803912,
+          "maximum": 0.0002261420013383031
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0006585840019397438,
+          "minimum": 0.0005915120054851286,
+          "maximum": 0.0006653180025750771
+        },
+        "complete_evaluation": {
+          "median": 0.0035978279993287288,
+          "minimum": 0.0035613599975476973,
+          "maximum": 0.004138639000302646
+        },
+        "three_whatifs": {
+          "median": 0.008697823999682441,
+          "minimum": 0.008567254997615237,
+          "maximum": 0.008998429002531338
+        },
+        "capture_including_evaluation": {
+          "median": 0.012917407002532855,
+          "minimum": 0.01125764699827414,
+          "maximum": 0.013596819000667892
+        },
+        "replay_including_evaluation": {
+          "median": 0.004125259998545516,
+          "minimum": 0.003941478003980592,
+          "maximum": 0.004132697999011725
+        },
+        "including_preparation_and_draws": {
+          "median": 0.005137166001077276,
+          "minimum": 0.005099384994537104,
+          "maximum": 0.0058207620022585616
+        }
+      },
+      "peak_rss_bytes": 137035776
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002626834000693634,
+          "minimum": 0.0026081469986820593,
+          "maximum": 0.0028125040043960325
+        },
+        "draw_generation": {
+          "median": 0.0009933710025507025,
+          "minimum": 0.0009431200014660135,
+          "maximum": 0.0010136799974134192
+        },
+        "cash_kernel": {
+          "median": 0.0003761059997486882,
+          "minimum": 0.0003441049993853085,
+          "maximum": 0.0004232930004945956
+        },
+        "summaries": {
+          "median": 0.0004537979984888807,
+          "minimum": 0.00040786700265016407,
+          "maximum": 0.0004893700024695136
+        },
+        "chart_order_statistics": {
+          "median": 0.010694737000449095,
+          "minimum": 0.010335084996768273,
+          "maximum": 0.011085334997915197
+        },
+        "complete_evaluation": {
+          "median": 0.028149899997515604,
+          "minimum": 0.027825421995657962,
+          "maximum": 0.028429999001673423
+        },
+        "three_whatifs": {
+          "median": 0.08423783699981868,
+          "minimum": 0.08258254900283646,
+          "maximum": 0.08538494100503158
+        },
+        "including_preparation_and_draws": {
+          "median": 0.03199540400237311,
+          "minimum": 0.030799168001976795,
+          "maximum": 0.0323333089982043
+        },
+        "application_pipeline_no_solver_no_uncertainty": {
+          "median": 0.042544926996924914,
+          "minimum": 0.04240723300608806,
+          "maximum": 0.04328707300010137
+        }
+      },
+      "peak_rss_bytes": 150364160
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002704883001570124,
+          "minimum": 0.0026831600043806247,
+          "maximum": 0.0027621370027191006
+        },
+        "draw_generation": {
+          "median": 0.000952553004026413,
+          "minimum": 0.0009315930001321249,
+          "maximum": 0.000975469003606122
+        },
+        "prepared_adapter": {
+          "median": 0.00019474800501484424,
+          "minimum": 0.0001900470015243627,
+          "maximum": 0.00021419300173874944
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0010698409969336353,
+          "minimum": 0.001044481003191322,
+          "maximum": 0.0010832750049303286
+        },
+        "chart_order_statistics": {
+          "median": 0.0036219049943611026,
+          "minimum": 0.003616167996369768,
+          "maximum": 0.0037623629978043027
+        },
+        "complete_evaluation": {
+          "median": 0.03269310699397465,
+          "minimum": 0.03216336500190664,
+          "maximum": 0.03409099300188245
+        },
+        "three_whatifs": {
+          "median": 0.06947141700220527,
+          "minimum": 0.06897297899558907,
+          "maximum": 0.06972108199988725
+        },
+        "capture_including_evaluation": {
+          "median": 0.018940050002129283,
+          "minimum": 0.01793898799951421,
+          "maximum": 0.019830593002552632
+        },
+        "replay_including_evaluation": {
+          "median": 0.00892939400364412,
+          "minimum": 0.008792578999418765,
+          "maximum": 0.009206285001710057
+        },
+        "including_preparation_and_draws": {
+          "median": 0.03664492800453445,
+          "minimum": 0.03647269800421782,
+          "maximum": 0.03681823700026143
+        },
+        "application_pipeline_no_solver_no_uncertainty": {
+          "median": 0.04839308500231709,
+          "minimum": 0.04801270199823193,
+          "maximum": 0.048764860002847854
+        }
+      },
+      "peak_rss_bytes": 149483520
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028027090011164546,
+          "minimum": 0.0027231010026298463,
+          "maximum": 0.0029399280028883368
+        },
+        "draw_generation": {
+          "median": 0.001166837006167043,
+          "minimum": 0.0011322569989715703,
+          "maximum": 0.0013631649999297224
+        },
+        "prepared_adapter": {
+          "median": 0.00022013599664205685,
+          "minimum": 0.00020177300029899925,
+          "maximum": 0.00023114599753171206
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0006282940012170002,
+          "minimum": 0.0005922350028413348,
+          "maximum": 0.0006970929971430451
+        },
+        "chart_order_statistics": {
+          "median": 0.0028878579978481866,
+          "minimum": 0.0027426619999459945,
+          "maximum": 0.0029075009952066466
+        },
+        "complete_evaluation": {
+          "median": 0.031830129999434575,
+          "minimum": 0.031690196999988984,
+          "maximum": 0.0319232500041835
+        },
+        "three_whatifs": {
+          "median": 0.06779438199737342,
+          "minimum": 0.06775126199499937,
+          "maximum": 0.06919778699375456
+        },
+        "capture_including_evaluation": {
+          "median": 0.018242825994093437,
+          "minimum": 0.017948079999769107,
+          "maximum": 0.018693159996473696
+        },
+        "replay_including_evaluation": {
+          "median": 0.007464626003638841,
+          "minimum": 0.007423188006214332,
+          "maximum": 0.008146152998961043
+        },
+        "including_preparation_and_draws": {
+          "median": 0.03572404800070217,
+          "minimum": 0.035453543001494836,
+          "maximum": 0.03652948099625064
+        },
+        "application_pipeline_no_solver_no_uncertainty": {
+          "median": 0.048099976003868505,
+          "minimum": 0.04753135500504868,
+          "maximum": 0.04837567099457374
+        }
+      },
+      "peak_rss_bytes": 149327872
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027515569963725284,
+          "minimum": 0.0027129860027343966,
+          "maximum": 0.002801821996399667
+        },
+        "draw_generation": {
+          "median": 0.0010982649982906878,
+          "minimum": 0.0009621619974495843,
+          "maximum": 0.0011817919948953204
+        },
+        "prepared_adapter": {
+          "median": 0.0001936490007210523,
+          "minimum": 0.00019270999473519623,
+          "maximum": 0.00019722999422810972
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0007905750026111491,
+          "minimum": 0.0007118930006981827,
+          "maximum": 0.0009248499991372228
+        },
+        "chart_order_statistics": {
+          "median": 0.0028305179948802106,
+          "minimum": 0.002727053994021844,
+          "maximum": 0.00284275300509762
+        },
+        "complete_evaluation": {
+          "median": 0.03205886399518931,
+          "minimum": 0.0316445379939978,
+          "maximum": 0.032305822998750955
+        },
+        "three_whatifs": {
+          "median": 0.07162249999964843,
+          "minimum": 0.06820811099896673,
+          "maximum": 0.08102551099727862
+        },
+        "capture_including_evaluation": {
+          "median": 0.019952979004301596,
+          "minimum": 0.018999317995621823,
+          "maximum": 0.03798880500107771
+        },
+        "replay_including_evaluation": {
+          "median": 0.008229711005697027,
+          "minimum": 0.007951550003781449,
+          "maximum": 0.012208380998345092
+        },
+        "including_preparation_and_draws": {
+          "median": 0.03672552300122334,
+          "minimum": 0.035477445999276824,
+          "maximum": 0.05472139799530851
+        },
+        "application_pipeline_no_solver_no_uncertainty": {
+          "median": 0.04748411200125702,
+          "minimum": 0.047322971004177816,
+          "maximum": 0.051308001995494124
+        }
+      },
+      "peak_rss_bytes": 150704128
+    },
+    {
+      "paths": 2000,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002745432997471653,
+          "minimum": 0.0027426649976405315,
+          "maximum": 0.0027792769978987053
+        },
+        "draw_generation": {
+          "median": 0.0010220149997621775,
+          "minimum": 0.0009556980003253557,
+          "maximum": 0.001090814999770373
+        },
+        "prepared_adapter": {
+          "median": 0.00019778500427491963,
+          "minimum": 0.00019427400548011065,
+          "maximum": 0.00021771199681097642
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0006861520014354028,
+          "minimum": 0.0005756239988841116,
+          "maximum": 0.000900131999514997
+        },
+        "chart_order_statistics": {
+          "median": 0.002842048001184594,
+          "minimum": 0.002763532000244595,
+          "maximum": 0.0029023840033914894
+        },
+        "complete_evaluation": {
+          "median": 0.03194659799919464,
+          "minimum": 0.03192664200469153,
+          "maximum": 0.032114772002387326
+        },
+        "three_whatifs": {
+          "median": 0.06914077900000848,
+          "minimum": 0.06738768200011691,
+          "maximum": 0.07014368799718795
+        },
+        "capture_including_evaluation": {
+          "median": 0.018898280002758838,
+          "minimum": 0.01786818700202275,
+          "maximum": 0.02077066999481758
+        },
+        "replay_including_evaluation": {
+          "median": 0.008086482004728168,
+          "minimum": 0.007869198998378124,
+          "maximum": 0.008216403002734296
+        },
+        "including_preparation_and_draws": {
+          "median": 0.03617504399881,
+          "minimum": 0.03617320400371682,
+          "maximum": 0.03622854500281392
+        },
+        "application_pipeline_no_solver_no_uncertainty": {
+          "median": 0.04803594599798089,
+          "minimum": 0.047643261998018716,
+          "maximum": 0.04924005499924533
+        }
+      },
+      "peak_rss_bytes": 150802432
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027687449983204715,
+          "minimum": 0.0027417119999881834,
+          "maximum": 0.0030674489971715957
+        },
+        "draw_generation": {
+          "median": 0.002806272001180332,
+          "minimum": 0.002707216000999324,
+          "maximum": 0.002868463001505006
+        },
+        "cash_kernel": {
+          "median": 0.0011898640004801564,
+          "minimum": 0.0011606639964156784,
+          "maximum": 0.001262513003894128
+        },
+        "summaries": {
+          "median": 0.001212643001053948,
+          "minimum": 0.0008532279971404932,
+          "maximum": 0.0012617289976333268
+        },
+        "complete_evaluation": {
+          "median": 0.0049466400014352985,
+          "minimum": 0.004651739000109956,
+          "maximum": 0.00506765500176698
+        },
+        "three_whatifs": {
+          "median": 0.01307750499836402,
+          "minimum": 0.012387486996885855,
+          "maximum": 0.013236612001492176
+        },
+        "including_preparation_and_draws": {
+          "median": 0.024289836997922976,
+          "minimum": 0.0236350749983103,
+          "maximum": 0.02639268900384195
+        }
+      },
+      "peak_rss_bytes": 143958016
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002633283998875413,
+          "minimum": 0.0026277899960405193,
+          "maximum": 0.002974663002532907
+        },
+        "draw_generation": {
+          "median": 0.0023041259992169216,
+          "minimum": 0.002197235997300595,
+          "maximum": 0.0025627340000937693
+        },
+        "prepared_adapter": {
+          "median": 0.00033502900623716414,
+          "minimum": 0.00032035000185715035,
+          "maximum": 0.00035395500162849203
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0016597149951849133,
+          "minimum": 0.001647630000661593,
+          "maximum": 0.0016759089994593523
+        },
+        "complete_evaluation": {
+          "median": 0.004787653000676073,
+          "minimum": 0.0045926429957035,
+          "maximum": 0.006083467000280507
+        },
+        "three_whatifs": {
+          "median": 0.011196030005521607,
+          "minimum": 0.011028893000911921,
+          "maximum": 0.011307695996947587
+        },
+        "capture_including_evaluation": {
+          "median": 0.013632800000777934,
+          "minimum": 0.013320444995770231,
+          "maximum": 0.014391119999345392
+        },
+        "replay_including_evaluation": {
+          "median": 0.005112724000355229,
+          "minimum": 0.005111906000820454,
+          "maximum": 0.006003230999340303
+        },
+        "including_preparation_and_draws": {
+          "median": 0.007475053003872745,
+          "minimum": 0.0072568149989820085,
+          "maximum": 0.007522052997956052
+        }
+      },
+      "peak_rss_bytes": 140689408
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028782080044038594,
+          "minimum": 0.0026762359993881546,
+          "maximum": 0.0029414289965643547
+        },
+        "draw_generation": {
+          "median": 0.002372446993831545,
+          "minimum": 0.002151790999050718,
+          "maximum": 0.002383381004619878
+        },
+        "prepared_adapter": {
+          "median": 0.0003912009997293353,
+          "minimum": 0.0003268709988333285,
+          "maximum": 0.00040522700146539137
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0005622449971269816,
+          "minimum": 0.0004969669971615076,
+          "maximum": 0.000568978997762315
+        },
+        "complete_evaluation": {
+          "median": 0.004165606995229609,
+          "minimum": 0.0037619869981426746,
+          "maximum": 0.004275908002455253
+        },
+        "three_whatifs": {
+          "median": 0.009125594995566644,
+          "minimum": 0.008727480002562515,
+          "maximum": 0.00958058000105666
+        },
+        "capture_including_evaluation": {
+          "median": 0.013329957000678405,
+          "minimum": 0.012363994996121619,
+          "maximum": 0.013366104998567607
+        },
+        "replay_including_evaluation": {
+          "median": 0.004076309000083711,
+          "minimum": 0.004067231995577458,
+          "maximum": 0.004740293996292166
+        },
+        "including_preparation_and_draws": {
+          "median": 0.0064775619975989684,
+          "minimum": 0.006427571999665815,
+          "maximum": 0.00659485600044718
+        }
+      },
+      "peak_rss_bytes": 140865536
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027527220008778386,
+          "minimum": 0.002729247004026547,
+          "maximum": 0.0028670660030911677
+        },
+        "draw_generation": {
+          "median": 0.001962966001883615,
+          "minimum": 0.001959793000423815,
+          "maximum": 0.002067137997073587
+        },
+        "prepared_adapter": {
+          "median": 0.00034017799771390855,
+          "minimum": 0.0003256519994465634,
+          "maximum": 0.0003661800001282245
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0008221040043281391,
+          "minimum": 0.0008068249953794293,
+          "maximum": 0.001068056997610256
+        },
+        "complete_evaluation": {
+          "median": 0.004130610002903268,
+          "minimum": 0.004118506003578659,
+          "maximum": 0.004231786995660514
+        },
+        "three_whatifs": {
+          "median": 0.009672576998127624,
+          "minimum": 0.00961391699820524,
+          "maximum": 0.010041567002190277
+        },
+        "capture_including_evaluation": {
+          "median": 0.013379680000070948,
+          "minimum": 0.01317912500235252,
+          "maximum": 0.013710291001189034
+        },
+        "replay_including_evaluation": {
+          "median": 0.0044407320019672625,
+          "minimum": 0.004346772002463695,
+          "maximum": 0.004901427004369907
+        },
+        "including_preparation_and_draws": {
+          "median": 0.006771387001208495,
+          "minimum": 0.006543967996549327,
+          "maximum": 0.007693466999626253
+        }
+      },
+      "peak_rss_bytes": 141045760
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027605969953583553,
+          "minimum": 0.0026135810039704666,
+          "maximum": 0.010432802999275737
+        },
+        "draw_generation": {
+          "median": 0.002807347998896148,
+          "minimum": 0.0027148530061822385,
+          "maximum": 0.002888597002311144
+        },
+        "prepared_adapter": {
+          "median": 0.0003300259995739907,
+          "minimum": 0.0003250340014346875,
+          "maximum": 0.00033722000080160797
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.000881117994140368,
+          "minimum": 0.0007750369986752048,
+          "maximum": 0.0010772140012704767
+        },
+        "complete_evaluation": {
+          "median": 0.004397980999783613,
+          "minimum": 0.004259111999999732,
+          "maximum": 0.004503553005633876
+        },
+        "three_whatifs": {
+          "median": 0.009758649001014419,
+          "minimum": 0.009701596995000727,
+          "maximum": 0.010032860998762771
+        },
+        "capture_including_evaluation": {
+          "median": 0.01297464499657508,
+          "minimum": 0.012771982001140714,
+          "maximum": 0.01347637999424478
+        },
+        "replay_including_evaluation": {
+          "median": 0.004477292997762561,
+          "minimum": 0.004298479005228728,
+          "maximum": 0.005104269002913497
+        },
+        "including_preparation_and_draws": {
+          "median": 0.006907041999511421,
+          "minimum": 0.006651602998317685,
+          "maximum": 0.007401733004371636
+        }
+      },
+      "peak_rss_bytes": 140873728
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002687692998733837,
+          "minimum": 0.002674475996172987,
+          "maximum": 0.0027669539995258674
+        },
+        "draw_generation": {
+          "median": 0.002702266996493563,
+          "minimum": 0.0021244969975668937,
+          "maximum": 0.0027026540046790615
+        },
+        "cash_kernel": {
+          "median": 0.0011795230020652525,
+          "minimum": 0.0011345370003255084,
+          "maximum": 0.0012110980023862794
+        },
+        "summaries": {
+          "median": 0.00121962399862241,
+          "minimum": 0.0008658340011606924,
+          "maximum": 0.0013084589954814874
+        },
+        "chart_order_statistics": {
+          "median": 0.02185908400133485,
+          "minimum": 0.02121865699882619,
+          "maximum": 0.022265403997153044
+        },
+        "complete_evaluation": {
+          "median": 0.052413388999411836,
+          "minimum": 0.05200581799726933,
+          "maximum": 0.05407675799506251
+        },
+        "three_whatifs": {
+          "median": 0.1579118810041109,
+          "minimum": 0.15306874700036133,
+          "maximum": 0.16637956199701875
+        },
+        "including_preparation_and_draws": {
+          "median": 0.05803168900456512,
+          "minimum": 0.05684246299642837,
+          "maximum": 0.05913401900033932
+        }
+      },
+      "peak_rss_bytes": 148180992
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027870030025951564,
+          "minimum": 0.0027741919984691776,
+          "maximum": 0.0030253689983510412
+        },
+        "draw_generation": {
+          "median": 0.001809135006624274,
+          "minimum": 0.001774825002939906,
+          "maximum": 0.001828749998821877
+        },
+        "prepared_adapter": {
+          "median": 0.0003390729980310425,
+          "minimum": 0.0003316610018373467,
+          "maximum": 0.0003623309967224486
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0022130489960545674,
+          "minimum": 0.002179804003390018,
+          "maximum": 0.0022386290002032183
+        },
+        "chart_order_statistics": {
+          "median": 0.007352879001700785,
+          "minimum": 0.007286202002433129,
+          "maximum": 0.007539794998592697
+        },
+        "complete_evaluation": {
+          "median": 0.04533533600624651,
+          "minimum": 0.04518158599967137,
+          "maximum": 0.04635214700101642
+        },
+        "three_whatifs": {
+          "median": 0.09212680500058923,
+          "minimum": 0.09204695699736476,
+          "maximum": 0.10569381900131702
+        },
+        "capture_including_evaluation": {
+          "median": 0.02647443000023486,
+          "minimum": 0.02624665699840989,
+          "maximum": 0.02650305700080935
+        },
+        "replay_including_evaluation": {
+          "median": 0.01713193800242152,
+          "minimum": 0.015596592005749699,
+          "maximum": 0.018086470001435373
+        },
+        "including_preparation_and_draws": {
+          "median": 0.05087113600166049,
+          "minimum": 0.048964761997922324,
+          "maximum": 0.05191943300451385
+        }
+      },
+      "peak_rss_bytes": 147042304
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002713392001169268,
+          "minimum": 0.0026831809955183417,
+          "maximum": 0.0027406650042394176
+        },
+        "draw_generation": {
+          "median": 0.0017852950040833093,
+          "minimum": 0.001749668997945264,
+          "maximum": 0.0018031190047622658
+        },
+        "prepared_adapter": {
+          "median": 0.00035208400367992,
+          "minimum": 0.00033689599513309076,
+          "maximum": 0.0003620850038714707
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0006443050006055273,
+          "minimum": 0.0006260709997150116,
+          "maximum": 0.0006564979994436726
+        },
+        "chart_order_statistics": {
+          "median": 0.006276278996665496,
+          "minimum": 0.0062315809991559945,
+          "maximum": 0.008545135002350435
+        },
+        "complete_evaluation": {
+          "median": 0.044228797996765934,
+          "minimum": 0.04217014399910113,
+          "maximum": 0.047447281001950614
+        },
+        "three_whatifs": {
+          "median": 0.09285002200340386,
+          "minimum": 0.09204216699436074,
+          "maximum": 0.09617696899658768
+        },
+        "capture_including_evaluation": {
+          "median": 0.023319961997913197,
+          "minimum": 0.023213489999761805,
+          "maximum": 0.024278162003611214
+        },
+        "replay_including_evaluation": {
+          "median": 0.013052499998593703,
+          "minimum": 0.012580953996803146,
+          "maximum": 0.013221840999904089
+        },
+        "including_preparation_and_draws": {
+          "median": 0.04869605799467536,
+          "minimum": 0.04816813900106354,
+          "maximum": 0.04894965600396972
+        }
+      },
+      "peak_rss_bytes": 147066880
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027013029975933023,
+          "minimum": 0.002690975998120848,
+          "maximum": 0.002762512995104771
+        },
+        "draw_generation": {
+          "median": 0.0018656309985090047,
+          "minimum": 0.0018025649987976067,
+          "maximum": 0.0018745839988696389
+        },
+        "prepared_adapter": {
+          "median": 0.00033557600545464084,
+          "minimum": 0.00033351800084346905,
+          "maximum": 0.00034523899375926703
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0011693640044541098,
+          "minimum": 0.001149684001575224,
+          "maximum": 0.001233846000104677
+        },
+        "chart_order_statistics": {
+          "median": 0.00612806600111071,
+          "minimum": 0.005958563997410238,
+          "maximum": 0.008130456997605506
+        },
+        "complete_evaluation": {
+          "median": 0.04862373200012371,
+          "minimum": 0.043832338000356685,
+          "maximum": 0.052295761997811496
+        },
+        "three_whatifs": {
+          "median": 0.09296107100090012,
+          "minimum": 0.09278959700168343,
+          "maximum": 0.09440275399538223
+        },
+        "capture_including_evaluation": {
+          "median": 0.024603889003628865,
+          "minimum": 0.022915474997716956,
+          "maximum": 0.026010929999756627
+        },
+        "replay_including_evaluation": {
+          "median": 0.013907626002037432,
+          "minimum": 0.013545916001021396,
+          "maximum": 0.015721684001618996
+        },
+        "including_preparation_and_draws": {
+          "median": 0.051381933997618034,
+          "minimum": 0.05007823400228517,
+          "maximum": 0.05289378100133035
+        }
+      },
+      "peak_rss_bytes": 148680704
+    },
+    {
+      "paths": 4000,
+      "horizon": 30,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0030040839992580004,
+          "minimum": 0.002687663996766787,
+          "maximum": 0.003031100997759495
+        },
+        "draw_generation": {
+          "median": 0.0019388240034459159,
+          "minimum": 0.0017463510012021288,
+          "maximum": 0.001938985995366238
+        },
+        "prepared_adapter": {
+          "median": 0.0003403029986657202,
+          "minimum": 0.00032907700369833037,
+          "maximum": 0.0003857119954773225
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0011350339991622604,
+          "minimum": 0.001068245001079049,
+          "maximum": 0.0014625580006395467
+        },
+        "chart_order_statistics": {
+          "median": 0.00622915499843657,
+          "minimum": 0.005958700996416155,
+          "maximum": 0.006288687996857334
+        },
+        "complete_evaluation": {
+          "median": 0.04550063500209944,
+          "minimum": 0.04383096599485725,
+          "maximum": 0.0475727309967624
+        },
+        "three_whatifs": {
+          "median": 0.09502759200404398,
+          "minimum": 0.09351007499935804,
+          "maximum": 0.09738222399755614
+        },
+        "capture_including_evaluation": {
+          "median": 0.024653341999510303,
+          "minimum": 0.024588168002082966,
+          "maximum": 0.024853861003066413
+        },
+        "replay_including_evaluation": {
+          "median": 0.014412900003662799,
+          "minimum": 0.014380340995558072,
+          "maximum": 0.014483861006738152
+        },
+        "including_preparation_and_draws": {
+          "median": 0.050836524002079386,
+          "minimum": 0.05028766999748768,
+          "maximum": 0.051486274001945276
+        }
+      },
+      "peak_rss_bytes": 149917696
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002737105001870077,
+          "minimum": 0.0026553420029813424,
+          "maximum": 0.0027875199957634322
+        },
+        "draw_generation": {
+          "median": 0.0037206999986665323,
+          "minimum": 0.0037202859966782853,
+          "maximum": 0.00379463100398425
+        },
+        "cash_kernel": {
+          "median": 0.0016278359980788082,
+          "minimum": 0.0014060510002309456,
+          "maximum": 0.0019650370013550855
+        },
+        "summaries": {
+          "median": 0.0021462299991981126,
+          "minimum": 0.0014521609991788864,
+          "maximum": 0.002616507998027373
+        },
+        "complete_evaluation": {
+          "median": 0.0074358700003358535,
+          "minimum": 0.006784251003409736,
+          "maximum": 0.009459139997488819
+        },
+        "three_whatifs": {
+          "median": 0.01745663900510408,
+          "minimum": 0.016897565001272596,
+          "maximum": 0.017547240997373592
+        },
+        "including_preparation_and_draws": {
+          "median": 0.029584543000964914,
+          "minimum": 0.028470896002545487,
+          "maximum": 0.030483185000775848
+        }
+      },
+      "peak_rss_bytes": 153378816
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0026985440053977072,
+          "minimum": 0.0026887529966188595,
+          "maximum": 0.002721511998970527
+        },
+        "draw_generation": {
+          "median": 0.0037469950038939714,
+          "minimum": 0.003709689000970684,
+          "maximum": 0.003877942006511148
+        },
+        "prepared_adapter": {
+          "median": 0.0006261279995669611,
+          "minimum": 0.000613816999248229,
+          "maximum": 0.0006924650006112643
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0030038929980946705,
+          "minimum": 0.002898710998124443,
+          "maximum": 0.0032809519980219193
+        },
+        "complete_evaluation": {
+          "median": 0.006410249996406492,
+          "minimum": 0.006321237000520341,
+          "maximum": 0.006779452000046149
+        },
+        "three_whatifs": {
+          "median": 0.013684818004549015,
+          "minimum": 0.013386826998612378,
+          "maximum": 0.01394683600665303
+        },
+        "capture_including_evaluation": {
+          "median": 0.016375744999095332,
+          "minimum": 0.015572946998872794,
+          "maximum": 0.018040483999357093
+        },
+        "replay_including_evaluation": {
+          "median": 0.007518489001085982,
+          "minimum": 0.00725069000327494,
+          "maximum": 0.007752873003482819
+        },
+        "including_preparation_and_draws": {
+          "median": 0.011828399998194072,
+          "minimum": 0.01160189599613659,
+          "maximum": 0.012307548997341655
+        }
+      },
+      "peak_rss_bytes": 146857984
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002823411996359937,
+          "minimum": 0.002816760999849066,
+          "maximum": 0.0028858790028607473
+        },
+        "draw_generation": {
+          "median": 0.0038213510051718913,
+          "minimum": 0.0037711059994762763,
+          "maximum": 0.0038854110025567934
+        },
+        "prepared_adapter": {
+          "median": 0.0006555420040967874,
+          "minimum": 0.0006341120024444535,
+          "maximum": 0.0006773589993827045
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0009406899989699014,
+          "minimum": 0.0009269180009141564,
+          "maximum": 0.00096552399918437
+        },
+        "complete_evaluation": {
+          "median": 0.004550683996058069,
+          "minimum": 0.004373185001895763,
+          "maximum": 0.00497597899811808
+        },
+        "three_whatifs": {
+          "median": 0.009746638002980035,
+          "minimum": 0.009592219998012297,
+          "maximum": 0.01039333199878456
+        },
+        "capture_including_evaluation": {
+          "median": 0.01540301999921212,
+          "minimum": 0.014551804000802804,
+          "maximum": 0.015677441995649133
+        },
+        "replay_including_evaluation": {
+          "median": 0.005430808996607084,
+          "minimum": 0.005278099000861403,
+          "maximum": 0.005497038997418713
+        },
+        "including_preparation_and_draws": {
+          "median": 0.010732700997323263,
+          "minimum": 0.01042677900113631,
+          "maximum": 0.010966087997076102
+        }
+      },
+      "peak_rss_bytes": 147197952
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028077859969926067,
+          "minimum": 0.002732581000600476,
+          "maximum": 0.002937754994491115
+        },
+        "draw_generation": {
+          "median": 0.004127398002310656,
+          "minimum": 0.0038069650036050007,
+          "maximum": 0.004415563998918515
+        },
+        "prepared_adapter": {
+          "median": 0.0006309689997578971,
+          "minimum": 0.0005871450048289262,
+          "maximum": 0.0006786349986214191
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0012932320023537613,
+          "minimum": 0.0012333120030234568,
+          "maximum": 0.0013417679947451688
+        },
+        "complete_evaluation": {
+          "median": 0.004960272002790589,
+          "minimum": 0.004803508003533352,
+          "maximum": 0.005783713000710122
+        },
+        "three_whatifs": {
+          "median": 0.01053161900199484,
+          "minimum": 0.010242242999083828,
+          "maximum": 0.012900939997052774
+        },
+        "capture_including_evaluation": {
+          "median": 0.015199628993286751,
+          "minimum": 0.014523026999086142,
+          "maximum": 0.015748729994811583
+        },
+        "replay_including_evaluation": {
+          "median": 0.005620729003567249,
+          "minimum": 0.005418490000010934,
+          "maximum": 0.006618105995585211
+        },
+        "including_preparation_and_draws": {
+          "median": 0.011592350994760636,
+          "minimum": 0.011448779005149845,
+          "maximum": 0.011996821995126083
+        }
+      },
+      "peak_rss_bytes": 146788352
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027541829986148514,
+          "minimum": 0.002703785998164676,
+          "maximum": 0.0029905490009696223
+        },
+        "draw_generation": {
+          "median": 0.0038092799950391054,
+          "minimum": 0.0038060719962231815,
+          "maximum": 0.003939260997867677
+        },
+        "prepared_adapter": {
+          "median": 0.000699604999681469,
+          "minimum": 0.0006465949991252273,
+          "maximum": 0.0008582259979448281
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0012965440037078224,
+          "minimum": 0.001181065003038384,
+          "maximum": 0.0013801469976897351
+        },
+        "complete_evaluation": {
+          "median": 0.005946444005530793,
+          "minimum": 0.005439778004074469,
+          "maximum": 0.006813239000621252
+        },
+        "three_whatifs": {
+          "median": 0.011642120000033174,
+          "minimum": 0.010654248995706439,
+          "maximum": 0.012395443998684641
+        },
+        "capture_including_evaluation": {
+          "median": 0.016083647999039385,
+          "minimum": 0.015118612995138392,
+          "maximum": 0.01724340299551841
+        },
+        "replay_including_evaluation": {
+          "median": 0.005786059999081772,
+          "minimum": 0.005675784996128641,
+          "maximum": 0.007294779003132135
+        },
+        "including_preparation_and_draws": {
+          "median": 0.011779395994381048,
+          "minimum": 0.011462443995696958,
+          "maximum": 0.011813172000984196
+        }
+      },
+      "peak_rss_bytes": 147267584
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028382339951349422,
+          "minimum": 0.002731200002017431,
+          "maximum": 0.003589963998820167
+        },
+        "draw_generation": {
+          "median": 0.00446650899539236,
+          "minimum": 0.0041173229983542114,
+          "maximum": 0.004745873004139867
+        },
+        "cash_kernel": {
+          "median": 0.0025274939980590716,
+          "minimum": 0.002377363998675719,
+          "maximum": 0.0027584070048760623
+        },
+        "summaries": {
+          "median": 0.0022363570024026558,
+          "minimum": 0.002141218996257521,
+          "maximum": 0.0023895880003692582
+        },
+        "chart_order_statistics": {
+          "median": 0.04142641100042965,
+          "minimum": 0.03999679300613934,
+          "maximum": 0.04394459500326775
+        },
+        "complete_evaluation": {
+          "median": 0.08508806800091406,
+          "minimum": 0.08112248700490454,
+          "maximum": 0.08892574300261913
+        },
+        "three_whatifs": {
+          "median": 0.2518289790023118,
+          "minimum": 0.24666634999448434,
+          "maximum": 0.26777857299748575
+        },
+        "including_preparation_and_draws": {
+          "median": 0.09101551000640029,
+          "minimum": 0.09059287199488608,
+          "maximum": 0.09671225200145273
+        }
+      },
+      "peak_rss_bytes": 160006144
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002957040000183042,
+          "minimum": 0.002798695000819862,
+          "maximum": 0.0030736249973415397
+        },
+        "draw_generation": {
+          "median": 0.004708373999164905,
+          "minimum": 0.004681196005549282,
+          "maximum": 0.005680135000147857
+        },
+        "prepared_adapter": {
+          "median": 0.0006160589982755482,
+          "minimum": 0.0006096249999245629,
+          "maximum": 0.0008856100030243397
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.002976526004204061,
+          "minimum": 0.002953456998511683,
+          "maximum": 0.0036045720044057816
+        },
+        "chart_order_statistics": {
+          "median": 0.014622722002968658,
+          "minimum": 0.013812949000566732,
+          "maximum": 0.01509695099957753
+        },
+        "complete_evaluation": {
+          "median": 0.059027090996096376,
+          "minimum": 0.05808355200133519,
+          "maximum": 0.061600241002452094
+        },
+        "three_whatifs": {
+          "median": 0.10849945399968419,
+          "minimum": 0.10559909400035394,
+          "maximum": 0.1140906289947452
+        },
+        "capture_including_evaluation": {
+          "median": 0.035466405999613926,
+          "minimum": 0.0337728039958165,
+          "maximum": 0.036840544002188835
+        },
+        "replay_including_evaluation": {
+          "median": 0.025492791006399784,
+          "minimum": 0.025097097997786477,
+          "maximum": 0.026989548998244572
+        },
+        "including_preparation_and_draws": {
+          "median": 0.06500829700235045,
+          "minimum": 0.06417455300106667,
+          "maximum": 0.06939210500422632
+        }
+      },
+      "peak_rss_bytes": 157220864
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002797394998196978,
+          "minimum": 0.0027367060029064305,
+          "maximum": 0.002829144003044348
+        },
+        "draw_generation": {
+          "median": 0.003790532995481044,
+          "minimum": 0.00375456600158941,
+          "maximum": 0.003943422001611907
+        },
+        "prepared_adapter": {
+          "median": 0.0006217359987203963,
+          "minimum": 0.0006188679981278256,
+          "maximum": 0.000622360996203497
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0011992399959126487,
+          "minimum": 0.0011592499940888956,
+          "maximum": 0.0012435229946277104
+        },
+        "chart_order_statistics": {
+          "median": 0.011550702998647466,
+          "minimum": 0.011457683001935948,
+          "maximum": 0.011649865002254955
+        },
+        "complete_evaluation": {
+          "median": 0.05321253099828027,
+          "minimum": 0.051755327003775164,
+          "maximum": 0.05409420499927364
+        },
+        "three_whatifs": {
+          "median": 0.10409081599937053,
+          "minimum": 0.10102404100325657,
+          "maximum": 0.10454555300384527
+        },
+        "capture_including_evaluation": {
+          "median": 0.03392459199676523,
+          "minimum": 0.031947928000590764,
+          "maximum": 0.03592674399988027
+        },
+        "replay_including_evaluation": {
+          "median": 0.021764785997220315,
+          "minimum": 0.021355423996283207,
+          "maximum": 0.024206907000916544
+        },
+        "including_preparation_and_draws": {
+          "median": 0.0637373799982015,
+          "minimum": 0.06170142899645725,
+          "maximum": 0.06392336200224236
+        }
+      },
+      "peak_rss_bytes": 157474816
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027583629998844117,
+          "minimum": 0.0027087560010841116,
+          "maximum": 0.0028586979969986714
+        },
+        "draw_generation": {
+          "median": 0.004249680998327676,
+          "minimum": 0.003939096997783054,
+          "maximum": 0.004293288002372719
+        },
+        "prepared_adapter": {
+          "median": 0.0007077659975038841,
+          "minimum": 0.0006757220035069622,
+          "maximum": 0.0008226219943026081
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0025006969954119995,
+          "minimum": 0.0022753979937988333,
+          "maximum": 0.0028367999984766357
+        },
+        "chart_order_statistics": {
+          "median": 0.0119442649956909,
+          "minimum": 0.011407108002458699,
+          "maximum": 0.014340520006953739
+        },
+        "complete_evaluation": {
+          "median": 0.05579034100082936,
+          "minimum": 0.05463042899646098,
+          "maximum": 0.05625469000369776
+        },
+        "three_whatifs": {
+          "median": 0.10541600299620768,
+          "minimum": 0.10261429100501118,
+          "maximum": 0.10629421799967531
+        },
+        "capture_including_evaluation": {
+          "median": 0.03234665699710604,
+          "minimum": 0.030267217000073288,
+          "maximum": 0.033929825003724545
+        },
+        "replay_including_evaluation": {
+          "median": 0.022898422001162544,
+          "minimum": 0.022740524997061584,
+          "maximum": 0.0266714259996661
+        },
+        "including_preparation_and_draws": {
+          "median": 0.06439787500130478,
+          "minimum": 0.06392363699706038,
+          "maximum": 0.06497639499866636
+        }
+      },
+      "peak_rss_bytes": 159150080
+    },
+    {
+      "paths": 4000,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028933569992659613,
+          "minimum": 0.0027180010001757182,
+          "maximum": 0.0029533910055761226
+        },
+        "draw_generation": {
+          "median": 0.003919047005183529,
+          "minimum": 0.0037914159984211437,
+          "maximum": 0.0040518539972254075
+        },
+        "prepared_adapter": {
+          "median": 0.0006436550029320642,
+          "minimum": 0.0006212700027390383,
+          "maximum": 0.0006604299996979535
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.002453641005558893,
+          "minimum": 0.0022509369955514558,
+          "maximum": 0.0024594709975644946
+        },
+        "chart_order_statistics": {
+          "median": 0.011923573998501524,
+          "minimum": 0.011566143999516498,
+          "maximum": 0.015547292998235207
+        },
+        "complete_evaluation": {
+          "median": 0.0561654510020162,
+          "minimum": 0.053636022996215615,
+          "maximum": 0.06931344400072703
+        },
+        "three_whatifs": {
+          "median": 0.104994880995946,
+          "minimum": 0.10179006800171919,
+          "maximum": 0.10548086699418491
+        },
+        "capture_including_evaluation": {
+          "median": 0.03248149799765088,
+          "minimum": 0.031565660996420775,
+          "maximum": 0.035307092002767604
+        },
+        "replay_including_evaluation": {
+          "median": 0.023985876003280282,
+          "minimum": 0.021636495999700855,
+          "maximum": 0.028017588003422134
+        },
+        "including_preparation_and_draws": {
+          "median": 0.06539543100370793,
+          "minimum": 0.0620022329967469,
+          "maximum": 0.0684988329958287
+        }
+      },
+      "peak_rss_bytes": 160567296
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0038756400026613846,
+          "minimum": 0.0029665279944310896,
+          "maximum": 0.004591196004184894
+        },
+        "draw_generation": {
+          "median": 0.030259637998824473,
+          "minimum": 0.029308310004125815,
+          "maximum": 0.03316440599883208
+        },
+        "cash_kernel": {
+          "median": 0.00810065800033044,
+          "minimum": 0.006315689999610186,
+          "maximum": 0.008994828000140842
+        },
+        "summaries": {
+          "median": 0.009973334999813233,
+          "minimum": 0.009834799995587673,
+          "maximum": 0.01104880800266983
+        },
+        "complete_evaluation": {
+          "median": 0.023985461004485842,
+          "minimum": 0.0227826880000066,
+          "maximum": 0.024733295998885296
+        },
+        "three_whatifs": {
+          "median": 0.06523636400379473,
+          "minimum": 0.06520315799571108,
+          "maximum": 0.07221381699491758
+        },
+        "including_preparation_and_draws": {
+          "median": 0.06623831699835137,
+          "minimum": 0.06578512599662645,
+          "maximum": 0.07833194599515991
+        }
+      },
+      "peak_rss_bytes": 212824064
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002950146998045966,
+          "minimum": 0.0028554750024341047,
+          "maximum": 0.0030168230005074292
+        },
+        "draw_generation": {
+          "median": 0.02373113499925239,
+          "minimum": 0.02327152200450655,
+          "maximum": 0.024876090996258426
+        },
+        "prepared_adapter": {
+          "median": 0.0027724519968614914,
+          "minimum": 0.0027101700034108944,
+          "maximum": 0.0028074049987480976
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.016811642999527976,
+          "minimum": 0.013760200003162026,
+          "maximum": 0.020736903003125917
+        },
+        "complete_evaluation": {
+          "median": 0.022070334998716135,
+          "minimum": 0.021555803999945056,
+          "maximum": 0.023002345995337237
+        },
+        "three_whatifs": {
+          "median": 0.044468972002505325,
+          "minimum": 0.04240829600166762,
+          "maximum": 0.04449164700054098
+        },
+        "capture_including_evaluation": {
+          "median": 0.03839097899617627,
+          "minimum": 0.0380805250024423,
+          "maximum": 0.03881234399887035
+        },
+        "replay_including_evaluation": {
+          "median": 0.0297943160039722,
+          "minimum": 0.02881863699440146,
+          "maximum": 0.03048325800045859
+        },
+        "including_preparation_and_draws": {
+          "median": 0.05171389599854592,
+          "minimum": 0.05004250499769114,
+          "maximum": 0.052593938999052625
+        }
+      },
+      "peak_rss_bytes": 185704448
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0030654469956061803,
+          "minimum": 0.002878847997635603,
+          "maximum": 0.0030672369975945912
+        },
+        "draw_generation": {
+          "median": 0.023970973001269158,
+          "minimum": 0.02211622400500346,
+          "maximum": 0.024508521004463546
+        },
+        "prepared_adapter": {
+          "median": 0.0027669470000546426,
+          "minimum": 0.0026298829980078153,
+          "maximum": 0.0027958150021731853
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.004079985999851488,
+          "minimum": 0.0039339939976343885,
+          "maximum": 0.0041720759982126765
+        },
+        "complete_evaluation": {
+          "median": 0.012556893998407759,
+          "minimum": 0.011624625003605615,
+          "maximum": 0.013017217999731656
+        },
+        "three_whatifs": {
+          "median": 0.024323384001036175,
+          "minimum": 0.022213688993360847,
+          "maximum": 0.025293965001765173
+        },
+        "capture_including_evaluation": {
+          "median": 0.029511513996112626,
+          "minimum": 0.028024100996844936,
+          "maximum": 0.032015475000662263
+        },
+        "replay_including_evaluation": {
+          "median": 0.019158495997544378,
+          "minimum": 0.01720725300401682,
+          "maximum": 0.02610467199701816
+        },
+        "including_preparation_and_draws": {
+          "median": 0.04018548800377175,
+          "minimum": 0.03870468199602328,
+          "maximum": 0.04258519200084265
+        }
+      },
+      "peak_rss_bytes": 185102336
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.00286625100125093,
+          "minimum": 0.0028463089984143153,
+          "maximum": 0.0028908909953315742
+        },
+        "draw_generation": {
+          "median": 0.02441761399677489,
+          "minimum": 0.024239689999376424,
+          "maximum": 0.024518047997844405
+        },
+        "prepared_adapter": {
+          "median": 0.002720595999562647,
+          "minimum": 0.0026882010060944594,
+          "maximum": 0.0031920580004225485
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.004976204996637534,
+          "minimum": 0.004768738996062893,
+          "maximum": 0.005100833994220011
+        },
+        "complete_evaluation": {
+          "median": 0.01379995600291295,
+          "minimum": 0.01295435299834935,
+          "maximum": 0.014054473002033774
+        },
+        "three_whatifs": {
+          "median": 0.025772588000108954,
+          "minimum": 0.024386880999372806,
+          "maximum": 0.028439980000257492
+        },
+        "capture_including_evaluation": {
+          "median": 0.031498785996518563,
+          "minimum": 0.029868935998820234,
+          "maximum": 0.035208121000323445
+        },
+        "replay_including_evaluation": {
+          "median": 0.01959840099880239,
+          "minimum": 0.019566946000850294,
+          "maximum": 0.020404599003086332
+        },
+        "including_preparation_and_draws": {
+          "median": 0.04319860800023889,
+          "minimum": 0.04099069999938365,
+          "maximum": 0.0457234910063562
+        }
+      },
+      "peak_rss_bytes": 183545856
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028472380072344095,
+          "minimum": 0.0028131599974585697,
+          "maximum": 0.0037673900005756877
+        },
+        "draw_generation": {
+          "median": 0.02311371899850201,
+          "minimum": 0.02295635300106369,
+          "maximum": 0.029103026005032007
+        },
+        "prepared_adapter": {
+          "median": 0.002797668996208813,
+          "minimum": 0.0027845759977935813,
+          "maximum": 0.003196728997863829
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.005140977998962626,
+          "minimum": 0.00481859299907228,
+          "maximum": 0.016271893997327425
+        },
+        "complete_evaluation": {
+          "median": 0.01505376600107411,
+          "minimum": 0.013415399997029454,
+          "maximum": 0.020684503004304133
+        },
+        "three_whatifs": {
+          "median": 0.0256342369975755,
+          "minimum": 0.024586356994404923,
+          "maximum": 0.03509596799995052
+        },
+        "capture_including_evaluation": {
+          "median": 0.030261006999353413,
+          "minimum": 0.029577938999864273,
+          "maximum": 0.038921094994293526
+        },
+        "replay_including_evaluation": {
+          "median": 0.02256592299818294,
+          "minimum": 0.020674639999924693,
+          "maximum": 0.025287659002060536
+        },
+        "including_preparation_and_draws": {
+          "median": 0.04276765000395244,
+          "minimum": 0.04170414999680361,
+          "maximum": 0.04420708299585385
+        }
+      },
+      "peak_rss_bytes": 184311808
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0029135229997336864,
+          "minimum": 0.0027750000008381903,
+          "maximum": 0.002997347997734323
+        },
+        "draw_generation": {
+          "median": 0.027110299000923987,
+          "minimum": 0.02610777500376571,
+          "maximum": 0.02746958400530275
+        },
+        "cash_kernel": {
+          "median": 0.00844208099442767,
+          "minimum": 0.008244741999078542,
+          "maximum": 0.008594356004323345
+        },
+        "summaries": {
+          "median": 0.009105273995373864,
+          "minimum": 0.008969932001491543,
+          "maximum": 0.009373231994686648
+        },
+        "chart_order_statistics": {
+          "median": 0.22569530899636447,
+          "minimum": 0.21854183299728902,
+          "maximum": 0.2294650819967501
+        },
+        "complete_evaluation": {
+          "median": 0.45263799100212054,
+          "minimum": 0.4441337050011498,
+          "maximum": 0.46082216200011317
+        },
+        "three_whatifs": {
+          "median": 1.3242522780055879,
+          "minimum": 1.3166859100019792,
+          "maximum": 1.3474255620021722
+        },
+        "including_preparation_and_draws": {
+          "median": 0.4669959199964069,
+          "minimum": 0.46635153100214666,
+          "maximum": 0.4727642220022972
+        }
+      },
+      "peak_rss_bytes": 237395968
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002811120997648686,
+          "minimum": 0.0027518849965417758,
+          "maximum": 0.0030062939986237325
+        },
+        "draw_generation": {
+          "median": 0.024665243006893434,
+          "minimum": 0.021958097000606358,
+          "maximum": 0.02624515900242841
+        },
+        "prepared_adapter": {
+          "median": 0.0027056980034103617,
+          "minimum": 0.002628135000122711,
+          "maximum": 0.002866640999855008
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.017869593000796158,
+          "minimum": 0.014194413997756783,
+          "maximum": 0.018138849998649675
+        },
+        "chart_order_statistics": {
+          "median": 0.07193831800395856,
+          "minimum": 0.07181083300383762,
+          "maximum": 0.07236006799939787
+        },
+        "complete_evaluation": {
+          "median": 0.24354858299921034,
+          "minimum": 0.23720020800101338,
+          "maximum": 0.2799250870011747
+        },
+        "three_whatifs": {
+          "median": 0.44574337800440844,
+          "minimum": 0.44297860100050457,
+          "maximum": 0.44719439699838404
+        },
+        "capture_including_evaluation": {
+          "median": 0.11849705599888694,
+          "minimum": 0.11675823400582885,
+          "maximum": 0.11984001699602231
+        },
+        "replay_including_evaluation": {
+          "median": 0.11403934100235347,
+          "minimum": 0.1097279410023475,
+          "maximum": 0.11421650099509861
+        },
+        "including_preparation_and_draws": {
+          "median": 0.2640601870007231,
+          "minimum": 0.26331239200226264,
+          "maximum": 0.2708901110017905
+        }
+      },
+      "peak_rss_bytes": 218722304
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002861191998817958,
+          "minimum": 0.002763880002021324,
+          "maximum": 0.0029989270042278804
+        },
+        "draw_generation": {
+          "median": 0.02411609300179407,
+          "minimum": 0.021705254999687895,
+          "maximum": 0.025411824994080234
+        },
+        "prepared_adapter": {
+          "median": 0.002678114004083909,
+          "minimum": 0.002675830000953283,
+          "maximum": 0.0031108229959500022
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.00801631499780342,
+          "minimum": 0.005892686000152025,
+          "maximum": 0.008573787999921478
+        },
+        "chart_order_statistics": {
+          "median": 0.06729663699661614,
+          "minimum": 0.06352452599821845,
+          "maximum": 0.06869407399790362
+        },
+        "complete_evaluation": {
+          "median": 0.23078370400617132,
+          "minimum": 0.21945428699837066,
+          "maximum": 0.23891553299472434
+        },
+        "three_whatifs": {
+          "median": 0.4409259320018464,
+          "minimum": 0.4243824939985643,
+          "maximum": 0.45576362300198525
+        },
+        "capture_including_evaluation": {
+          "median": 0.10409733899723506,
+          "minimum": 0.09989095100172563,
+          "maximum": 0.10650532099680277
+        },
+        "replay_including_evaluation": {
+          "median": 0.10072861400112743,
+          "minimum": 0.09651538999605691,
+          "maximum": 0.1291838889956125
+        },
+        "including_preparation_and_draws": {
+          "median": 0.2529217570045148,
+          "minimum": 0.25178346000029705,
+          "maximum": 0.2530260279963841
+        }
+      },
+      "peak_rss_bytes": 219017216
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.003049509999982547,
+          "minimum": 0.002823683993483428,
+          "maximum": 0.003226054002880119
+        },
+        "draw_generation": {
+          "median": 0.02404915700026322,
+          "minimum": 0.0221826350025367,
+          "maximum": 0.02839012799813645
+        },
+        "prepared_adapter": {
+          "median": 0.0027065390022471547,
+          "minimum": 0.0025861340036499314,
+          "maximum": 0.0033904390002135187
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.009882320002361666,
+          "minimum": 0.008565062002162449,
+          "maximum": 0.011331861998769455
+        },
+        "chart_order_statistics": {
+          "median": 0.06463420500222128,
+          "minimum": 0.06429566300357692,
+          "maximum": 0.07884018199547427
+        },
+        "complete_evaluation": {
+          "median": 0.22994902700156672,
+          "minimum": 0.22287646000040695,
+          "maximum": 0.2746562559987069
+        },
+        "three_whatifs": {
+          "median": 0.43258525500277756,
+          "minimum": 0.43245403400214855,
+          "maximum": 0.5240504200046416
+        },
+        "capture_including_evaluation": {
+          "median": 0.1023812259954866,
+          "minimum": 0.10087973700137809,
+          "maximum": 0.1149613829984446
+        },
+        "replay_including_evaluation": {
+          "median": 0.09783013499691151,
+          "minimum": 0.09781768699758686,
+          "maximum": 0.1094509989998187
+        },
+        "including_preparation_and_draws": {
+          "median": 0.25664608999795746,
+          "minimum": 0.2522816370037617,
+          "maximum": 0.2844727060000878
+        }
+      },
+      "peak_rss_bytes": 220438528
+    },
+    {
+      "paths": 32768,
+      "horizon": 30,
+      "case": "normal",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.003023700999619905,
+          "minimum": 0.0028697369998553768,
+          "maximum": 0.003142585999739822
+        },
+        "draw_generation": {
+          "median": 0.023367858004348818,
+          "minimum": 0.023138504999224097,
+          "maximum": 0.02609924400167074
+        },
+        "prepared_adapter": {
+          "median": 0.002716103997954633,
+          "minimum": 0.0025925680020009167,
+          "maximum": 0.002885238005546853
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.00918436599749839,
+          "minimum": 0.008604921000369359,
+          "maximum": 0.009944268000253942
+        },
+        "chart_order_statistics": {
+          "median": 0.06722900200111326,
+          "minimum": 0.06646023599751061,
+          "maximum": 0.06850106400088407
+        },
+        "complete_evaluation": {
+          "median": 0.2319255480033462,
+          "minimum": 0.22623805900366278,
+          "maximum": 0.236017069000809
+        },
+        "three_whatifs": {
+          "median": 0.441850114002591,
+          "minimum": 0.4395039489972987,
+          "maximum": 0.44332604699593503
+        },
+        "capture_including_evaluation": {
+          "median": 0.10107016000256408,
+          "minimum": 0.09997057399596088,
+          "maximum": 0.1036667509979452
+        },
+        "replay_including_evaluation": {
+          "median": 0.09861806299886666,
+          "minimum": 0.09747412599972449,
+          "maximum": 0.09893435899721226
+        },
+        "including_preparation_and_draws": {
+          "median": 0.25610759599658195,
+          "minimum": 0.24998849099938525,
+          "maximum": 0.28938205300073605
+        }
+      },
+      "peak_rss_bytes": 226881536
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.004360213999461848,
+          "minimum": 0.0026960690011037514,
+          "maximum": 0.005364181000913959
+        },
+        "draw_generation": {
+          "median": 0.0549245099973632,
+          "minimum": 0.046786756996880285,
+          "maximum": 0.055278676001762506
+        },
+        "cash_kernel": {
+          "median": 0.020118159001867753,
+          "minimum": 0.013647051993757486,
+          "maximum": 0.02079208000213839
+        },
+        "summaries": {
+          "median": 0.016403629997512326,
+          "minimum": 0.01608140800090041,
+          "maximum": 0.018602591997478157
+        },
+        "complete_evaluation": {
+          "median": 0.04316237800230738,
+          "minimum": 0.03985346200352069,
+          "maximum": 0.043392122999648564
+        },
+        "three_whatifs": {
+          "median": 0.12575642499723472,
+          "minimum": 0.11105904300347902,
+          "maximum": 0.1275327199982712
+        },
+        "including_preparation_and_draws": {
+          "median": 0.11485549400094897,
+          "minimum": 0.11060484699555673,
+          "maximum": 0.11499134000041522
+        }
+      },
+      "peak_rss_bytes": 291569664
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027821990006486885,
+          "minimum": 0.002781235998554621,
+          "maximum": 0.002957128999696579
+        },
+        "draw_generation": {
+          "median": 0.046792884000751656,
+          "minimum": 0.045873101997131016,
+          "maximum": 0.04860024799563689
+        },
+        "prepared_adapter": {
+          "median": 0.005424670998763759,
+          "minimum": 0.00532956600363832,
+          "maximum": 0.005527371002244763
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.02329957199981436,
+          "minimum": 0.022904372002813034,
+          "maximum": 0.02444816999923205
+        },
+        "complete_evaluation": {
+          "median": 0.034041278006043285,
+          "minimum": 0.03334803400503006,
+          "maximum": 0.034716273003141396
+        },
+        "three_whatifs": {
+          "median": 0.06412228900444461,
+          "minimum": 0.0628164099980495,
+          "maximum": 0.0648387740002363
+        },
+        "capture_including_evaluation": {
+          "median": 0.055638138997892383,
+          "minimum": 0.05166709300101502,
+          "maximum": 0.09072572400327772
+        },
+        "replay_including_evaluation": {
+          "median": 0.045204754002043046,
+          "minimum": 0.04336592299659969,
+          "maximum": 0.048688109003705904
+        },
+        "including_preparation_and_draws": {
+          "median": 0.08909979899908649,
+          "minimum": 0.08886582400009502,
+          "maximum": 0.09279379500367213
+        }
+      },
+      "peak_rss_bytes": 231907328
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027601349938777275,
+          "minimum": 0.0026552769995760173,
+          "maximum": 0.0029298840017872863
+        },
+        "draw_generation": {
+          "median": 0.04794215500442078,
+          "minimum": 0.045908060994406696,
+          "maximum": 0.04894110099849058
+        },
+        "prepared_adapter": {
+          "median": 0.00560409200261347,
+          "minimum": 0.005362847005017102,
+          "maximum": 0.005820869002491236
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.007722064001427498,
+          "minimum": 0.007360948002315126,
+          "maximum": 0.00808837099611992
+        },
+        "complete_evaluation": {
+          "median": 0.018187417001172435,
+          "minimum": 0.018127454997738823,
+          "maximum": 0.019216072003473528
+        },
+        "three_whatifs": {
+          "median": 0.031200788005662616,
+          "minimum": 0.03023658599704504,
+          "maximum": 0.03220192899607355
+        },
+        "capture_including_evaluation": {
+          "median": 0.03600794000522001,
+          "minimum": 0.0353452070048661,
+          "maximum": 0.03777074900426669
+        },
+        "replay_including_evaluation": {
+          "median": 0.02844195399666205,
+          "minimum": 0.0278369070001645,
+          "maximum": 0.06859600699681323
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07651611399342073,
+          "minimum": 0.07551187500212109,
+          "maximum": 0.0770907990008709
+        }
+      },
+      "peak_rss_bytes": 232288256
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028578010023920797,
+          "minimum": 0.002820383000653237,
+          "maximum": 0.002938010002253577
+        },
+        "draw_generation": {
+          "median": 0.04883837399393087,
+          "minimum": 0.04754236200096784,
+          "maximum": 0.050852927000960335
+        },
+        "prepared_adapter": {
+          "median": 0.005595716997049749,
+          "minimum": 0.005453543002658989,
+          "maximum": 0.00581023999984609
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.00779321399750188,
+          "minimum": 0.0076775819979957305,
+          "maximum": 0.007971727995027322
+        },
+        "complete_evaluation": {
+          "median": 0.019311114003357943,
+          "minimum": 0.01911045200540684,
+          "maximum": 0.019736063994059805
+        },
+        "three_whatifs": {
+          "median": 0.03305258700129343,
+          "minimum": 0.0328302820053068,
+          "maximum": 0.035197213997889776
+        },
+        "capture_including_evaluation": {
+          "median": 0.04330956700141542,
+          "minimum": 0.03870106900285464,
+          "maximum": 0.0455712369948742
+        },
+        "replay_including_evaluation": {
+          "median": 0.0312850529953721,
+          "minimum": 0.028194665996124968,
+          "maximum": 0.03170651599793928
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07709579999936977,
+          "minimum": 0.07613721599773271,
+          "maximum": 0.08091716899798485
+        }
+      },
+      "peak_rss_bytes": 232300544
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028503990033641458,
+          "minimum": 0.0028302030041231774,
+          "maximum": 0.003908474005584139
+        },
+        "draw_generation": {
+          "median": 0.04823507599940058,
+          "minimum": 0.046595981999416836,
+          "maximum": 0.048883331000979524
+        },
+        "prepared_adapter": {
+          "median": 0.005410025994933676,
+          "minimum": 0.0054066390002844855,
+          "maximum": 0.005870999004400801
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.007349986997724045,
+          "minimum": 0.0067978119986946695,
+          "maximum": 0.007370639003056567
+        },
+        "complete_evaluation": {
+          "median": 0.01840419899963308,
+          "minimum": 0.01778896000178065,
+          "maximum": 0.021056286001112312
+        },
+        "three_whatifs": {
+          "median": 0.03125166999961948,
+          "minimum": 0.02918700099689886,
+          "maximum": 0.03141668100579409
+        },
+        "capture_including_evaluation": {
+          "median": 0.03725707700505154,
+          "minimum": 0.035113989004457835,
+          "maximum": 0.04005054499430116
+        },
+        "replay_including_evaluation": {
+          "median": 0.027704337000614032,
+          "minimum": 0.026813787000719458,
+          "maximum": 0.027748435000830796
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07546033099788474,
+          "minimum": 0.07324621800216846,
+          "maximum": 0.07658394800091628
+        }
+      },
+      "peak_rss_bytes": 231342080
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027404120046412572,
+          "minimum": 0.002724803998717107,
+          "maximum": 0.0029116930018062703
+        },
+        "draw_generation": {
+          "median": 0.05323521199898096,
+          "minimum": 0.04933804200118175,
+          "maximum": 0.05385956499958411
+        },
+        "cash_kernel": {
+          "median": 0.016410705000453163,
+          "minimum": 0.01607935599895427,
+          "maximum": 0.017156440000690054
+        },
+        "summaries": {
+          "median": 0.017151688000012655,
+          "minimum": 0.01542401900223922,
+          "maximum": 0.017942703001608606
+        },
+        "chart_order_statistics": {
+          "median": 0.45207502000266686,
+          "minimum": 0.445774210995296,
+          "maximum": 0.4827199089995702
+        },
+        "complete_evaluation": {
+          "median": 0.783528767999087,
+          "minimum": 0.7646382149978308,
+          "maximum": 0.8164641550029046
+        },
+        "three_whatifs": {
+          "median": 2.3359925580007257,
+          "minimum": 2.2895322969998233,
+          "maximum": 2.4354230820026714
+        },
+        "including_preparation_and_draws": {
+          "median": 0.8637625290066353,
+          "minimum": 0.8479204320028657,
+          "maximum": 0.9016173850031919
+        }
+      },
+      "peak_rss_bytes": 339607552
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0029109280003467575,
+          "minimum": 0.002799984002194833,
+          "maximum": 0.002989230997627601
+        },
+        "draw_generation": {
+          "median": 0.05295570599992061,
+          "minimum": 0.0509406860001036,
+          "maximum": 0.053089747998456005
+        },
+        "prepared_adapter": {
+          "median": 0.005679673995473422,
+          "minimum": 0.005552587004785892,
+          "maximum": 0.005757360995630734
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.031614055995305534,
+          "minimum": 0.030666853999719024,
+          "maximum": 0.03174178100016434
+        },
+        "chart_order_statistics": {
+          "median": 0.15215342799638165,
+          "minimum": 0.14478992499789456,
+          "maximum": 0.15335101700475207
+        },
+        "complete_evaluation": {
+          "median": 0.38693748399964534,
+          "minimum": 0.3810151330035296,
+          "maximum": 0.39292483500321396
+        },
+        "three_whatifs": {
+          "median": 0.6303986720013199,
+          "minimum": 0.6129553140053758,
+          "maximum": 0.6614069700008258
+        },
+        "capture_including_evaluation": {
+          "median": 0.22925024600408506,
+          "minimum": 0.22096051100379555,
+          "maximum": 0.23359594400244532
+        },
+        "replay_including_evaluation": {
+          "median": 0.22384891199908452,
+          "minimum": 0.21949338400008855,
+          "maximum": 0.2463785919971997
+        },
+        "including_preparation_and_draws": {
+          "median": 0.43490014700364554,
+          "minimum": 0.42767592100426555,
+          "maximum": 0.49297595000098227
+        }
+      },
+      "peak_rss_bytes": 311521280
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0030698170012328774,
+          "minimum": 0.0027542890020413324,
+          "maximum": 0.003322522999951616
+        },
+        "draw_generation": {
+          "median": 0.05588777099910658,
+          "minimum": 0.05043338299583411,
+          "maximum": 0.06165337299898965
+        },
+        "prepared_adapter": {
+          "median": 0.006101908998971339,
+          "minimum": 0.0053606440051225945,
+          "maximum": 0.006783619995985646
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.01640680999844335,
+          "minimum": 0.014911112004483584,
+          "maximum": 0.01796977200137917
+        },
+        "chart_order_statistics": {
+          "median": 0.14254339200124377,
+          "minimum": 0.12990816599631216,
+          "maximum": 0.1622758689991315
+        },
+        "complete_evaluation": {
+          "median": 0.3644432630026131,
+          "minimum": 0.338714291996439,
+          "maximum": 0.40388192299724324
+        },
+        "three_whatifs": {
+          "median": 0.6027676840021741,
+          "minimum": 0.5607736329984618,
+          "maximum": 0.637273380998522
+        },
+        "capture_including_evaluation": {
+          "median": 0.19296350300282938,
+          "minimum": 0.1926379030046519,
+          "maximum": 0.1987487410005997
+        },
+        "replay_including_evaluation": {
+          "median": 0.19136022299790056,
+          "minimum": 0.18338726599904476,
+          "maximum": 0.19670316799602006
+        },
+        "including_preparation_and_draws": {
+          "median": 0.40528007799730403,
+          "minimum": 0.3848423270028434,
+          "maximum": 0.4079352509943419
+        }
+      },
+      "peak_rss_bytes": 297459712
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002791388993500732,
+          "minimum": 0.0027466130050015636,
+          "maximum": 0.004619865998392925
+        },
+        "draw_generation": {
+          "median": 0.051358188000449445,
+          "minimum": 0.04575738600397017,
+          "maximum": 0.05229412900371244
+        },
+        "prepared_adapter": {
+          "median": 0.005610903004708234,
+          "minimum": 0.0053514280007220805,
+          "maximum": 0.0061123080013203435
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.016513861999555957,
+          "minimum": 0.01604209200013429,
+          "maximum": 0.017787275995942764
+        },
+        "chart_order_statistics": {
+          "median": 0.13829682099458296,
+          "minimum": 0.1291472469965811,
+          "maximum": 0.1509488270021393
+        },
+        "complete_evaluation": {
+          "median": 0.3472317180057871,
+          "minimum": 0.33915661799983354,
+          "maximum": 0.410327003999555
+        },
+        "three_whatifs": {
+          "median": 0.5711636479973095,
+          "minimum": 0.5584717730016564,
+          "maximum": 0.6264840419971733
+        },
+        "capture_including_evaluation": {
+          "median": 0.19735774600121658,
+          "minimum": 0.18381358099577483,
+          "maximum": 0.20866160500008846
+        },
+        "replay_including_evaluation": {
+          "median": 0.18933006099541672,
+          "minimum": 0.18489837900415296,
+          "maximum": 0.23243757299496792
+        },
+        "including_preparation_and_draws": {
+          "median": 0.3931369869969785,
+          "minimum": 0.3922108839979046,
+          "maximum": 0.4088225230007083
+        }
+      },
+      "peak_rss_bytes": 300834816
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "stressed",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027272389997961,
+          "minimum": 0.0027135380005347542,
+          "maximum": 0.004128362001210917
+        },
+        "draw_generation": {
+          "median": 0.04597056400234578,
+          "minimum": 0.0453385079963482,
+          "maximum": 0.04608130500128027
+        },
+        "prepared_adapter": {
+          "median": 0.00531316200067522,
+          "minimum": 0.005277009004203137,
+          "maximum": 0.00531791799585335
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.01550286899873754,
+          "minimum": 0.015370932000223547,
+          "maximum": 0.016039476002333686
+        },
+        "chart_order_statistics": {
+          "median": 0.13025336300052004,
+          "minimum": 0.12972323699796107,
+          "maximum": 0.13043116300104884
+        },
+        "complete_evaluation": {
+          "median": 0.3419740079989424,
+          "minimum": 0.3366242600022815,
+          "maximum": 0.3423756960037281
+        },
+        "three_whatifs": {
+          "median": 0.5604702479977277,
+          "minimum": 0.5575603649995173,
+          "maximum": 0.5651415559987072
+        },
+        "capture_including_evaluation": {
+          "median": 0.1941836810001405,
+          "minimum": 0.18229556000005687,
+          "maximum": 0.19493382699874928
+        },
+        "replay_including_evaluation": {
+          "median": 0.18817947700154036,
+          "minimum": 0.18684727200161433,
+          "maximum": 0.19092560600256547
+        },
+        "including_preparation_and_draws": {
+          "median": 0.3939981950024958,
+          "minimum": 0.392185150005389,
+          "maximum": 0.44392280699685216
+        }
+      },
+      "peak_rss_bytes": 305598464
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002852418001566548,
+          "minimum": 0.0028117719994043,
+          "maximum": 0.0030221130000427365
+        },
+        "draw_generation": {
+          "median": 0.056187563997809775,
+          "minimum": 0.04579812199517619,
+          "maximum": 0.058815368996874895
+        },
+        "cash_kernel": {
+          "median": 0.02106722499593161,
+          "minimum": 0.013618698001664598,
+          "maximum": 0.021187168000324164
+        },
+        "summaries": {
+          "median": 0.017058911005733535,
+          "minimum": 0.016552781002246775,
+          "maximum": 0.017701069999020547
+        },
+        "complete_evaluation": {
+          "median": 0.04509172400139505,
+          "minimum": 0.04042161400138866,
+          "maximum": 0.045161649002693594
+        },
+        "three_whatifs": {
+          "median": 0.12653518599836389,
+          "minimum": 0.11110755899426294,
+          "maximum": 0.1309324110043235
+        },
+        "including_preparation_and_draws": {
+          "median": 0.10830561300099362,
+          "minimum": 0.10665882700413931,
+          "maximum": 0.11027683599968441
+        }
+      },
+      "peak_rss_bytes": 292663296
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028500420012278482,
+          "minimum": 0.0027565529962885194,
+          "maximum": 0.0029139809994376265
+        },
+        "draw_generation": {
+          "median": 0.04734817300050054,
+          "minimum": 0.0471117269989918,
+          "maximum": 0.04783231699548196
+        },
+        "prepared_adapter": {
+          "median": 0.005591783003183082,
+          "minimum": 0.005553938994125929,
+          "maximum": 0.005609427003946621
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.023538080000435002,
+          "minimum": 0.023369998998532537,
+          "maximum": 0.02404381200176431
+        },
+        "complete_evaluation": {
+          "median": 0.03400402600527741,
+          "minimum": 0.033683282003039494,
+          "maximum": 0.03427115700469585
+        },
+        "three_whatifs": {
+          "median": 0.06197493100626161,
+          "minimum": 0.06142473899672041,
+          "maximum": 0.06357342800038168
+        },
+        "capture_including_evaluation": {
+          "median": 0.05157563799730269,
+          "minimum": 0.05145961800008081,
+          "maximum": 0.05166696200467413
+        },
+        "replay_including_evaluation": {
+          "median": 0.04392116700182669,
+          "minimum": 0.04278055699978722,
+          "maximum": 0.04415955099830171
+        },
+        "including_preparation_and_draws": {
+          "median": 0.09126590399682755,
+          "minimum": 0.08863580499746604,
+          "maximum": 0.09393401200213702
+        }
+      },
+      "peak_rss_bytes": 233099264
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002865989998099394,
+          "minimum": 0.0028375710026011802,
+          "maximum": 0.002954345000034664
+        },
+        "draw_generation": {
+          "median": 0.05208663400117075,
+          "minimum": 0.047796701997867785,
+          "maximum": 0.05586928800039459
+        },
+        "prepared_adapter": {
+          "median": 0.005624326004181057,
+          "minimum": 0.005539832993235905,
+          "maximum": 0.005638055001327302
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.0076901639986317605,
+          "minimum": 0.007548920999397524,
+          "maximum": 0.008331778000865597
+        },
+        "complete_evaluation": {
+          "median": 0.018988895004440565,
+          "minimum": 0.01858843800437171,
+          "maximum": 0.01943518000189215
+        },
+        "three_whatifs": {
+          "median": 0.030684915000165347,
+          "minimum": 0.030471641002804972,
+          "maximum": 0.031114525998418685
+        },
+        "capture_including_evaluation": {
+          "median": 0.038712904999556486,
+          "minimum": 0.03583546300069429,
+          "maximum": 0.04152469499967992
+        },
+        "replay_including_evaluation": {
+          "median": 0.027922729997953866,
+          "minimum": 0.025908832001732662,
+          "maximum": 0.029381378000834957
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07517797499895096,
+          "minimum": 0.06905860400001984,
+          "maximum": 0.07824267399701057
+        }
+      },
+      "peak_rss_bytes": 233492480
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028312869981164113,
+          "minimum": 0.0027812949992949143,
+          "maximum": 0.0029900800000177696
+        },
+        "draw_generation": {
+          "median": 0.04798631100129569,
+          "minimum": 0.04709824499877868,
+          "maximum": 0.051311032999365125
+        },
+        "prepared_adapter": {
+          "median": 0.005808355999761261,
+          "minimum": 0.00577992299804464,
+          "maximum": 0.006134717994427774
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.008407038003497291,
+          "minimum": 0.008047336996241938,
+          "maximum": 0.009007485001347959
+        },
+        "complete_evaluation": {
+          "median": 0.02103899699432077,
+          "minimum": 0.01938140700076474,
+          "maximum": 0.021161081000173
+        },
+        "three_whatifs": {
+          "median": 0.03142032700270647,
+          "minimum": 0.031049571000039577,
+          "maximum": 0.03688115000113612
+        },
+        "capture_including_evaluation": {
+          "median": 0.04190934100188315,
+          "minimum": 0.03916846599895507,
+          "maximum": 0.04291221399762435
+        },
+        "replay_including_evaluation": {
+          "median": 0.02846709000004921,
+          "minimum": 0.027135933996760286,
+          "maximum": 0.030893950002791826
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07476484999642707,
+          "minimum": 0.07466931200178806,
+          "maximum": 0.0880886980012292
+        }
+      },
+      "peak_rss_bytes": 231825408
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": false,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028265080036362633,
+          "minimum": 0.0028115629975218326,
+          "maximum": 0.002874685000278987
+        },
+        "draw_generation": {
+          "median": 0.04953021500114119,
+          "minimum": 0.04835728499892866,
+          "maximum": 0.04985062400373863
+        },
+        "prepared_adapter": {
+          "median": 0.005785246001323685,
+          "minimum": 0.005413157006842084,
+          "maximum": 0.005851433001225814
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.007439865999913309,
+          "minimum": 0.007382246003544424,
+          "maximum": 0.007714110004599206
+        },
+        "complete_evaluation": {
+          "median": 0.018646227996214293,
+          "minimum": 0.017984573998546693,
+          "maximum": 0.018736582998826634
+        },
+        "three_whatifs": {
+          "median": 0.031010441001853906,
+          "minimum": 0.02941585700318683,
+          "maximum": 0.032759908004663885
+        },
+        "capture_including_evaluation": {
+          "median": 0.04299567500129342,
+          "minimum": 0.040915190998930484,
+          "maximum": 0.04493287599325413
+        },
+        "replay_including_evaluation": {
+          "median": 0.027124273001390975,
+          "minimum": 0.027116916004160885,
+          "maximum": 0.02918387099634856
+        },
+        "including_preparation_and_draws": {
+          "median": 0.07841844300128287,
+          "minimum": 0.07539390600140905,
+          "maximum": 0.07845373100280995
+        }
+      },
+      "peak_rss_bytes": 232329216
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "old",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002825344003213104,
+          "minimum": 0.002705079001316335,
+          "maximum": 0.003132222998829093
+        },
+        "draw_generation": {
+          "median": 0.05676741700153798,
+          "minimum": 0.04901564999454422,
+          "maximum": 0.05968392800423317
+        },
+        "cash_kernel": {
+          "median": 0.016704909998225048,
+          "minimum": 0.015876577999733854,
+          "maximum": 0.017612041003303602
+        },
+        "summaries": {
+          "median": 0.017854507997981273,
+          "minimum": 0.016341435999493115,
+          "maximum": 0.01793988500139676
+        },
+        "chart_order_statistics": {
+          "median": 0.4239989169946057,
+          "minimum": 0.41407191500184126,
+          "maximum": 0.4449749819978024
+        },
+        "complete_evaluation": {
+          "median": 0.7473634269990725,
+          "minimum": 0.7317648120006197,
+          "maximum": 0.7619895270036068
+        },
+        "three_whatifs": {
+          "median": 2.2578793260036036,
+          "minimum": 2.0815409520000685,
+          "maximum": 2.3390883340034634
+        },
+        "including_preparation_and_draws": {
+          "median": 0.7813318499975139,
+          "minimum": 0.7690844540047692,
+          "maximum": 0.8230750820002868
+        }
+      },
+      "peak_rss_bytes": 340754432
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "numpy",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0028185400005895644,
+          "minimum": 0.0027617990053840913,
+          "maximum": 0.0029511210013879463
+        },
+        "draw_generation": {
+          "median": 0.04854772899852833,
+          "minimum": 0.04647945099713979,
+          "maximum": 0.051251395998406224
+        },
+        "prepared_adapter": {
+          "median": 0.005365996999898925,
+          "minimum": 0.005365306002204306,
+          "maximum": 0.005488621995027643
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.025672218995168805,
+          "minimum": 0.025126379005087074,
+          "maximum": 0.02603180600272026
+        },
+        "chart_order_statistics": {
+          "median": 0.13456126600067364,
+          "minimum": 0.13233490200218512,
+          "maximum": 0.13795320100325625
+        },
+        "complete_evaluation": {
+          "median": 0.3301234359969385,
+          "minimum": 0.3277271099941572,
+          "maximum": 0.3507361040028627
+        },
+        "three_whatifs": {
+          "median": 0.5533244859980186,
+          "minimum": 0.550653616002819,
+          "maximum": 0.5609403580019716
+        },
+        "capture_including_evaluation": {
+          "median": 0.2044653369957814,
+          "minimum": 0.20267354499810608,
+          "maximum": 0.2046848489990225
+        },
+        "replay_including_evaluation": {
+          "median": 0.2012336600018898,
+          "minimum": 0.1989730579953175,
+          "maximum": 0.2043258740013698
+        },
+        "including_preparation_and_draws": {
+          "median": 0.4051825619972078,
+          "minimum": 0.3890728719998151,
+          "maximum": 0.40569298600166803
+        }
+      },
+      "peak_rss_bytes": 299438080
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 1,
+      "stages": {
+        "history_preparation": {
+          "median": 0.0027758659998653457,
+          "minimum": 0.0027695730022969656,
+          "maximum": 0.0028087869941373356
+        },
+        "draw_generation": {
+          "median": 0.04642506800155388,
+          "minimum": 0.04626562500197906,
+          "maximum": 0.04722816499997862
+        },
+        "prepared_adapter": {
+          "median": 0.005437004001578316,
+          "minimum": 0.0054107890027808025,
+          "maximum": 0.005587968000327237
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.010123230000317562,
+          "minimum": 0.009850210997683462,
+          "maximum": 0.01027074299781816
+        },
+        "chart_order_statistics": {
+          "median": 0.1184708490036428,
+          "minimum": 0.11842263099970296,
+          "maximum": 0.12155743699986488
+        },
+        "complete_evaluation": {
+          "median": 0.3060459490006906,
+          "minimum": 0.30496087500068825,
+          "maximum": 0.30849375300022075
+        },
+        "three_whatifs": {
+          "median": 0.5300580340044689,
+          "minimum": 0.5231993960042018,
+          "maximum": 0.5341050909992191
+        },
+        "capture_including_evaluation": {
+          "median": 0.1730696340018767,
+          "minimum": 0.17139391799719306,
+          "maximum": 0.18206183899746975
+        },
+        "replay_including_evaluation": {
+          "median": 0.168269893998513,
+          "minimum": 0.16714059299556538,
+          "maximum": 0.16838726400601445
+        },
+        "including_preparation_and_draws": {
+          "median": 0.3688188199957949,
+          "minimum": 0.3667443429949344,
+          "maximum": 0.3706631129971356
+        }
+      },
+      "peak_rss_bytes": 299466752
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 2,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002772857995296363,
+          "minimum": 0.0026605449966154993,
+          "maximum": 0.0035537500007194467
+        },
+        "draw_generation": {
+          "median": 0.04903073199966457,
+          "minimum": 0.046211068001866806,
+          "maximum": 0.05251938700530445
+        },
+        "prepared_adapter": {
+          "median": 0.005524577994947322,
+          "minimum": 0.005498613994859625,
+          "maximum": 0.005680729002051521
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.016100177002954297,
+          "minimum": 0.0156995889992686,
+          "maximum": 0.016225243998633232
+        },
+        "chart_order_statistics": {
+          "median": 0.12194602200179361,
+          "minimum": 0.11709841000265442,
+          "maximum": 0.12424151400045957
+        },
+        "complete_evaluation": {
+          "median": 0.32345206500031054,
+          "minimum": 0.32295672000327613,
+          "maximum": 0.32949856699997326
+        },
+        "three_whatifs": {
+          "median": 0.5342074669970316,
+          "minimum": 0.5240414530053386,
+          "maximum": 0.5359179660008522
+        },
+        "capture_including_evaluation": {
+          "median": 0.1768759270053124,
+          "minimum": 0.17627940799866337,
+          "maximum": 0.1791886649953085
+        },
+        "replay_including_evaluation": {
+          "median": 0.17852015900280094,
+          "minimum": 0.17522056799498387,
+          "maximum": 0.18187669300095877
+        },
+        "including_preparation_and_draws": {
+          "median": 0.3804647390061291,
+          "minimum": 0.3751658829933149,
+          "maximum": 0.4125072899987572
+        }
+      },
+      "peak_rss_bytes": 301117440
+    },
+    {
+      "paths": 32768,
+      "horizon": 60,
+      "case": "weighted",
+      "full": true,
+      "backend": "native",
+      "workers": 4,
+      "stages": {
+        "history_preparation": {
+          "median": 0.002747446000284981,
+          "minimum": 0.002739480994932819,
+          "maximum": 0.002837931999238208
+        },
+        "draw_generation": {
+          "median": 0.0457576299959328,
+          "minimum": 0.04567234400019515,
+          "maximum": 0.0468220909970114
+        },
+        "prepared_adapter": {
+          "median": 0.005308400002832059,
+          "minimum": 0.005284340004436672,
+          "maximum": 0.0054261160039459355
+        },
+        "cash_kernel_fused_summaries": {
+          "median": 0.015519471002335194,
+          "minimum": 0.015518649001023732,
+          "maximum": 0.017222882001078688
+        },
+        "chart_order_statistics": {
+          "median": 0.11957546500343597,
+          "minimum": 0.119326751002518,
+          "maximum": 0.12054615800298052
+        },
+        "complete_evaluation": {
+          "median": 0.32686862599803135,
+          "minimum": 0.318928719003452,
+          "maximum": 0.3317076899984386
+        },
+        "three_whatifs": {
+          "median": 0.5343183709992445,
+          "minimum": 0.5211555210044025,
+          "maximum": 0.5667940979983541
+        },
+        "capture_including_evaluation": {
+          "median": 0.18071491100272397,
+          "minimum": 0.1765078859971254,
+          "maximum": 0.19036752999818418
+        },
+        "replay_including_evaluation": {
+          "median": 0.18136701000184985,
+          "minimum": 0.17801316900295205,
+          "maximum": 0.1884939659939846
+        },
+        "including_preparation_and_draws": {
+          "median": 0.3717109610006446,
+          "minimum": 0.3709531530039385,
+          "maximum": 0.3910401390021434
+        }
+      },
+      "peak_rss_bytes": 306331648
+    }
+  ]
+}

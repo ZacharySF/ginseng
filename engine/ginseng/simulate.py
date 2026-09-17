@@ -55,13 +55,14 @@ class DrawBundle:
     initial_block_lengths: np.ndarray | None = None
 
     def __post_init__(self):
-        if self.sampler != "legacy_mc":
-            # Immutable bytes backing also prevents callers re-enabling writes.
-            for name in ("index_matrix", "material_indices", "initial_block_lengths"):
-                value = getattr(self, name)
-                if value is not None:
-                    owned = np.frombuffer(np.asarray(value, dtype="<i8").tobytes(), dtype="<i8").reshape(value.shape)
-                    object.__setattr__(self, name, owned)
+        # Immutable bytes backing also prevents callers re-enabling writes.
+        for name in ("index_matrix", "material_indices", "initial_block_lengths"):
+            value = getattr(self, name)
+            if value is not None:
+                from ginseng.execution import snapshot
+                if np.asarray(value).dtype != np.dtype('int64'):
+                    raise ValueError('Draw indices must use native int64 without implicit conversion.')
+                object.__setattr__(self, name, snapshot(value, '<i8'))
 
 @dataclass(frozen=True)
 class PathBundle:
@@ -108,6 +109,12 @@ class PathBundle:
         ):
             raise ValueError("Portfolio paths do not match the cash-path bundle.")
 
+        from ginseng.execution import snapshot
+        for name in ('daily_cash_flows','known_income_daily','known_obligation_daily','discretionary_daily','portfolio_values'):
+            value = getattr(self,name)
+            if value is not None:
+                object.__setattr__(self,name,snapshot(value))
+
     @property
     def available_horizon_days(self) -> int:
         return self.daily_cash_flows.shape[1]
@@ -125,7 +132,7 @@ def direct_path_draw_id(source: str, seed: int, n_paths: int, horizon_days: int)
     return hashlib.sha256(material).hexdigest()
 
 
-def _joint_history(state: FinancialState) -> pd.DataFrame:
+def _uncached_joint_history(state: FinancialState) -> pd.DataFrame:
     """The daily joint series Y_t (spec 15) over the full recorded ledger
     window. Irregular expenses are excluded, per spec 10."""
     if not state.transactions and state.history_start is None:
@@ -145,6 +152,22 @@ def _joint_history(state: FinancialState) -> pd.DataFrame:
             ),
         }
     )
+
+
+def _joint_history(state: FinancialState) -> pd.DataFrame:
+    from ginseng.execution import current_context
+    from ginseng.provenance import digest
+    from dataclasses import asdict
+    context = current_context()
+    if context is None:
+        return _uncached_joint_history(state)
+    # Includes reconciliation transactions and dates; opening-cash edits that
+    # change history cannot accidentally hit a cash-only dependency key.
+    key = ('history', digest((tuple(asdict(t) for t in state.transactions), state.history_start, state.history_end, state.as_of)))
+    def create():
+        context.counters['history_preparations'] += 1
+        return _uncached_joint_history(state)
+    return context.remember(key, create, lambda frame: int(frame.memory_usage(deep=True).sum()))
 
 
 def _fallback_block_length(z: np.ndarray) -> float:
@@ -218,7 +241,7 @@ def _compute_draw_id(index_matrix: np.ndarray) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def draw_bundle(
+def _uncached_draw_bundle(
     state: FinancialState,
     horizon_days: int,
     n_paths: int,
@@ -254,6 +277,23 @@ def draw_bundle(
         index_matrix=index_matrix,
         bootstrap_draw_id=_compute_draw_id(index_matrix),
     )
+
+
+def draw_bundle(state, horizon_days, n_paths, seed, mean_block_length=None):
+    from ginseng.execution import current_context, array_id
+    context = current_context()
+    if context is None:
+        return _uncached_draw_bundle(state,horizon_days,n_paths,seed,mean_block_length)
+    joint = _joint_history(state).to_numpy()
+    key = ('legacy_draws',array_id(joint),horizon_days,n_paths,seed,mean_block_length)
+    if key in context.cache:
+        context.counters['cache_hits'] += 1
+        return context.cache[key]
+    context.check(n_paths*horizon_days*8*4)
+    def create():
+        context.counters['draw_generations'] += 1
+        return _uncached_draw_bundle(state,horizon_days,n_paths,seed,mean_block_length)
+    return context.remember(key,create,lambda b:b.index_matrix.nbytes)
 
 
 def _recurring_days(item: Obligation, horizon_days: int) -> list[int]:
@@ -329,7 +369,7 @@ def known_flows(
     return np.cumsum(income_daily), np.cumsum(obligation_daily)
 
 
-def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle | PathBundle) -> np.ndarray:
+def _uncached_discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle | PathBundle) -> np.ndarray:
     """Per-path discretionary spending from the shared forecast bundle."""
     if isinstance(bundle, PathBundle):
         return bundle.discretionary_daily[:, : bundle.horizon_days]
@@ -337,7 +377,7 @@ def discretionary_resampled_paths(state: FinancialState, bundle: DrawBundle | Pa
     return disc[bundle.index_matrix]
 
 
-def portfolio_value_paths(
+def _uncached_portfolio_value_paths(
     state: FinancialState, bundle: DrawBundle | PathBundle
 ) -> np.ndarray | None:
     """Per-path market value on the same paths as the cash forecast."""
@@ -374,6 +414,10 @@ def cash_paths(
     *, prepared_history: np.ndarray | None = None
 ) -> np.ndarray:
     """`X_{j,t}` cumulative future net cash flow, excluding opening cash."""
+    from ginseng.execution import current_context, prepare_scenario
+    context = current_context()
+    if context is not None:
+        return context.cash_paths(prepare_scenario(state, bundle, obligations, prepared_history))
     if isinstance(bundle, PathBundle):
         daily_net = bundle.daily_cash_flows[:, : bundle.horizon_days]
         additional = _future_obligation_daily(obligations, bundle.horizon_days)
@@ -392,3 +436,41 @@ def cash_paths(
 
     daily_net = stochastic_daily + deterministic_daily[np.newaxis, :]
     return np.cumsum(daily_net, axis=1)
+
+
+def discretionary_resampled_paths(state, bundle):
+    from ginseng.execution import current_context, array_id, snapshot
+    from ginseng.provenance import digest
+    from dataclasses import asdict
+    context = current_context()
+    if context is None:
+        return _uncached_discretionary_resampled_paths(state, bundle)
+    if isinstance(bundle, PathBundle):
+        arrays = (bundle.discretionary_daily, bundle.portfolio_values)
+        draw_key = tuple(array_id(a) if a is not None else None for a in arrays)
+    else:
+        draw_key = array_id(bundle.index_matrix)
+    key = ("discretionary_resampled_paths", digest(asdict(state)), draw_key, bundle.horizon_days)
+    def create():
+        value = _uncached_discretionary_resampled_paths(state, bundle)
+        return None if value is None else snapshot(value)
+    return context.remember(key, create, lambda a: 0 if a is None else a.nbytes)
+
+
+def portfolio_value_paths(state, bundle):
+    from ginseng.execution import current_context, array_id, snapshot
+    from ginseng.provenance import digest
+    from dataclasses import asdict
+    context = current_context()
+    if context is None:
+        return _uncached_portfolio_value_paths(state, bundle)
+    if isinstance(bundle, PathBundle):
+        arrays = (bundle.discretionary_daily, bundle.portfolio_values)
+        draw_key = tuple(array_id(a) if a is not None else None for a in arrays)
+    else:
+        draw_key = array_id(bundle.index_matrix)
+    key = ("portfolio_value_paths", digest(asdict(state)), draw_key, bundle.horizon_days)
+    def create():
+        value = _uncached_portfolio_value_paths(state, bundle)
+        return None if value is None else snapshot(value)
+    return context.remember(key, create, lambda a: 0 if a is None else a.nbytes)
