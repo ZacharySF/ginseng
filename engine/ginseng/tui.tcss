@@ -114,6 +114,11 @@ Screen.-urgent-short #sidebar { border-right: heavy $error; }
     scrollbar-corner-color: transparent;
 }
 
+/* Boot screen scrolls nothing on purpose -- no hairline gutter to show. */
+#boot-frame, #boot-log {
+    scrollbar-size: 0 0;
+}
+
 /* ---- command palette: a glass overlay, not a boxed dialog ------------ */
 
 CommandPalette { background: $background 55%; }

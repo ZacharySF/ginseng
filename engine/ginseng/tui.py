@@ -69,7 +69,7 @@ from ginseng.braille import rain_frame, ridge_surface
 from ginseng.numerical import diagnostics, environment, manifest, run_core
 from ginseng.portrait import render_portrait
 from ginseng.provenance import source_fingerprint
-from ginseng.splash import WIDTH as SPLASH_WIDTH, render_splash
+from ginseng.splash import WIDTH as SPLASH_WIDTH, render_splash, shade_rows
 from ginseng.sampling import prepare_history
 
 FIXTURES = ["canonical", "tiny", "zero-heavy", "drought-heavy"]
@@ -292,6 +292,9 @@ class OperatorPanel(Static):
 # ---------------------------------------------------------------------------
 
 
+_SHADE_OPACITY = {"1": 35, "2": 45, "3": 55, "4": 65, "5": 75, "6": 85, "7": 92, "8": 100}
+
+
 class Splash(Static):
     """The second portrait. Lives only on `BootScreen` -- never alongside the
     sidebar portrait, so only one piece of art is ever on screen at once.
@@ -304,9 +307,26 @@ class Splash(Static):
 
     def render(self):
         width = self.size.width or SPLASH_WIDTH
-        lines = render_splash(min(width, SPLASH_WIDTH)).splitlines()
-        pad = max(0, (width - max((len(line) for line in lines), default=0)) // 2)
-        return "\n".join(" " * pad + line for line in lines)
+        render_width = min(width, SPLASH_WIDTH)
+        lines = render_splash(render_width).splitlines()
+        pad = " " * max(0, (width - max((len(line) for line in lines), default=0)) // 2)
+        shades = shade_rows(render_width)
+        if shades is None:
+            return "\n".join(pad + line for line in lines)
+
+        # Below native width `render_splash` has already been resampled by
+        # `braille.scale`, which invents fresh dot patterns `shades` can't
+        # describe -- `shade_rows` returns None then and this branch is
+        # skipped, falling back to the flat single-color line above.
+        parts: list[str | tuple[str, str]] = []
+        for i, (line, shade) in enumerate(zip(lines, shades)):
+            if i:
+                parts.append("\n")
+            parts.append(pad)
+            for ch, level in zip(line, shade):
+                opacity = _SHADE_OPACITY.get(level)
+                parts.append((ch, f"$g-thin {opacity}%") if opacity else ch)
+        return Content.assemble(*parts)
 
 
 GINSENG_LOGO = r"""
@@ -431,7 +451,7 @@ class BootScreen(Screen):
         # environment()'s actual dependency versions and thread-pool env
         # vars, then a genuine SHA-256 of every source file, ending on the
         # exact digest every manifest carries as `source_fingerprint`.
-        muted, safe, thin, focus = (self._role(r) for r in ("muted", "safe", "thin", "focus"))
+        muted, safe, thin = (self._role(r) for r in ("muted", "safe", "thin"))
         env = environment()
         log.write(f"[{muted}]boot[/]  python {env.get('python', '--')}  {env.get('platform', '--')}")
         log.write(f"[{muted}]boot[/]  cpu    {env.get('cpu', '--')}")
@@ -456,7 +476,7 @@ class BootScreen(Screen):
             log.write(f"[{muted}]sha256[/] {digest[:16]}  {path.relative_to(root).as_posix()}")
             if not await self._sleep(0.008):
                 return
-        log.write(f"[bold {focus}]source_fingerprint[/] {source_fingerprint()}")
+        log.write(f"[bold {thin}]source_fingerprint[/] {source_fingerprint()}")
 
 
 class WelcomePanel(VerticalScroll):
