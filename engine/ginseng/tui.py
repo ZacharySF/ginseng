@@ -880,9 +880,13 @@ class GinsengApp(Dressable, App):
         self._apply_responsive_layout()
 
     def _apply_responsive_layout(self) -> None:
-        """Hide the portrait and shrink the sidebar on small terminals."""
+        """Shrink the sidebar on small terminals. The portrait itself only
+        hides below a genuinely unusable width -- `render_portrait` already
+        scales the art down to fit whatever's available (see `braille.scale`),
+        so a plain 80-column terminal (a common default -- wider than this
+        used to require) still gets to see her, just smaller."""
         width = self.size.width
-        self.query_one(Portrait).display = width >= 100
+        self.query_one(Portrait).display = width >= 40
         sidebar = self.query_one("#sidebar")
         sidebar.styles.width = 50 if width >= 160 else (36 if width >= 100 else 24)
 
