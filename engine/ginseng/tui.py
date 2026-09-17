@@ -424,7 +424,6 @@ class BootScreen(Screen):
         hint = self.query_one("#boot-hint", Static)
         hint.update("[$g-muted]· press any key ·[/]")
         hint.display = True
-        self.set_timer(6.0, self._leave)
         if not await self._sleep(0.2):
             return
 
