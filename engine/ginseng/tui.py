@@ -1,24 +1,75 @@
-"""Interactive offline terminal UI for ginseng simulate/exact.
+"""Interactive terminal UI for ginseng simulate/exact, built on Textual.
 
-Curses-only: no extra dependency beyond the Python standard library, matching
-the project's offline, ordinary-CPU footprint. Launch with ``ginseng tui``.
+Presented as a dense instrument console (telemetry strip, subsystem nav,
+real-data charts) rather than a bordered-box dashboard. Launch with
+``ginseng tui`` (requires the ``tui`` extra: ``uv sync --extra tui``).
+
+Dressed by ``ginseng_rice``: nine coords (themes) control every color in
+the app, switch with ``t``, and the finished ``Dashboard`` widget renders
+every simulate/exact run -- see ``ginseng_rice/CLAUDE.md`` for how the two
+are wired together.
 """
 
-import curses
+from __future__ import annotations
+
+import asyncio
+import inspect
 import json
-import locale
-import threading
-import time
-import traceback
+import math
+import os
 import warnings
-from dataclasses import dataclass
+from dataclasses import asdict
+from functools import partial
 from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
+
+import numpy as np
+from rich.text import Text
+from textual import on, work
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.command import DiscoveryHit, Hit, Hits, Provider
+from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.content import Content
+from textual.reactive import reactive
+from textual.screen import Screen
+from textual.widgets import (
+    Button,
+    ContentSwitcher,
+    DataTable,
+    Footer,
+    Input,
+    Label,
+    OptionList,
+    RichLog,
+    Select,
+    Static,
+)
+from textual.widgets.option_list import Option
+from textual.worker import Worker, WorkerState
 
 from ginseng.exact import enumerate_exact
+from ginseng.ginseng_rice.dashboard.adapter import EngineRun, from_engine
+from ginseng.ginseng_rice.dashboard.board import Dashboard
+from ginseng.ginseng_rice.dashboard.model import (
+    CALM_BELOW,
+    THIN_BELOW,
+    DashboardData,
+    FundingOption,
+    LedgerEntry,
+    PathBands,
+    Validation,
+)
+from ginseng.ginseng_rice.dress import COORDS, Dressable
+from ginseng.ginseng_rice.terminal import pick_coord
 from ginseng.inputs import fixture, load_input
-from ginseng.numerical import diagnostics, manifest, run_core
+from ginseng.braille import rain_frame, ridge_surface
+from ginseng.numerical import diagnostics, environment, manifest, run_core
+from ginseng.portrait import render_portrait
+from ginseng.provenance import source_fingerprint
+from ginseng.splash import WIDTH as SPLASH_WIDTH, render_splash
 from ginseng.sampling import prepare_history
 
 FIXTURES = ["canonical", "tiny", "zero-heavy", "drought-heavy"]
@@ -26,90 +77,90 @@ SAMPLERS = ["mc", "sobol", "legacy_mc"]
 ESTIMATORS = ["path", "initial-block-cmc"]
 ARTIFACT_DIR = Path("artifacts/tui")
 
-SPINNER = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-MIN_W, MIN_H = 62, 18
+# run_exact() below always calls enumerate_exact() with no arguments, so
+# these are read off its own defaults rather than duplicated by hand.
+_EXACT_DEFAULTS = inspect.signature(enumerate_exact).parameters
+EXACT_OPENING_CASH = _EXACT_DEFAULTS["opening_cash"].default
+EXACT_SEQUENCE_COUNT = len(_EXACT_DEFAULTS["net"].default) ** len(_EXACT_DEFAULTS["deterministic"].default)
 
-# Color pair ids. Brand accent leans on the product's cobalt mark; ncurses
-# only guarantees the 8 base colors portably, so "cobalt" is approximated
-# with bold blue/cyan rather than a true-color hex.
-P_RIBBON = 1   # black on cyan  -- top ribbon
-P_SELECT = 2   # black on blue  -- selected row
-P_ACCENT = 3   # cyan           -- borders, secondary emphasis
-P_BRAND = 4    # blue, bold     -- headline numbers, wordmark
-P_GOOD = 5     # green
-P_BAD = 6      # red
-P_WARN = 7     # yellow
-P_MUTED = 8    # white (dimmed via A_DIM)
+# Lifecycle and risk-tier text in the sidebar resolve against the active
+# coord's theme roles, so they recolor with every "t" coord switch instead
+# of being pinned to one fixed palette.
+LIFECYCLE_ROLE = {"READY": "primary", "COMPUTE": "accent", "COMPLETE": "accent", "FAULT": "error"}
+TIER_ROLE = {"idle": "primary", "safe": "success", "thin": "warning", "short": "error"}
+RISK_LABEL = {"idle": "--", "safe": "LOW", "thin": "MODERATE", "short": "HIGH"}
 
-
-@dataclass
-class Field:
-    key: str
-    label: str
-    kind: str  # "choice", "int", "optional_int", "text"
-    value: Any
-    choices: Optional[list] = None
-    hint: str = ""
+SPARK_BLOCKS = " ▁▂▃▄▅▆▇█"
+SPARK_WIDTH = 12
 
 
-def default_fields():
-    return [
-        Field("source", "Source", "choice", "fixture", ["fixture", "file"]),
-        Field("fixture", "Fixture", "choice", "canonical", FIXTURES),
-        Field("path", "Input file", "text", "examples/tiny-history.json"),
-        Field("sampler", "Sampler", "choice", "mc", SAMPLERS),
-        Field("estimator", "Estimator", "choice", "path", ESTIMATORS),
-        Field("paths", "Paths", "int", 2048, hint="powers of two required for sobol"),
-        Field("seed", "Seed", "int", 42),
-        Field("replicate", "Replicate", "int", 0),
-        Field("horizon", "Horizon (days)", "optional_int", None, hint="blank = fixture default"),
-        Field("material_horizon", "Material horizon", "optional_int", None, hint="blank = none"),
-        Field("block_length", "Block length", "optional_int", None, hint="blank = auto"),
-    ]
+def risk_sparkline(history: list[float]) -> str:
+    """A real seismograph of this session's own runs -- every shortfall
+    probability actually computed so far, most recent on the right, each
+    bar tinted by the same calm/thin/short tiers the dashboard body uses.
+    Empty slots (no run yet) stay blank rather than reading as zero risk."""
+    recent = history[-SPARK_WIDTH:]
+    pad = [None] * (SPARK_WIDTH - len(recent))
+    cells = []
+    for p in pad + recent:
+        if p is None:
+            cells.append(" ")
+            continue
+        level = min(8, max(1, round(p * 8 / 0.5)))
+        role = "success" if p < CALM_BELOW else ("warning" if p < THIN_BELOW else "error")
+        cells.append(f"[${role}]{SPARK_BLOCKS[level]}[/]")
+    return "".join(cells)
 
 
-def visible_fields(fields):
-    by_key = {f.key: f for f in fields}
-    out = [by_key["source"]]
-    out.append(by_key["fixture"] if by_key["source"].value == "fixture" else by_key["path"])
-    out += [by_key[k] for k in
-            ("sampler", "estimator", "paths", "seed", "replicate",
-             "horizon", "material_horizon", "block_length")]
-    return out
+def money(x: float) -> str:
+    return f"${x:,.2f}"
 
 
-def run_simulation(fields):
-    by_key = {f.key: f for f in fields}
-    if by_key["source"].value == "fixture":
-        case = fixture(by_key["fixture"].value)
-    else:
-        case = load_input(Path(by_key["path"].value))
-    block_length = by_key["block_length"].value
+# ---------------------------------------------------------------------------
+# Pure simulation wrappers -- unchanged business logic. run_core/enumerate_exact
+# are the actual engine; everything below only *reads* their output.
+# ---------------------------------------------------------------------------
+
+
+def load_case(kind: str, params: dict[str, Any] | None):
+    """The case a run will use, resolved without sampling anything -- cheap
+    enough to call from the UI thread so `RunningPanel` can show real
+    obligations before the worker's `run_core`/`enumerate_exact` call even
+    starts. Mirrors `run_simulation`'s own case resolution exactly."""
+    if kind != "simulate":
+        from ginseng.inputs import fixture as fx
+        return fx("tiny")
+    if params["source"] == "fixture":
+        return fixture(params["fixture_name"])
+    return load_input(Path(params["path"]))
+
+
+def run_simulation(params: dict[str, Any]) -> tuple[dict, np.ndarray, Any, Any]:
+    case = load_case("simulate", params)
+    block_length = params["block_length"]
     requested = block_length if block_length is not None else (7 if case.name == "tiny" else None)
     prepared = prepare_history(case.state, requested)
     bundle, matrix, summary = run_core(
         case,
         prepared,
-        by_key["sampler"].value,
-        by_key["paths"].value,
-        by_key["seed"].value,
-        by_key["horizon"].value,
-        by_key["material_horizon"].value,
-        by_key["replicate"].value,
-        estimator=by_key["estimator"].value,
+        params["sampler"],
+        params["paths"],
+        params["seed"],
+        params["horizon"],
+        params["material_horizon"],
+        params["replicate"],
+        estimator=params["estimator"],
     )
-    return dict(
+    result = dict(
         summary=summary,
-        manifest=manifest(case, prepared, bundle, summary, by_key["estimator"].value),
+        manifest=manifest(case, prepared, bundle, summary, params["estimator"]),
         diagnostics=diagnostics(case, prepared, bundle, matrix),
     )
+    return result, matrix, case, bundle
 
 
-def run_exact():
-    from dataclasses import asdict
-
+def run_exact() -> dict:
     from ginseng.inputs import fixture as fx
-    from ginseng.numerical import environment
     from ginseng.provenance import digest
 
     result = enumerate_exact()
@@ -124,480 +175,903 @@ def run_exact():
     return result
 
 
-class Job:
-    """Runs a blocking callable on a background thread so the UI can animate."""
-
-    def __init__(self, fn):
-        self.fn = fn
-        self.result = None
-        self.error = None
-        self.done = False
-        self.started = time.monotonic()
-        self._thread = threading.Thread(target=self._run, daemon=True)
-        self._thread.start()
-
-    def _run(self):
-        try:
-            self.result = self.fn()
-        except Exception as exc:  # noqa: BLE001 - surfaced to the UI, not swallowed
-            self.error = "".join(traceback.format_exception_only(type(exc), exc)).strip()
-        finally:
-            self.done = True
-
-    @property
-    def elapsed(self):
-        return time.monotonic() - self.started
+def _engine_run_from_simulation(result: dict, matrix: np.ndarray, case, bundle) -> EngineRun:
+    return EngineRun(
+        kind="simulate",
+        summary=result["summary"],
+        manifest=result["manifest"],
+        matrix=matrix,
+        opening_cash=case.state.immediate_funding,
+        state=case.state,
+        obligations=case.obligations,
+        bundle=bundle,
+    )
 
 
-def money(x):
-    return f"${x:,.2f}"
+def _engine_run_from_exact(result: dict) -> EngineRun:
+    sequences = result["sequences"]
+    matrix = np.array([row["cumulative"] for row in sequences], dtype=float)
+    weights = np.array([row["probability"] for row in sequences], dtype=float)
+    return EngineRun(
+        kind="exact",
+        summary=result["summary"],
+        manifest=result["manifest"],
+        matrix=matrix,
+        opening_cash=EXACT_OPENING_CASH,
+        weights=weights,
+    )
 
 
-def fmt_value(f: Field):
-    if f.kind == "choice":
-        return f.value
-    if f.kind == "optional_int":
-        return "" if f.value is None else str(f.value)
-    return str(f.value)
+def _dashboard_to_dict(data: DashboardData) -> dict:
+    return asdict(data)
 
 
-def bar(width, fraction):
-    """Two-tone gauge string; caller colors the filled/empty spans separately."""
-    fraction = max(0.0, min(1.0, fraction))
-    filled = int(round(width * fraction))
-    return "█" * filled, "░" * (width - filled)
+def _dashboard_from_dict(payload: dict) -> DashboardData:
+    payload = dict(payload)
+    bands = PathBands(**payload.pop("bands"))
+    options = tuple(FundingOption(**o) for o in payload.pop("options", ()))
+    ledger = tuple(LedgerEntry(**e) for e in payload.pop("ledger", ()))
+    validation = Validation(**payload.pop("validation", {}))
+    return DashboardData(bands=bands, options=options, ledger=ledger, validation=validation, **payload)
 
 
-def risk_tier(probability):
-    if probability < 0.02:
-        return "LOW RISK", P_GOOD
-    if probability < 0.15:
-        return "MODERATE RISK", P_WARN
-    return "HIGH RISK", P_BAD
+# ---------------------------------------------------------------------------
+# Sidebar: compact operator chip (portrait + status block), instrument-panel
+# styled subsystem nav.
+# ---------------------------------------------------------------------------
 
 
-MENU = [
-    ("Simulate", "configure and run a stationary-bootstrap cash simulation"),
-    ("Exact (tiny fixture)", "independent rational enumeration oracle"),
-    ("History", "browse previously saved runs in artifacts/tui/"),
-    ("Quit", "exit ginseng tui"),
+class Portrait(Static):
+    """The sidebar chip. Recolors with the coord (`$g-{tone}`) and, past the
+    first run, with the last result's risk tier -- idle and safe stay the
+    coord's `thin` violet, and only a real `short` verdict turns her `short`
+    crimson, same as the bleed-only-when-it-matters rule the palette itself
+    follows. `set_tone` is called from the same spots that update
+    `OperatorPanel`, so the two never disagree."""
+
+    DEFAULT_CSS = "Portrait { text-wrap: nowrap; text-overflow: clip; }"
+    tone: reactive[str] = reactive("thin")
+
+    def render(self):
+        return Content.assemble((render_portrait(self.size.width or 48), f"$g-{self.tone}"))
+
+    def set_tone(self, tone: str) -> None:
+        self.tone = tone
+
+
+class OperatorPanel(Static):
+    """STATE tracks the run lifecycle (READY/COMPUTE/COMPLETE/FAULT); RISK/
+    P(x) track the last result's shortfall tier -- two distinct axes that a
+    single reused label previously conflated. Tier names (idle/safe/thin/
+    short) match DashboardData.tone, so the sidebar and the dashboard body
+    always agree on how risky a run was."""
+
+    lifecycle: reactive[str] = reactive("READY")
+    tier: reactive[str] = reactive("idle")
+    engine: reactive[str] = reactive("STANDBY")
+    value_text: reactive[str] = reactive("--")
+    flavor: reactive[str] = reactive("awaiting model parameters")
+
+    def render(self):
+        lifecycle_text = "STANDBY_ALIVE" if self.lifecycle == "READY" else self.lifecycle
+        lrole, rrole = LIFECYCLE_ROLE[self.lifecycle], TIER_ROLE[self.tier]
+        return (
+            f"[bold $primary]OPERATOR // GINSENG[/]\n"
+            f"[dim $g-muted]STATE[/]   [bold ${lrole}]{lifecycle_text:<13}[/]\n"
+            f"[dim $g-muted]ENGINE[/]  [$foreground]{self.engine[:10]:<10}[/]\n"
+            f"[dim $g-muted]RISK[/]    [bold ${rrole}]{RISK_LABEL[self.tier]:<10}[/]\n"
+            f"[dim $g-muted]P(x)[/]    [bold ${rrole}]{self.value_text:<10}[/]\n"
+            f"[dim $primary]> {self.flavor}[/]"
+        )
+
+    def set_idle(self) -> None:
+        self.lifecycle, self.tier, self.engine, self.value_text = "READY", "idle", "STANDBY", "--"
+        self.flavor = "awaiting model parameters"
+
+    def set_busy(self, engine: str) -> None:
+        self.lifecycle, self.tier, self.engine, self.value_text = "COMPUTE", "idle", engine.upper(), "--"
+        self.flavor = {
+            "sobol": "initializing low-discrepancy sequence",
+            "mc": "initializing pseudorandom sequence",
+            "legacy_mc": "initializing legacy generator",
+        }.get(engine, "initializing sampler")
+
+    def set_result(self, data: DashboardData) -> None:
+        self.lifecycle, self.tier = "COMPLETE", data.tone
+        self.engine, self.value_text = data.sampler.upper(), f"{data.shortfall_p:.4f}"
+        self.flavor = "convergence nominal" if data.tone != "short" else "shortfall risk elevated"
+
+    def set_error(self) -> None:
+        self.lifecycle, self.tier, self.engine, self.value_text = "FAULT", "idle", "FAULT", "--"
+        self.flavor = "run aborted -- see fault panel"
+
+
+# ---------------------------------------------------------------------------
+# Panels -- thin single-line borders with a border_title label instead of a
+# boxed heading; real telemetry instead of decorative filler.
+# ---------------------------------------------------------------------------
+
+
+class Splash(Static):
+    """The second portrait. Lives only on `BootScreen` -- never alongside the
+    sidebar portrait, so only one piece of art is ever on screen at once.
+
+    Centered by hand-padding each line to `self.size.width`: a `width: auto`
+    container only shrink-wraps reliably once Textual has settled on a final
+    layout, and on the very first paint (especially on a wide terminal) it
+    can still be reporting the full screen width, which reads as
+    left-aligned instead of centered."""
+
+    def render(self):
+        width = self.size.width or SPLASH_WIDTH
+        lines = render_splash(min(width, SPLASH_WIDTH)).splitlines()
+        pad = max(0, (width - max((len(line) for line in lines), default=0)) // 2)
+        return "\n".join(" " * pad + line for line in lines)
+
+
+GINSENG_LOGO = r"""
+  ___ ___ _  _ ___ ___ _  _  ___
+ / __|_ _| \| / __| __| \| |/ __|
+| (_ || || .` \__ \ _|| .` | (_ |
+ \___|___|_|\_|___/___|_|\_|\___|""".strip("\n")
+
+
+def _logo_content(diag_a: str, diag_b: str, ink: str) -> Content:
+    """Color the wordmark by stroke direction, not position: every `\\`
+    takes one role, every `/` the other, verticals and underscores stay the
+    coord's own ink -- the same two-tone diagonal look as the reference
+    image, built from real per-character spans instead of a flat string."""
+    spans = []
+    for ch in GINSENG_LOGO:
+        role = diag_a if ch == "\\" else diag_b if ch == "/" else ink
+        spans.append((ch, role))
+    return Content.assemble(*spans)
+
+
+class BootScreen(Screen):
+    """First thing you see, alone, before the instrument boots -- dismissed
+    by any key, click, or after the sequence finishes and idles a while.
+    The sidebar portrait only appears once this is gone, so the two never
+    show at the same time.
+
+    The wordmark and the character both appear together, right after a
+    brief flicker -- they used to wait behind the whole provenance stream
+    below, which read as a bug (the art simply took a long time to show
+    up). The stream is still real -- `environment()`'s actual dependency
+    versions and thread-pool env vars, then a genuine SHA-256 of every
+    source file under this package, ending on the exact digest
+    `source_fingerprint()` feeds into every run's manifest -- it's just
+    detail underneath now, not a gate in front of the art."""
+
+    DEFAULT_CSS = """
+    BootScreen { align-horizontal: center; background: $background; }
+    #boot-frame { width: 1fr; height: 1fr; max-width: 100; }
+    #boot-crt { color: $g-muted; text-align: center; height: 1; }
+    #boot-logo { width: 1fr; height: auto; text-align: center; margin-top: 1; }
+    #boot-art { color: $g-thin; width: 1fr; margin-top: 1; }
+    #boot-hint { color: $g-muted; text-align: center; width: 1fr; margin-top: 1; }
+    #boot-log { height: 9; border: none; border-top: dashed $g-rule; background: $panel 10%; margin-top: 1; }
+    """
+
+    def compose(self) -> ComposeResult:
+        with VerticalScroll(id="boot-frame"):
+            yield Static("", id="boot-crt")
+            yield Static("", id="boot-logo")
+            yield Splash(id="boot-art")
+            yield Static("", id="boot-hint")
+            yield RichLog(id="boot-log", markup=True, auto_scroll=True, max_lines=9, wrap=False)
+
+    def on_mount(self) -> None:
+        self._skipped = False
+        self.query_one(Splash).display = False
+        self.query_one("#boot-hint", Static).display = False
+        self.run_worker(self._sequence(), exclusive=True)
+
+    def on_key(self, event) -> None:
+        self._leave()
+
+    def on_click(self) -> None:
+        self._leave()
+
+    def _leave(self) -> None:
+        self._skipped = True
+        if self.is_current:
+            self.dismiss()
+
+    def _role(self, name: str) -> str:
+        """RichLog parses Rich markup, not Textual's `$role` Content markup,
+        so boot-log lines resolve the coord's actual hex directly -- still
+        the active coord's own color, just fetched a layer earlier."""
+        return self.app.coord.palette[name]
+
+    async def _sleep(self, seconds: float) -> bool:
+        """Sleep unless the boot's already been skipped. Returns False when
+        the caller should stop -- checked between every write so a keypress
+        lands within one step, never after the whole sequence finishes.
+
+        `GINSENG_MOTION=0` (same switch `henshin` honors) skips the real
+        delay, not the content: every real line still gets written, just
+        with no pacing, so the sequence settles on its final, reveal state
+        practically at once -- which is also what makes it deterministic
+        for snapshot tests instead of racing wall-clock time."""
+        if self._skipped:
+            return False
+        if os.environ.get("GINSENG_MOTION") == "0":
+            await asyncio.sleep(0)
+            return not self._skipped
+        await asyncio.sleep(seconds)
+        return not self._skipped
+
+    async def _sequence(self) -> None:
+        crt = self.query_one("#boot-crt", Static)
+        logo = self.query_one("#boot-logo", Static)
+        log = self.query_one("#boot-log", RichLog)
+
+        # Stage 1: a brief thin-line flicker -- dashes, not a solid CRT bar.
+        width = 44
+        for n in range(4, width + 1, 6):
+            crt.update(("╌" * n).center(width))
+            if not await self._sleep(0.012):
+                return
+        crt.update("[dim $g-muted]· booting stationary cashflow engine ·[/]")
+        if not await self._sleep(0.12):
+            return
+
+        # Stage 2: the wordmark and the character reveal together, right
+        # away -- the whole point of moving them ahead of the log below.
+        logo.update(_logo_content("$focus", "$g-thin", "$g-ink"))
+        self.query_one(Splash).display = True
+        hint = self.query_one("#boot-hint", Static)
+        hint.update("[$g-muted]· press any key ·[/]")
+        hint.display = True
+        self.set_timer(6.0, self._leave)
+        if not await self._sleep(0.2):
+            return
+
+        # Stage 3: the real provenance stream, now just detail underneath --
+        # environment()'s actual dependency versions and thread-pool env
+        # vars, then a genuine SHA-256 of every source file, ending on the
+        # exact digest every manifest carries as `source_fingerprint`.
+        muted, safe, thin, focus = (self._role(r) for r in ("muted", "safe", "thin", "focus"))
+        env = environment()
+        log.write(f"[{muted}]boot[/]  python {env.get('python', '--')}  {env.get('platform', '--')}")
+        log.write(f"[{muted}]boot[/]  cpu    {env.get('cpu', '--')}")
+        if not await self._sleep(0.06):
+            return
+        for name, ver in env.get("dependencies", {}).items():
+            log.write(f"[{safe}]alloc[/]   {name:<12} {ver or '?'}")
+            if not await self._sleep(0.03):
+                return
+        for key, val in env.get("threads", {}).items():
+            log.write(f"[{muted}]env[/]    {key}={val or 'unset'}")
+        if not await self._sleep(0.1):
+            return
+
+        root = Path(__file__).parent
+        files = sorted(p for p in root.rglob("*.py") if "__pycache__" not in p.parts)
+        log.write(f"[{thin}]hash[/]   fingerprinting {len(files)} source files")
+        if not await self._sleep(0.05):
+            return
+        for path in files:
+            digest = sha256(path.read_bytes()).hexdigest()
+            log.write(f"[{muted}]sha256[/] {digest[:16]}  {path.relative_to(root).as_posix()}")
+            if not await self._sleep(0.008):
+                return
+        log.write(f"[bold {focus}]source_fingerprint[/] {source_fingerprint()}")
+
+
+class WelcomePanel(VerticalScroll):
+    def on_mount(self) -> None:
+        self.border_title = "╔═[ GINSENG // STATIONARY CASHFLOW ENGINE ]═╗"
+        env = environment()
+        self.query_one("#sys-info", Static).update(
+            f"PYTHON   {env.get('python', '--')}\n"
+            f"PLATFORM {env.get('platform', '--')}\n"
+            f"CPU      {env.get('cpu', '--')}"
+        )
+
+    def compose(self) -> ComposeResult:
+        yield Static("stationary-bootstrap cash-flow simulator", classes="banner")
+        yield Static("offline · reproducible · ordinary CPU", classes="mono-dim")
+        yield Static("SYSTEM // ENVIRONMENT ─────────────────", classes="rule")
+        yield Static("", id="sys-info", classes="mono-block")
+        yield Static("OPERATIONS // AVAILABLE SUBSYSTEMS ───", classes="rule")
+        yield Static(
+            "SIMULATE   MC / SOBOL ENGINE -- configure and run cash-path sampling\n"
+            "EXACT      ENUMERATION ORACLE -- independent rational validation\n"
+            "HISTORY    RUN ARCHIVE -- revisit saved runs\n",
+            classes="hint",
+        )
+        yield Static("> select a subsystem from OPERATIONS at left _", classes="prompt")
+
+
+class SimulateForm(VerticalScroll):
+    def on_mount(self) -> None:
+        self.border_title = "SIMULATE // MC-SOBOL ENGINE"
+        self.update_visibility()
+
+    def compose(self) -> ComposeResult:
+        yield Static("SOURCE ─────────────────────────────", classes="rule")
+        yield Select([("fixture", "fixture"), ("input file", "file")], id="f-source",
+                     value="fixture", allow_blank=False)
+        yield Label("fixture", id="label-fixture", classes="field-label")
+        yield Select([(name, name) for name in FIXTURES], id="f-fixture",
+                     value="canonical", allow_blank=False)
+        yield Label("input file path", id="label-path", classes="field-label")
+        yield Input(value="examples/tiny-history.json", id="f-path")
+
+        yield Static("METHOD ─────────────────────────────", classes="rule")
+        yield Select([(name, name) for name in SAMPLERS], id="f-sampler",
+                     value="mc", allow_blank=False)
+        yield Select([(name, name) for name in ESTIMATORS], id="f-estimator",
+                     value="path", allow_blank=False)
+
+        yield Static("PARAMETERS ─────────────────────────", classes="rule")
+        with Horizontal(classes="field-row"):
+            with Vertical(classes="field-col"):
+                yield Label("paths", classes="field-label")
+                yield Input(value="2048", type="integer", id="f-paths")
+            with Vertical(classes="field-col"):
+                yield Label("seed", classes="field-label")
+                yield Input(value="42", type="integer", id="f-seed")
+            with Vertical(classes="field-col"):
+                yield Label("replicate", classes="field-label")
+                yield Input(value="0", type="integer", id="f-replicate")
+        with Horizontal(classes="field-row"):
+            with Vertical(classes="field-col"):
+                yield Label("horizon", classes="field-label")
+                yield Input(placeholder="default", type="integer", id="f-horizon", valid_empty=True)
+            with Vertical(classes="field-col"):
+                yield Label("material horizon", classes="field-label")
+                yield Input(placeholder="none", type="integer", id="f-material-horizon", valid_empty=True)
+            with Vertical(classes="field-col"):
+                yield Label("block length", classes="field-label")
+                yield Input(placeholder="auto", type="integer", id="f-block-length", valid_empty=True)
+
+        yield Static("─────────────────────────────────────", classes="rule")
+        yield Button(Text("[ Run simulation ]"), id="btn-run", variant="success")
+
+    @on(Select.Changed, "#f-source")
+    def _source_changed(self, _event: Select.Changed) -> None:
+        self.update_visibility()
+
+    def update_visibility(self) -> None:
+        is_fixture = self.query_one("#f-source", Select).value == "fixture"
+        for sel in ("#label-fixture", "#f-fixture"):
+            self.query_one(sel).display = is_fixture
+        for sel in ("#label-path", "#f-path"):
+            self.query_one(sel).display = not is_fixture
+
+    def collect(self) -> dict[str, Any]:
+        def int_of(widget_id, default=None):
+            raw = self.query_one(widget_id, Input).value.strip()
+            return default if raw == "" else int(raw)
+
+        return dict(
+            source=self.query_one("#f-source", Select).value,
+            fixture_name=self.query_one("#f-fixture", Select).value,
+            path=self.query_one("#f-path", Input).value.strip(),
+            sampler=self.query_one("#f-sampler", Select).value,
+            estimator=self.query_one("#f-estimator", Select).value,
+            paths=int_of("#f-paths", 2048),
+            seed=int_of("#f-seed", 42),
+            replicate=int_of("#f-replicate", 0),
+            horizon=int_of("#f-horizon"),
+            material_horizon=int_of("#f-material-horizon"),
+            block_length=int_of("#f-block-length"),
+        )
+
+
+class ObligationsView(Static):
+    """The real input obligations for this run -- known the instant the case
+    loads, well before `run_core` samples anything, so it's honest to show
+    immediately instead of waiting for a result that doesn't exist yet."""
+
+    DEFAULT_CSS = "ObligationsView { height: auto; color: $foreground; }"
+
+    def show(self, case) -> None:
+        if not case.obligations:
+            self.update("[dim]no scheduled obligations[/]")
+            return
+        lines = [
+            f"{o.due_in_days:>4}d  {o.label:<26} {o.amount:>+11,.2f}  {o.transaction_type.value}"
+            for o in case.obligations
+        ]
+        self.update("\n".join(lines))
+
+
+class ExecutingWave(Static):
+    """Motion while the worker thread is inside `run_core`/`enumerate_exact`.
+
+    Deliberately abstract, not a progress bar: `run_core` samples the whole
+    draw in one call with no incremental hook to observe, so anything
+    claiming to show live sampler iteration here would be invented. This is
+    a synthetic waveform through the same hidden-line ridge renderer real
+    results use in `VolSurface` -- the visual language carries over, the
+    data doesn't, and the real per-path surface replaces it the instant the
+    worker actually returns."""
+
+    DEFAULT_CSS = "ExecutingWave { height: 10; color: $g-thin; }"
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._t = 0
+        self._timer = None
+
+    def on_mount(self) -> None:
+        if os.environ.get("GINSENG_MOTION") != "0":
+            self._timer = self.set_interval(0.08, self._tick)
+
+    def on_unmount(self) -> None:
+        if self._timer is not None:
+            self._timer.stop()
+
+    def _tick(self) -> None:
+        if not self.display:
+            return
+        self._t += 1
+        self.refresh()
+
+    def render(self):
+        width, height = max(10, self.size.width), max(4, self.size.height)
+        series = []
+        for i in range(10):
+            phase = self._t * 0.18 + i * 0.6
+            series.append([
+                math.sin(x * 0.25 + phase) + 0.15 * math.sin(x * 0.7 - phase * 1.3)
+                for x in range(48)
+            ])
+        return Content("\n".join(ridge_surface(series, width, height)))
+
+
+class VolSurface(Static):
+    """A hidden-line depth plot of a real sample of this run's simulated
+    cash paths -- the actual `matrix` `cash_paths` returned, not the fan
+    chart's summary bands, ordered worst-trough-first so the most stressed
+    paths sit in front."""
+
+    DEFAULT_CSS = "VolSurface { height: 12; color: $g-focus; }"
+    # always_update: comparing an old numpy array against a new one (or
+    # against None) for equality raises "ambiguous truth value" -- a new
+    # run's matrix is always genuinely new, so the equality check buys
+    # nothing here and always_update skips it.
+    matrix: reactive[object] = reactive(None, always_update=True)
+
+    def render(self):
+        if self.matrix is None or len(self.matrix) == 0:
+            return Content("[dim]awaiting a run[/]")
+        width, height = max(10, self.size.width), max(4, self.size.height)
+        order = np.argsort(self.matrix.min(axis=1))
+        pick = order[np.linspace(0, len(order) - 1, min(16, len(order))).astype(int)]
+        return Content("\n".join(ridge_surface(self.matrix[pick], width, height)))
+
+
+class IndexRain(Static):
+    """Live cascade of the real per-path, per-day historical-day indices the
+    stationary bootstrap actually resampled for this run
+    (`DrawBundle.index_matrix`) -- see `braille.rain_frame`. Ticks its own
+    timer only while mounted; skips redraw while hidden behind another
+    panel."""
+
+    DEFAULT_CSS = "IndexRain { height: 10; color: $g-thin; }"
+    bundle: reactive[object] = reactive(None, always_update=True)  # see VolSurface.matrix
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._phase = 0
+        self._timer = None
+
+    def on_mount(self) -> None:
+        if os.environ.get("GINSENG_MOTION") != "0":
+            self._timer = self.set_interval(0.12, self._tick)
+
+    def on_unmount(self) -> None:
+        if self._timer is not None:
+            self._timer.stop()
+
+    def _tick(self) -> None:
+        if self.bundle is None or not self.display:
+            return
+        self._phase += 1
+        self.refresh()
+
+    def render(self):
+        if self.bundle is None or self.bundle.index_matrix is None:
+            return Content("[dim]no draw bundle for this run[/]")
+        width, height = max(10, self.size.width), max(4, self.size.height)
+        lines = rain_frame(self.bundle.index_matrix, width, height, self._phase, self.bundle.history_length)
+        return Content("\n".join(lines))
+
+
+class RunningPanel(VerticalScroll):
+    """What's real before the worker even starts: the loaded case's own
+    obligations and configuration. What's after them is honestly abstract
+    -- see `ExecutingWave`."""
+
+    def on_mount(self) -> None:
+        self.border_title = "╔═[ ENGINE // DATA CORE ]══════════════╗"
+
+    def compose(self) -> ComposeResult:
+        yield Static("", id="run-config", classes="mono-block")
+        yield Static("OBLIGATIONS // INPUT LEDGER ────────────", classes="rule")
+        yield ObligationsView(id="run-obligations")
+        yield Static("ENGINE // EXECUTING (abstract -- no incremental progress hook)",
+                     classes="rule mono-dim")
+        yield ExecutingWave(id="run-wave")
+
+    def set_context(self, case, kind: str) -> None:
+        state = case.state
+        self.query_one("#run-config", Static).update(
+            f"case      {case.name}\n"
+            f"as_of     {state.as_of}   horizon {state.forecast_horizon}d   method {kind}\n"
+            f"buffer    {money(state.operating_buffer)}   opening {money(state.immediate_funding)}   "
+            f"coverage {state.coverage_target:.0%}"
+        )
+        self.query_one(ObligationsView).show(case)
+
+
+class ResultPanel(VerticalScroll):
+    def compose(self) -> ComposeResult:
+        yield Dashboard(id="dashboard")
+        with Horizontal(id="surface-row"):
+            with Vertical(classes="surface-col"):
+                yield Static("CASH PATHS // HIDDEN-LINE SURFACE ──────", classes="rule")
+                yield VolSurface(id="vol-surface")
+            with Vertical(classes="surface-col"):
+                yield Static("DRAW BUNDLE // INDEX CASCADE ───────────", classes="rule")
+                yield IndexRain(id="index-rain")
+        with Vertical(id="log-pane"):
+            yield Static("EVENT LOG", classes="rule")
+            yield Static("", id="event-log", classes="mono-dim")
+        yield Button(Text("[ Save run ]"), id="btn-save", variant="primary")
+
+
+class HistoryPanel(VerticalScroll):
+    def on_mount(self) -> None:
+        self.border_title = "RUN ARCHIVE // artifacts/tui"
+        self.query_one(DataTable).add_columns("saved", "plan", "sampler", "reserve", "p(shortfall)")
+
+    def compose(self) -> ComposeResult:
+        yield Label("no archived runs -- save one from a result panel", id="history-empty", classes="hint")
+        yield DataTable(id="history-table", cursor_type="row")
+
+
+class ErrorPanel(VerticalScroll):
+    def on_mount(self) -> None:
+        self.border_title = "FAULT // RUN FAILED"
+
+    def compose(self) -> ComposeResult:
+        yield Static("", id="error-text", classes="mono-block tier-high")
+
+
+# ---------------------------------------------------------------------------
+# App
+# ---------------------------------------------------------------------------
+
+NAV_OPTIONS = [
+    ("simulate", "SIMULATE", "MC / SOBOL ENGINE"),
+    ("exact", "EXACT", "ENUMERATION ORACLE"),
+    ("history", "HISTORY", "RUN ARCHIVE"),
+    ("quit", "QUIT", "TERMINATE SESSION"),
 ]
 
 
-class App:
-    def __init__(self, stdscr):
-        self.stdscr = stdscr
-        self.state = "menu"
-        self.menu_index = 0
-        self.fields = default_fields()
-        self.field_index = 0
-        self.editing = False
-        self.edit_buffer = ""
-        self.job = None
-        self.job_label = ""
-        self.result = None
-        self.error = None
-        self.message = ""
-        self.history_items = []
-        self.history_index = 0
-        self.frame = 0
-        curses.curs_set(0)
-        try:
-            curses.use_default_colors()
-        except curses.error:
-            pass
-        try:
-            curses.init_pair(P_RIBBON, curses.COLOR_BLACK, curses.COLOR_CYAN)
-            curses.init_pair(P_SELECT, curses.COLOR_WHITE, curses.COLOR_BLUE)
-            curses.init_pair(P_ACCENT, curses.COLOR_CYAN, -1)
-            curses.init_pair(P_BRAND, curses.COLOR_BLUE, -1)
-            curses.init_pair(P_GOOD, curses.COLOR_GREEN, -1)
-            curses.init_pair(P_BAD, curses.COLOR_RED, -1)
-            curses.init_pair(P_WARN, curses.COLOR_YELLOW, -1)
-            curses.init_pair(P_MUTED, curses.COLOR_WHITE, -1)
-        except curses.error:
-            pass
-        self.stdscr.keypad(True)
-        self.stdscr.timeout(80)
+def _nav_label(tag: str, hint: str) -> Content:
+    # Content, not a markup string: an Option label built from plain str
+    # brackets in `hint` could otherwise be misread as a markup tag.
+    return Content.assemble((tag, "bold $primary"), (f"    {hint}", "dim $g-muted"))
 
-    # ---- low-level rendering helpers --------------------------------------
-    def addstr(self, y, x, text, attr=0):
-        h, w = self.stdscr.getmaxyx()
-        if 0 <= y < h and 0 <= x < w:
-            try:
-                self.stdscr.addstr(y, x, text[: max(0, w - x - 1)], attr)
-            except curses.error:
-                pass
 
-    def hline(self, y, ch="─", attr=None):
-        _, w = self.stdscr.getmaxyx()
-        self.addstr(y, 0, ch * w, attr if attr is not None else curses.color_pair(P_ACCENT) | curses.A_DIM)
+# The same defaults SimulateForm.collect() falls back to, for the command
+# palette's one-keystroke "just run something" shortcuts.
+QUICK_SIMULATE = dict(source="fixture", fixture_name="canonical", path="", sampler="mc",
+                       estimator="path", paths=2048, seed=42, replicate=0,
+                       horizon=None, material_horizon=None, block_length=None)
 
-    def ribbon(self, label):
-        _, w = self.stdscr.getmaxyx()
-        left = " ⟡ GINSENG "
-        right = f" {label.upper()} "
-        pad = max(0, w - len(left) - len(right))
-        self.addstr(0, 0, (left + " " * pad + right)[:w], curses.color_pair(P_RIBBON) | curses.A_BOLD)
 
-    def chip(self, y, x, key, label):
-        self.addstr(y, x, f" {key} ", curses.color_pair(P_SELECT) | curses.A_BOLD)
-        self.addstr(y, x + len(key) + 3, f" {label} ", curses.color_pair(P_MUTED) | curses.A_DIM)
-        return x + len(key) + len(label) + 5
+class WardrobeCommands(Provider):
+    """Command palette entries: jump straight to a coord, or fire off a run,
+    without leaving the keyboard. `ctrl+p` opens the palette (see the footer)."""
 
-    def footer(self, chips):
-        h, _ = self.stdscr.getmaxyx()
-        self.hline(h - 2)
-        x = 1
-        for key, label in chips:
-            x = self.chip(h - 1, x, key, label)
+    def _commands(self) -> list[tuple[str, str, object]]:
+        app = self.app
+        commands = [
+            (f"wear {name}: {coord.label} {coord.name}", coord.voice.get("calm", ""), (app.wear, name))
+            for name, coord in sorted(COORDS.items())
+        ]
+        commands.append(("run: canonical simulate (mc, 2048 paths)", "quick simulate launch",
+                          (app.launch, "simulate", dict(QUICK_SIMULATE))))
+        commands.append(("run: exact oracle", "quick exact-oracle launch", (app.launch, "exact", None)))
+        return commands
 
-    def frame_header(self, title):
-        self.ribbon(title)
-        self.hline(1)
+    async def discover(self) -> Hits:
+        for text, help_text, (func, *args) in self._commands():
+            yield DiscoveryHit(text, partial(func, *args), help=help_text)
 
-    # ---- main loop ----------------------------------------------------------
-    def run(self):
-        while self.state != "done":
-            self.frame += 1
-            self.stdscr.erase()
-            h, w = self.stdscr.getmaxyx()
-            if h < MIN_H or w < MIN_W:
-                self.draw_too_small(h, w)
-            else:
-                getattr(self, f"draw_{self.state}")()
-            self.stdscr.refresh()
-            if self.state == "running":
-                if self.job.done:
-                    if self.job.error:
-                        self.error = self.job.error
-                        self.state = "error"
-                    else:
-                        self.result = self.job.result
-                        self.state = "result"
-                    self.job = None
-                continue
-            ch = self.stdscr.getch()
-            if ch == -1:
-                continue
-            if h < MIN_H or w < MIN_W:
-                if ch == ord("q"):
-                    self.state = "done"
-                continue
-            getattr(self, f"input_{self.state}")(ch)
+    async def search(self, query: str) -> Hits:
+        matcher = self.matcher(query)
+        for text, help_text, (func, *args) in self._commands():
+            score = matcher.match(text)
+            if score > 0:
+                yield Hit(score, matcher.highlight(text), partial(func, *args), help=help_text)
 
-    def draw_too_small(self, h, w):
-        msg = f"resize terminal (need {MIN_W}x{MIN_H}, have {w}x{h})"
-        try:
-            self.stdscr.addstr(max(0, h // 2), max(0, (w - len(msg)) // 2), msg[: max(0, w - 1)])
-        except curses.error:
-            pass
 
-    # ---- menu ----------------------------------------------------------------
-    def draw_menu(self):
-        self.frame_header("main menu")
-        h, w = self.stdscr.getmaxyx()
-        box_w = min(w - 6, 64)
-        self.addstr(3, 3, "┌" + "─" * (box_w - 2) + "┐", curses.color_pair(P_ACCENT))
-        self.addstr(4, 3, "│" + " stationary-bootstrap liquidity simulator".ljust(box_w - 2) + "│",
-                    curses.color_pair(P_ACCENT))
-        self.addstr(5, 3, "│" + " offline · reproducible · ordinary CPU".ljust(box_w - 2) + "│",
-                    curses.color_pair(P_ACCENT) | curses.A_DIM)
-        self.addstr(6, 3, "└" + "─" * (box_w - 2) + "┘", curses.color_pair(P_ACCENT))
+class GinsengApp(Dressable, App):
+    TITLE = "ginseng"
+    SUB_TITLE = "少女終端 // cashflow instrument"
+    DEFAULT_COORD = "gosurori"
+    COMMANDS = App.COMMANDS | {WardrobeCommands}
+    CSS_PATH = ["ginseng_rice/rice.tcss", "ginseng_rice/dashboard/dashboard.tcss", "tui.tcss"]
 
-        top = 8
-        for i, (item, _desc) in enumerate(MENU):
-            y = top + i
-            selected = i == self.menu_index
-            marker = "▸ " if selected else "  "
-            attr = curses.color_pair(P_SELECT) | curses.A_BOLD if selected else 0
-            text = f"{marker}{item}"
-            self.addstr(y, 4, text.ljust(box_w - 2), attr)
-        desc_y = top + len(MENU) + 1
-        self.addstr(desc_y, 4, MENU[self.menu_index][1], curses.color_pair(P_ACCENT) | curses.A_ITALIC)
-        self.footer([("↑↓", "move"), ("⏎", "select"), ("q", "quit")])
+    BINDINGS = [
+        Binding("q", "quit", "Quit"),
+        Binding("escape", "go_welcome", "Menu"),
+        Binding("t", "next_coord", "Coord"),
+    ]
 
-    def input_menu(self, ch):
-        if ch in (curses.KEY_UP, ord("k")):
-            self.menu_index = (self.menu_index - 1) % len(MENU)
-        elif ch in (curses.KEY_DOWN, ord("j")):
-            self.menu_index = (self.menu_index + 1) % len(MENU)
-        elif ch in (curses.KEY_ENTER, 10, 13):
-            choice = MENU[self.menu_index][0]
-            if choice == "Simulate":
-                self.field_index = 0
-                self.state = "form"
-            elif choice.startswith("Exact"):
-                self.job = Job(run_exact)
-                self.job_label = "exact"
-                self.state = "running"
-            elif choice == "History":
-                self.load_history()
-                self.state = "history"
-            elif choice == "Quit":
-                self.state = "done"
-        elif ch in (ord("q"), 27):
-            self.state = "done"
+    def __init__(self, coord: str | None = None):
+        super().__init__()
+        self.start_coord = coord
+        self.last_result: dict | None = None
+        self.last_data: DashboardData | None = None
+        self.last_kind: str | None = None
+        self.last_run: EngineRun | None = None
+        self._history_payloads: dict[str, dict] = {}
+        self.run_counter = 0
+        self.last_engine = "--"
+        self.last_paths: Any = "--"
+        self.last_seed: Any = "--"
+        self.last_elapsed = 0.0
+        self.last_throughput = 0.0
+        self.event_log: list[str] = []
+        self.risk_history: list[float] = []
+        self._pulse = 0
+        self._marquee = 0
+        self._env: dict | None = None
 
-    # ---- simulate form ---------------------------------------------------
-    def current_fields(self):
-        return visible_fields(self.fields)
+    def compose(self) -> ComposeResult:
+        yield Static("", id="telemetry")
+        with Horizontal(id="workspace"):
+            with VerticalScroll(id="sidebar"):
+                yield Portrait(id="portrait")
+                yield OperatorPanel(id="operator")
+                yield OptionList(
+                    *(Option(_nav_label(tag, hint), id=key) for key, tag, hint in NAV_OPTIONS),
+                    id="nav",
+                )
+            with ContentSwitcher(initial="panel-welcome", id="body"):
+                yield WelcomePanel(id="panel-welcome")
+                yield SimulateForm(id="panel-form")
+                yield RunningPanel(id="panel-running")
+                yield ResultPanel(id="panel-result")
+                yield HistoryPanel(id="panel-history")
+                yield ErrorPanel(id="panel-error")
+        yield Footer()
 
-    def draw_form(self):
-        self.frame_header("simulate")
-        rows = self.current_fields()
-        for i, f in enumerate(rows):
-            y = 3 + i
-            selected = i == self.field_index
-            marker = "▸" if selected else " "
-            label_attr = (curses.color_pair(P_BRAND) | curses.A_BOLD) if selected else (curses.A_DIM)
-            self.addstr(y, 2, marker, curses.color_pair(P_ACCENT) | curses.A_BOLD if selected else 0)
-            self.addstr(y, 4, f"{f.label:<18}", label_attr)
-            if selected and self.editing:
-                shown = f"[ {self.edit_buffer}▌ ]"
-                value_attr = curses.color_pair(P_WARN) | curses.A_BOLD
-            else:
-                v = fmt_value(f)
-                shown = f"‹ {v} ›" if f.kind == "choice" else (v if v else "—")
-                value_attr = (curses.color_pair(P_SELECT) | curses.A_BOLD) if selected else curses.A_BOLD
-            self.addstr(y, 23, shown, value_attr)
-            if f.hint and selected and not self.editing:
-                self.addstr(y, 44, f"· {f.hint}", curses.color_pair(P_ACCENT) | curses.A_DIM)
-        run_row = 3 + len(rows) + 1
-        selected = self.field_index == len(rows)
-        attr = curses.color_pair(P_SELECT) | curses.A_BOLD if selected else curses.color_pair(P_GOOD) | curses.A_BOLD
-        marker = "▸ " if selected else "  "
-        self.addstr(run_row, 2, f"{marker}▶ RUN SIMULATION", attr)
-        if self.editing:
-            self.footer([("⏎", "commit"), ("esc", "cancel")])
-        else:
-            self.footer([("↑↓", "move"), ("←→", "change"), ("⏎", "edit/run"), ("b", "back"), ("q", "quit")])
+    def on_mount(self) -> None:
+        self.dress_up(self.start_coord)
+        self.update_telemetry("READY")
+        self._apply_responsive_layout()
+        self.set_interval(0.8, self._tick_pulse)
+        self.run_worker(self._load_env(), exclusive=False)
+        self.push_screen(BootScreen())
 
-    def input_form(self, ch):
-        rows = self.current_fields()
-        n = len(rows) + 1  # + Run row
-        if self.editing:
-            f = rows[self.field_index]
-            if ch in (curses.KEY_ENTER, 10, 13):
-                self.commit_edit(f)
-                self.editing = False
-            elif ch == 27:
-                self.editing = False
-                self.edit_buffer = ""
-            elif ch in (curses.KEY_BACKSPACE, 127, 8):
-                self.edit_buffer = self.edit_buffer[:-1]
-            elif 32 <= ch < 127:
-                self.edit_buffer += chr(ch)
+    async def _load_env(self) -> None:
+        """`environment()` shells out to git and hashes the source tree, so
+        it runs off the UI thread once at startup -- the same real
+        dependency/thread-env data the boot log streamed, kept around for
+        the telemetry strip's THREADS readout instead of re-shelling out
+        on every 0.8s tick."""
+        self._env = await asyncio.to_thread(environment)
+        self.update_telemetry("COMPLETE" if self.last_data else "READY")
+
+    def _tick_pulse(self) -> None:
+        """Small CRT-like heartbeat in the telemetry strip. Frozen under
+        GINSENG_MOTION=0: a real 0.8s wall-clock tick racing however long a
+        test's worker takes to finish is exactly the kind of nondeterminism
+        that flag exists to remove."""
+        if os.environ.get("GINSENG_MOTION") == "0":
             return
-        if ch in (curses.KEY_UP, ord("k")):
-            self.field_index = (self.field_index - 1) % n
-        elif ch in (curses.KEY_DOWN, ord("j")):
-            self.field_index = (self.field_index + 1) % n
-        elif ch in (ord("b"), 27):
-            self.state = "menu"
-        elif ch in (ord("q"),):
-            self.state = "done"
-        elif self.field_index == n - 1 and ch in (curses.KEY_ENTER, 10, 13):
-            self.launch_simulation()
-        elif self.field_index < len(rows):
-            f = rows[self.field_index]
-            if ch in (curses.KEY_LEFT, curses.KEY_RIGHT) and f.kind == "choice":
-                delta = -1 if ch == curses.KEY_LEFT else 1
-                idx = f.choices.index(f.value)
-                f.value = f.choices[(idx + delta) % len(f.choices)]
-            elif ch in (curses.KEY_LEFT, curses.KEY_RIGHT) and f.key == "paths":
-                f.value = max(1, f.value * 2 if ch == curses.KEY_RIGHT else max(1, f.value // 2))
-            elif ch in (curses.KEY_LEFT, curses.KEY_RIGHT) and f.kind in ("int", "optional_int"):
-                step = 1
-                base = f.value or 0
-                f.value = base + (step if ch == curses.KEY_RIGHT else -step)
-            elif ch in (curses.KEY_ENTER, 10, 13) and f.kind in ("int", "optional_int", "text"):
-                self.editing = True
-                self.edit_buffer = fmt_value(f)
+        self._pulse = (self._pulse + 1) % 4
+        self._marquee += 2
+        self.update_telemetry("COMPLETE" if self.last_data else "READY")
 
-    def commit_edit(self, f: Field):
-        text = self.edit_buffer.strip()
+    def on_resize(self, event) -> None:
+        self._apply_responsive_layout()
+
+    def _apply_responsive_layout(self) -> None:
+        """Hide the portrait and shrink the sidebar on small terminals."""
+        width = self.size.width
+        self.query_one(Portrait).display = width >= 100
+        sidebar = self.query_one("#sidebar")
+        sidebar.styles.width = 50 if width >= 160 else (36 if width >= 100 else 24)
+
+    def _marquee_text(self, width: int) -> str:
+        """A real scroll through this session's own event log -- not
+        fabricated hex, the exact lines `show_result`/`show_error` append."""
+        body = "  ◆  ".join(self.event_log[-5:]) if self.event_log else "awaiting first run"
+        loop = body + "     " + body
+        offset = self._marquee % (len(body) + 5)
+        return loop[offset:offset + width]
+
+    def update_telemetry(self, status: str) -> None:
+        pulse = ("|", "/", "-", "\\")[self._pulse]
+        threads = self._env["threads"] if self._env else {}
+        thread_bits = " ".join(f"{k.split('_')[0]}={v or '-'}" for k, v in threads.items()) or "loading..."
+        line1 = (
+            f"[bold $primary]{pulse} ginseng[/]  [dim $g-muted]ENGINE[/] [$foreground]{self.last_engine[:11]:<11}[/]"
+            f"[dim $g-muted]STATUS[/] [bold ${LIFECYCLE_ROLE[status]}]{status:<9}[/]"
+            f"[dim $g-muted]RISK[/] {risk_sparkline(self.risk_history)}  "
+            f"[dim $g-muted]PATHS[/] [$foreground]{self.last_paths!s:<9}[/]"
+            f"[dim $g-muted]SEED[/] [$foreground]{self.last_seed!s:<7}[/]"
+            f"[dim $g-muted]RUN[/] [$foreground]{self.run_counter:04d}[/]"
+        )
+        line2 = (
+            f"[dim $g-muted]ELAPSED[/] [$foreground]{self.last_elapsed:>6.2f}s[/]  "
+            f"[dim $g-muted]THROUGHPUT[/] [$foreground]{self.last_throughput:>9,.0f}/s[/]  "
+            f"[dim $g-muted]THREADS[/] [$g-thin]{thread_bits}[/]  "
+            f"[dim $g-muted]LOG[/] [$foreground]{self._marquee_text(56)}[/]"
+        )
+        self.query_one("#telemetry", Static).update(line1 + "\n" + line2)
+
+    def action_go_welcome(self) -> None:
+        self.query_one("#body", ContentSwitcher).current = "panel-welcome"
+
+    # ---- navigation ---------------------------------------------------
+    @on(OptionList.OptionSelected, "#nav")
+    def _nav_selected(self, event: OptionList.OptionSelected) -> None:
+        key = event.option.id
+        if key == "simulate":
+            self.query_one("#body", ContentSwitcher).current = "panel-form"
+        elif key == "exact":
+            self.launch("exact", None)
+        elif key == "history":
+            self.refresh_history()
+            self.query_one("#body", ContentSwitcher).current = "panel-history"
+        elif key == "quit":
+            self.exit()
+
+    @on(Button.Pressed, "#btn-run")
+    def _run_pressed(self) -> None:
+        form = self.query_one(SimulateForm)
         try:
-            if f.kind == "int":
-                f.value = int(text)
-            elif f.kind == "optional_int":
-                f.value = None if text == "" else int(text)
-            else:
-                f.value = text
+            params = form.collect()
         except ValueError:
-            pass  # keep prior value; malformed edits are silently discarded
-        self.edit_buffer = ""
+            self.notify("Numeric fields must be valid integers.", severity="error")
+            return
+        self.launch("simulate", params)
 
-    def launch_simulation(self):
-        snapshot = [Field(**vars(f)) for f in self.fields]
-        self.job = Job(lambda: run_simulation(snapshot))
-        self.job_label = "simulate"
-        self.state = "running"
-
-    # ---- running spinner ---------------------------------------------------
-    def draw_running(self):
-        self.frame_header("working")
-        h, w = self.stdscr.getmaxyx()
-        frame = SPINNER[int(self.job.elapsed * 12) % len(SPINNER)]
-        label = f"{frame}  running {self.job_label}…"
-        self.addstr(4, 4, label, curses.color_pair(P_BRAND) | curses.A_BOLD)
-        self.addstr(4, 4 + len(label) + 2, f"{self.job.elapsed:0.1f}s", curses.A_DIM)
-
-        track_w = min(w - 10, 40)
-        span = max(1, track_w - 6)
-        period = span * 2
-        pos = int(self.job.elapsed * 24) % period
-        pos = pos if pos <= span else period - pos
-        track = ["─"] * track_w
-        for i in range(6):
-            if 0 <= pos + i < track_w:
-                track[pos + i] = "█"
-        self.addstr(6, 4, "".join(track), curses.color_pair(P_ACCENT) | curses.A_BOLD)
-        self.footer([("…", "please wait")])
-
-    def input_running(self, ch):
-        pass
-
-    # ---- result --------------------------------------------------------------
-    def draw_result(self):
-        self.frame_header("result")
-        r = self.result
-        summary = r["summary"]
-        y = 3
-
-        def metric(label, value, attr=curses.A_BOLD):
-            nonlocal y
-            self.addstr(y, 4, label, curses.A_DIM)
-            self.addstr(y, 40, value, attr)
-            y += 1
-
-        metric("Required liquidity reserve", money(summary["required_liquidity_reserve"]),
-                curses.color_pair(P_BRAND) | curses.A_BOLD)
-
-        prob = summary["cash_shortfall_probability"]
-        tier_label, tier_pair = risk_tier(prob)
-        metric("Cash shortfall probability", f"{prob:.4f}", curses.color_pair(tier_pair) | curses.A_BOLD)
-        filled, empty = bar(28, prob)
-        self.addstr(y, 4, filled, curses.color_pair(tier_pair) | curses.A_BOLD)
-        self.addstr(y, 4 + len(filled), empty, curses.A_DIM)
-        self.addstr(y, 34, tier_label, curses.color_pair(tier_pair) | curses.A_BOLD)
-        y += 2
-
-        deficit = summary["expected_max_cash_deficit"]
-        metric("Expected max cash deficit", money(deficit),
-               (curses.color_pair(P_GOOD) if deficit == 0 else curses.color_pair(P_BAD)) | curses.A_BOLD)
-        metric("Avg deficit when short", money(summary["avg_cash_deficit_when_short"]))
-        gap = summary["funding_gap"]
-        metric("Funding gap", money(gap),
-               (curses.color_pair(P_GOOD) if gap == 0 else curses.color_pair(P_WARN)) | curses.A_BOLD)
-
-        y += 1
-        m = r.get("manifest", {})
-        if m:
-            self.addstr(y, 4, "── manifest ──", curses.color_pair(P_ACCENT))
-            y += 1
-            candidates = ("fixture", "sampler", "estimator", "actual_n", "visible_horizon",
-                          "method", "block_length", "horizon")
-            shown = [k for k in candidates if k in m]
-            line = "   ".join(f"{k}={m[k]}" for k in shown)
-            self.addstr(y, 4, line, curses.A_DIM)
-            y += 1
-        if self.message:
-            self.addstr(y + 1, 4, self.message, curses.color_pair(P_GOOD) | curses.A_BOLD)
-        self.footer([("s", "save json"), ("b", "menu"), ("q", "quit")])
-
-    def input_result(self, ch):
-        if ch == ord("s"):
-            self.save_result(self.result)
-        elif ch in (ord("b"), 27, curses.KEY_ENTER, 10, 13):
-            self.message = ""
-            self.state = "menu"
-        elif ch == ord("q"):
-            self.state = "done"
-
-    def save_result(self, payload):
+    @on(Button.Pressed, "#btn-save")
+    def _save_pressed(self) -> None:
+        if not self.last_data:
+            return
         ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         out = ARTIFACT_DIR / f"{stamp}.json"
-        out.write_text(json.dumps(payload, indent=2, allow_nan=False) + "\n")
-        self.message = f"✓ saved {out}"
+        out.write_text(json.dumps(_dashboard_to_dict(self.last_data), indent=2, allow_nan=False) + "\n")
+        self.notify(f"saved {out}", title="✓ saved", severity="information")
 
-    # ---- error -----------------------------------------------------------
-    def draw_error(self):
-        self.frame_header("error")
-        self.addstr(3, 4, "✕ the run failed", curses.color_pair(P_BAD) | curses.A_BOLD)
-        for i, line in enumerate(self.error.splitlines()[:12]):
-            self.addstr(5 + i, 4, line, curses.color_pair(P_BAD))
-        self.footer([("b", "back"), ("q", "quit")])
+    @on(DataTable.RowSelected, "#history-table")
+    def _history_row_selected(self, event: DataTable.RowSelected) -> None:
+        payload = self._history_payloads.get(str(event.row_key.value))
+        if payload:
+            self._present_result(_dashboard_from_dict(payload), "RESULT // ARCHIVED RUN")
 
-    def input_error(self, ch):
-        if ch in (ord("b"), 27, curses.KEY_ENTER, 10, 13):
-            self.state = "form" if self.job_label == "simulate" else "menu"
-        elif ch == ord("q"):
-            self.state = "done"
+    # ---- background work ------------------------------------------------
+    def launch(self, kind: str, params: dict | None) -> None:
+        engine = params["sampler"] if kind == "simulate" else "oracle"
+        case = load_case(kind, params)
+        self.query_one(OperatorPanel).set_busy(engine)
+        self.query_one(Portrait).set_tone("thin")
+        self.last_engine = engine.upper()
+        self.last_paths = params["paths"] if kind == "simulate" else EXACT_SEQUENCE_COUNT
+        self.last_seed = params["seed"] if kind == "simulate" else "--"
+        self.update_telemetry("COMPUTE")
+        ts = datetime.now().strftime("%H:%M:%S")
+        self.event_log = [f"{ts}  engine.init sampler={engine} paths={self.last_paths}"]
+        self.query_one(RunningPanel).set_context(case, kind)
+        self.query_one("#body", ContentSwitcher).current = "panel-running"
+        self._run_started = datetime.now()
+        self.run_job(kind, params)
 
-    # ---- history -----------------------------------------------------------
-    def load_history(self):
-        self.history_items = []
-        if ARTIFACT_DIR.exists():
-            for p in sorted(ARTIFACT_DIR.glob("*.json"), reverse=True):
-                try:
-                    self.history_items.append((p, json.loads(p.read_text())))
-                except (ValueError, OSError):
-                    continue
-        self.history_index = 0
+    @work(thread=True, exclusive=True, exit_on_error=False)
+    def run_job(self, kind: str, params: dict | None):
+        if kind == "simulate":
+            result, matrix, case, bundle = run_simulation(params)
+            run = _engine_run_from_simulation(result, matrix, case, bundle)
+        else:
+            result = run_exact()
+            run = _engine_run_from_exact(result)
+        return kind, result, from_engine(run), run
 
-    def draw_history(self):
-        self.frame_header("history · artifacts/tui")
-        if not self.history_items:
-            self.addstr(3, 4, "No saved runs yet — save one from a result screen with 's'.", curses.A_DIM)
-        for i, (path, payload) in enumerate(self.history_items):
-            selected = i == self.history_index
-            marker = "▸ " if selected else "  "
-            attr = curses.color_pair(P_SELECT) | curses.A_BOLD if selected else 0
-            m = payload.get("manifest", {})
-            s = payload.get("summary", {})
-            reserve = money(s["required_liquidity_reserve"]) if "required_liquidity_reserve" in s else "-"
-            label = (
-                f"{marker}{path.name}   {m.get('fixture', m.get('method', '?')):<12}"
-                f"{m.get('sampler', ''):<8}reserve={reserve}"
-            )
-            self.addstr(3 + i, 4, label, attr)
-        self.footer([("↑↓", "move"), ("⏎", "view"), ("b", "back"), ("q", "quit")])
-
-    def input_history(self, ch):
-        if not self.history_items:
-            if ch in (ord("b"), 27, ord("q")):
-                self.state = "menu"
+    def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+        if event.worker.name != "run_job":
             return
-        if ch in (curses.KEY_UP, ord("k")):
-            self.history_index = (self.history_index - 1) % len(self.history_items)
-        elif ch in (curses.KEY_DOWN, ord("j")):
-            self.history_index = (self.history_index + 1) % len(self.history_items)
-        elif ch in (curses.KEY_ENTER, 10, 13):
-            self.result = self.history_items[self.history_index][1]
-            self.job_label = "history"
-            self.message = ""
-            self.state = "result"
-        elif ch in (ord("b"), 27):
-            self.state = "menu"
-        elif ch == ord("q"):
-            self.state = "done"
+        if event.state == WorkerState.SUCCESS:
+            kind, result, data, run = event.worker.result
+            self.show_result(kind, result, data, run)
+        elif event.state == WorkerState.ERROR:
+            self.show_error(event.worker.error)
+
+    # ---- result rendering ------------------------------------------------
+    def set_urgency(self, tone: str) -> None:
+        """Shift the instrument's own chrome, not just the mascot, toward
+        the alarm color -- same rule as everywhere else in this app: it only
+        moves for `thin`/`short`, and idle/safe leave it alone."""
+        self.screen.set_class(tone == "thin", "-urgent-thin")
+        self.screen.set_class(tone == "short", "-urgent-short")
+
+    def _present_result(self, data: DashboardData, title: str, run: EngineRun | None = None) -> None:
+        panel = self.query_one(ResultPanel)
+        panel.border_title = title
+        panel.query_one(Dashboard).show(data)
+        panel.query_one("#event-log", Static).update("\n".join(self.event_log[-6:]))
+        panel.query_one(VolSurface).matrix = run.matrix if run is not None else None
+        panel.query_one(IndexRain).bundle = run.bundle if run is not None else None
+        self.query_one(OperatorPanel).set_result(data)
+        self.query_one(Portrait).set_tone(data.tone)
+        self.set_urgency(data.tone)
+        self.last_engine = data.sampler.upper()
+        self.last_paths = data.paths
+        self.update_telemetry("COMPLETE")
+        self.query_one("#body", ContentSwitcher).current = "panel-result"
+
+    def show_result(self, kind: str, result: dict, data: DashboardData, run: EngineRun) -> None:
+        self.last_result = result
+        self.last_data = data
+        self.last_kind = kind
+        self.last_run = run
+        self.run_counter += 1
+        self.risk_history.append(data.shortfall_p)
+        elapsed = (datetime.now() - self._run_started).total_seconds() if hasattr(self, "_run_started") else 0.0
+        self.last_elapsed = elapsed
+        self.last_throughput = data.paths / elapsed if elapsed > 0 else 0.0
+        ts = datetime.now().strftime("%H:%M:%S")
+        self.event_log.append(f"{ts}  engine.done elapsed={elapsed:.2f}s")
+        self.event_log.append(f"{ts}  risk.compute p_shortfall={data.shortfall_p:.4f} state={data.state}")
+        if run.bundle is not None:
+            self.event_log.append(f"{ts}  draw.bundle id={run.bundle.bootstrap_draw_id} "
+                                   f"paths={run.bundle.n_paths} history={run.bundle.history_length}")
+        title = "RESULT // ENUMERATION ORACLE" if kind != "simulate" else "RESULT // RUN TELEMETRY"
+        self._present_result(data, title, run)
+
+    def show_error(self, error: BaseException) -> None:
+        ts = datetime.now().strftime("%H:%M:%S")
+        self.event_log.append(f"{ts}  fault {type(error).__name__}: {error}")
+        self.query_one(OperatorPanel).set_error()
+        self.query_one(Portrait).set_tone("short")
+        self.set_urgency("short")
+        self.query_one("#error-text", Static).update(f"{type(error).__name__}: {error}")
+        self.update_telemetry("FAULT")
+        self.query_one("#body", ContentSwitcher).current = "panel-error"
+        self.notify(str(error), title="run failed", severity="error", timeout=8)
+
+    def refresh_history(self) -> None:
+        table = self.query_one("#history-table", DataTable)
+        table.clear()
+        self._history_payloads.clear()
+        rows = []
+        if ARTIFACT_DIR.exists():
+            rows = sorted(ARTIFACT_DIR.glob("*.json"), reverse=True)
+        self.query_one("#history-empty", Label).display = not rows
+        for path in rows:
+            try:
+                payload = json.loads(path.read_text())
+                reserve = money(payload["reserve_to_add"])
+                prob = f"{payload['shortfall_p']:.4f}"
+                plan, sampler = payload.get("plan", "?"), payload.get("sampler", "")
+            except (ValueError, OSError, KeyError, TypeError):
+                continue
+            self._history_payloads[str(path)] = payload
+            table.add_row(path.name, plan, sampler, reserve, prob, key=str(path))
 
 
-def _main(stdscr):
-    App(stdscr).run()
-
-
-def main(argv=None):
-    try:
-        locale.setlocale(locale.LC_ALL, "")
-    except locale.Error:
-        pass
-    # A stray warnings.warn() writes straight to the terminal and corrupts the
-    # curses screen; the interactive UI has no channel to show it anyway.
+def main(argv=None) -> int:
+    # A stray warnings.warn() writes straight to the terminal and corrupts
+    # the alternate screen; the interactive UI has no channel to show it.
     warnings.simplefilter("ignore")
-    curses.wrapper(_main)
+    coord = pick_coord()  # must run before Textual takes stdin
+    GinsengApp(coord=coord).run()
     return 0
 
 

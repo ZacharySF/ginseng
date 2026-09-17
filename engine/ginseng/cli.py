@@ -16,7 +16,11 @@ def main(argv=None):
         from ginseng.engine_cli import main as engine_main
         return engine_main(argv[1:])
     if argv and argv[0] == "tui":
-        from ginseng.tui import main as tui_main
+        try:
+            from ginseng.tui import main as tui_main
+        except ImportError:
+            print("ginseng: the tui command needs the 'tui' extra: uv sync --extra tui", file=sys.stderr)
+            return 2
         return tui_main(argv[1:])
     parser = argparse.ArgumentParser(prog="ginseng")
     sub = parser.add_subparsers(dest="command", required=True)
