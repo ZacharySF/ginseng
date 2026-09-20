@@ -9,7 +9,7 @@ uv run --no-sync ginseng tui
 uv run --no-sync ginseng tui --coord sakura
 ```
 
-Sakura is the default: midnight plum, rose highlights, lavender panels and an anime portrait. The existing nine wardrobes remain available. `t` cycles palettes, `Ctrl+P` finds every workspace and experiment, `Ctrl+R` opens research, `Ctrl+B` toggles the sidebar, and Escape returns home. Small terminals collapse decoration; `NO_COLOR=1` and `GINSENG_MOTION=0` remain supported.
+Sakura is the default: midnight plum, rose highlights, lavender panels and an anime portrait. The existing nine wardrobes remain available. `t` cycles palettes, `Ctrl+P` finds every workspace and experiment, `Ctrl+R` opens research, `Ctrl+B` toggles the sidebar, and Escape returns home. Small terminals collapse decoration; `GINSENG_MOTION=0` disables motion. The fullscreen command preserves the upstream color fix: it clears `NO_COLOR` and defaults `COLORTERM` to `truecolor`. Monochrome rendering remains covered by the direct application snapshot tests.
 
 ## Workflows
 
