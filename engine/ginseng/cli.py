@@ -12,6 +12,15 @@ from ginseng.exact import enumerate_exact
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "two-decision":
+        from ginseng.two_decision_cli import main as experiment_main
+        return experiment_main(argv[1:])
+    if argv and argv[0] == 'precision-replay':
+        from ginseng.precision_replay_cli import main as replay_main
+        return replay_main(argv[1:])
+    if argv and argv[0] == "decision":
+        from ginseng.decision_cli import main as decision_main
+        return decision_main(argv[1:])
     if argv and argv[0] == "engine":
         from ginseng.engine_cli import main as engine_main
         return engine_main(argv[1:])
@@ -55,6 +64,14 @@ def main(argv=None):
     precision.add_argument("--horizon", type=int)
     precision.add_argument("--material-horizon", type=int)
     precision.add_argument("--block-length", type=int)
+    precision.add_argument('--chunk-size', type=int)
+    precision.add_argument('--time-limit', type=float, default=30.)
+    precision.add_argument('--memory-budget', type=int, default=128*1024**2)
+    precision.add_argument('--fixed-budget', action='store_true')
+    precision.add_argument('--capture', type=Path)
+    precision.add_argument('--allow-personal-capture', action='store_true')
+    precision.add_argument('--backend', choices=['numpy','native'], default='numpy')
+    precision.add_argument('--workers', type=int, default=1)
     exact = sub.add_parser("exact")
     exact.add_argument("--fixture", choices=["tiny"], default="tiny")
     bench = sub.add_parser("benchmark")
@@ -97,8 +114,13 @@ def main(argv=None):
             from ginseng.precision import PrecisionConfig, run_precision
 
             case = load_input(args.input) if args.input else fixture(args.fixture or "canonical")
-            config = PrecisionConfig(args.absolute_error, args.confidence, args.max_paths, args.batch_size)
+            config = PrecisionConfig(args.absolute_error, args.confidence, args.max_paths, args.batch_size,
+                                     chunk_size=args.chunk_size,time_limit_seconds=args.time_limit,
+                                     memory_budget_bytes=args.memory_budget,stop_when_precise=not args.fixed_budget)
+            from ginseng.execution import ExecutionConfig
             result = run_precision(case, config, estimator=args.estimator, sampler=args.sampler,
+                                   execution=ExecutionConfig(args.backend,args.workers),capture_path=args.capture,
+                                   synthetic=args.input is None,allow_personal_capture=args.allow_personal_capture,
                                    seed=args.seed, replicate=args.replicate, horizon=args.horizon,
                                    material_horizon=args.material_horizon,
                                    block_length=args.block_length if args.block_length is not None else (7 if case.name == "tiny" else None))

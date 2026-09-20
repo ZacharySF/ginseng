@@ -11,5 +11,6 @@
 </script>
 <ModelEvidencePanel {response} report={accuracy?.calibration ?? null} {error} {loading} {onRun} allowHistorical={modelMode === 'history'} />
 {#if modelMode !== 'history'}<p class="scope">Historical validation requires classified history. <a href={resolve('/data?section=history')}>Review history inputs</a>.</p>{/if}
+{#if accuracy?.information_timing === 'retrospective_current_records'}<p class="scope">Retrospective evaluation with current records. Historical arrival times and revisions are unavailable; this is not a point-in-time archive.</p>{/if}
 {#if accuracy?.warning}<p class="scope" role="status">{accuracy.warning}</p>{/if}
 <style>.scope { padding:1rem; background:var(--paper-soft); color:var(--ink-soft); } a {color:var(--link);}</style>

@@ -7,7 +7,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from ginseng.inputs import InputCase
-from ginseng.precision import PrecisionConfig, run_precision
+from ginseng.precision import PrecisionConfig, estimate_failure
 from ginseng.provenance import digest
 from ginseng.sampling import prepare_history, sample_bundle
 from ginseng.simulate import cash_paths
@@ -16,7 +16,13 @@ from ginseng.simulate import cash_paths
 class NumericalOptions(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     action: Literal["precision", "surface"]
-    absolute_error: Literal[0.005, 0.01] = 0.005
+    absolute_error: float = Field(default=0.005, gt=0, lt=1, strict=True)
+    confidence: float = Field(default=0.95, gt=0, lt=1, strict=True)
+    time_limit_seconds: float = Field(default=15.0, gt=0, le=30, strict=True)
+    memory_budget_bytes: int = Field(
+        default=128 * 1024**2, ge=1024, le=128 * 1024**2, strict=True
+    )
+    estimator: Literal["path", "initial-block-cmc"] = "path"
     max_paths: int = Field(default=65536, ge=1024, le=65536, strict=True)
 
 
@@ -47,7 +53,14 @@ def surface_from_paths(cumulative, opening_cash, additional_cash):
     return probability, deficit
 
 
-def explore(case: InputCase, options: NumericalOptions, *, seed=42, block_length=None):
+def explore(
+    case: InputCase,
+    options: NumericalOptions,
+    *,
+    seed=42,
+    block_length=None,
+    cancelled=None,
+):
     h = case.state.forecast_horizon
     if not 1 <= h <= 60:
         raise ValueError(
@@ -70,10 +83,18 @@ def explore(case: InputCase, options: NumericalOptions, *, seed=42, block_length
         dict(case=asdict(case), seed=seed, block_length=prepared.resolved_length)
     )
     if options.action == "precision":
-        result = run_precision(
+        result = estimate_failure(
             case,
-            PrecisionConfig(options.absolute_error, 0.95, options.max_paths, 512),
-            estimator="initial-block-cmc",
+            PrecisionConfig(
+                options.absolute_error,
+                options.confidence,
+                options.max_paths,
+                512,
+                time_limit_seconds=options.time_limit_seconds,
+                memory_budget_bytes=options.memory_budget_bytes,
+            ),
+            estimator=options.estimator,
+            cancelled=cancelled,
             seed=seed,
             block_length=prepared.resolved_length,
         )
@@ -81,7 +102,16 @@ def explore(case: InputCase, options: NumericalOptions, *, seed=42, block_length
             kind="precision",
             input_id=identity,
             summary=result["summary"],
-            method="Independent MC with initial-block conditioning",
+            method="Independent ordinary MC path indicators"
+            if options.estimator == "path"
+            else "Independent MC with initial-block conditioning",
+            interval_method=result["manifest"]["interval_method"],
+            model_identity=result["manifest"]["model_identity"],
+            stream=result["manifest"]["stream_layout"],
+            resources=dict(
+                time_limit_seconds=options.time_limit_seconds,
+                memory_budget_bytes=options.memory_budget_bytes,
+            ),
             scope="Numerical uncertainty under the current historical model; not forecast accuracy.",
             result_id=result["manifest"]["result_hash"],
         )

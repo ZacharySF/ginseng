@@ -1,3 +1,20 @@
+export interface ConstraintCheck {
+    name: string; units: string; measured: number | null; bound: number | null;
+    direction: string; slack: number | null; violation: number | null;
+    tolerance: number; status: 'pass' | 'fail' | 'unavailable';
+}
+export interface PlanVerification {
+    status: 'verified' | 'failed'; reason: string | null;
+    constraints: ConstraintCheck[]; policy_checks: ConstraintCheck[]; policy_status: 'pass' | 'fail';
+    metrics: Record<string, number | null>; identity: Record<string, unknown>;
+    execution: Record<string, unknown>; definitions: Record<string, string>;
+}
+export interface SolverEvidence {
+    feasible_candidate_objective?: number; lower_bound?: number | null;
+    global_lower_bound?: number | null; absolute_gap?: number | null;
+    relative_gap?: number | null; scope?: string; termination_reason?: string;
+}
+
 // Types for the POST /scenario contract and its model diagnostics.
 // Field names are snake_case and must match the engine's JSON exactly —
 // the frontend never renames, derives, or computes a financial number.
@@ -63,6 +80,7 @@ export interface ShortfallDistribution {
 // Funding plans (spec sections 38-45, 60), serialized by
 // `ginseng.policy.to_contract`. Field names match the engine's JSON exactly.
 export interface Plan {
+    verification?: PlanVerification | null;
     meets_policy?: boolean;
     policy_reason?: string | null;
     buffer_breach_probability?: number;
@@ -113,6 +131,8 @@ export interface WrongWayRisk {
 }
 
 export interface OptimalPlan {
+    verification?: PlanVerification | null;
+    solver_evidence?: SolverEvidence | null;
     meets_policy?: boolean;
     policy_reason?: string | null;
     buffer_coverage_target?: number | null;
@@ -171,6 +191,7 @@ export interface AccountLiquidity {
 }
 
 export interface OptimizerStatus {
+    verification?: PlanVerification | null;
 	code: 'optimal' | 'optimal_inaccurate' | 'not_needed' | 'invalid_input'
 		| 'no_funding_levers' | 'resource_limit' | 'cvxpy_unavailable' | 'solver_unavailable'
 		| 'solver_timeout' | 'solver_limit' | 'solver_error' | 'infeasible' | 'unbounded' | 'invalid_solution';

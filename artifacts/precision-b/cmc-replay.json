@@ -1,0 +1,26 @@
+{
+  "match": true,
+  "mismatches": [],
+  "summary": {
+    "cash_shortfall_probability": 0.392578125,
+    "numerical_probability_interval": [
+      0.35854566629239365,
+      0.42661058370760635
+    ],
+    "absolute_error_bound": 0.03403245870760635,
+    "requested_absolute_error": 0.05,
+    "confidence": 0.95,
+    "precision_met": true,
+    "stop_reason": "precision_reached",
+    "status": "precision_met",
+    "actual_n": 1024,
+    "interval_observations": 1024,
+    "method": "empirical-bernstein-alpha-spending-intersection-v2",
+    "model_identity": "ca33dde346290720cf5907affb60c4e9c354caf93986c61851bff66d705f32af"
+  },
+  "execution": {
+    "backend": "numpy",
+    "estimator": "initial-block-cmc"
+  },
+  "scope": "Exact captured futures and checkpoint arithmetic; wall-clock cancellation/deadline timing is recorded, not reproduced."
+}

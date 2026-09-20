@@ -6,7 +6,7 @@ from ginseng.execution import execution_scope
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from ginseng.dependencies import require_identity, supabase_http_error
@@ -25,7 +25,7 @@ from ginseng.personal_forecast import (
     evaluate_personal_forecast,
 )
 from ginseng.supabase import AuthenticatedIdentity, SupabaseError
-from ginseng.resources import forecast_capacity
+from ginseng.resources import forecast_capacity, cancellable_calculation
 from ginseng.workspace import MAX_EXPECTED_REVISION, MAX_WORKSPACE_REVISION, StrictInt
 
 from ginseng.risk_explorer import NumericalOptions, explore
@@ -128,19 +128,22 @@ class NumericalRequest(ForecastRequest):
 
 
 @router.post('/finance/numerics')
-def numerical_finance(
+async def numerical_finance(
     request: NumericalRequest,
+    http_request: Request,
     identity: Annotated[AuthenticatedIdentity, Depends(require_identity)],
     repository: Annotated[FinanceRepository, Depends(get_finance_repository)],
 ):
-    with forecast_capacity():
-        workspace = _current_workspace(request.expected_revision, identity, repository)
-        try:
-            if request.overrides is not None:
-                workspace = apply_scenario_overrides(workspace,request.overrides)
-            result = explore(historical_numerical_case(workspace,request.horizon_days),request.options,seed=request.seed)
-        except ValueError as error:
-            raise HTTPException(status_code=422,detail=str(error)) from error
-        # A save during the computation also invalidates the result.
-        _current_workspace(request.expected_revision,identity,repository)
-        return result
+    def calculate(cancelled):
+        with forecast_capacity():
+            workspace = _current_workspace(request.expected_revision, identity, repository)
+            try:
+                if request.overrides is not None:
+                    workspace = apply_scenario_overrides(workspace,request.overrides)
+                result = explore(historical_numerical_case(workspace,request.horizon_days),request.options,seed=request.seed,cancelled=cancelled)
+            except ValueError as error:
+                raise HTTPException(status_code=422,detail=str(error)) from error
+            # A save during the computation also invalidates the result.
+            _current_workspace(request.expected_revision,identity,repository)
+            return result
+    return await cancellable_calculation(http_request, calculate)

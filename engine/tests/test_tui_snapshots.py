@@ -31,6 +31,11 @@ class _FrozenDateTime(datetime):
 
 
 @pytest.fixture(autouse=True)
+def _color_default(monkeypatch):
+    monkeypatch.delenv("NO_COLOR", raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _frozen_clock(monkeypatch):
     monkeypatch.setattr(tui_module, "datetime", _FrozenDateTime)
 
@@ -76,8 +81,18 @@ async def _run_exact(pilot) -> None:
 
 
 def test_boot_screen(snap_compare):
-    # No run_before: capture the boot splash itself, before it's dismissed.
-    assert snap_compare(GinsengApp(coord="gothpunk"), terminal_size=SIZE)
+    async def stable_provenance(pilot):
+        # Real source digests change after any engine edit. Keep the visual
+        # fixture deterministic; provenance integrity has separate engine tests.
+        from textual.widgets import RichLog
+        await pilot.pause()
+        log = pilot.app.screen.query_one("#boot-log", RichLog)
+        log.clear()
+        log.write("[dim]boot[/]  synthetic snapshot environment")
+        log.write("[dim]sha256[/] 0123456789abcdef  verification.py")
+        log.write("[bold]source_fingerprint[/] " + "0123456789abcdef" * 4)
+        await pilot.pause()
+    assert snap_compare(GinsengApp(coord="gothpunk"), terminal_size=SIZE, run_before=stable_provenance)
 
 
 def test_boot_screen_dismisses_on_key():
@@ -104,3 +119,24 @@ def test_short_exact_run(snap_compare):
 def test_short_exact_run_without_color(snap_compare, monkeypatch):
     monkeypatch.setenv("NO_COLOR", "1")
     assert snap_compare(GinsengApp(coord="mori"), terminal_size=SIZE, run_before=_run_exact)
+
+
+def test_sakura_home(snap_compare, monkeypatch):
+    monkeypatch.delenv('NO_COLOR', raising=False)
+    assert snap_compare(GinsengApp(coord='sakura'), terminal_size=(140,48), run_before=_dismiss_boot)
+
+
+async def _show_atlas(pilot):
+    from ginseng.studio import run_experiment
+    from ginseng.studio_ui import ResearchStudio
+    await _dismiss_boot(pilot)
+    pilot.app.open_studio('surface')
+    record = run_experiment('surface', dict(fixture='drought-heavy', paths=256, horizon=30))
+    record['elapsed_seconds'] = 0
+    pilot.app.query_one(ResearchStudio).present(record)
+    await pilot.pause()
+
+
+def test_sakura_atlas(snap_compare, monkeypatch):
+    monkeypatch.delenv('NO_COLOR', raising=False)
+    assert snap_compare(GinsengApp(coord='sakura'), terminal_size=(140,48), run_before=_show_atlas)

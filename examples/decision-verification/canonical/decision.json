@@ -1,0 +1,1723 @@
+{
+  "calculation": "decision-verification-v1",
+  "calculation_source": "18878f4a220acfd4b843b11b750249c2d36796513d4e2c89f9b61061936facd8",
+  "complete": true,
+  "contract": {
+    "coverage_target": 0.95,
+    "max_buffer_breach_probability": null,
+    "max_cash_failure_probability": 0.05,
+    "max_credit_utilization": 1.0,
+    "mean_buffer_allowance": 1900.0,
+    "money_tolerance": 1e-06,
+    "objective": "cvar",
+    "objective_tolerance": 0.001,
+    "operating_buffer": 1000.0,
+    "overdraft_apr": 0.2999,
+    "policy_boundary_tolerance": 1e-06,
+    "probability_tolerance": 1e-12,
+    "signed_margin_coverage": null,
+    "tail_deficit_limit": null
+  },
+  "controls": {
+    "as_of": "2026-09-11",
+    "credits": [
+      {
+        "account_id": "card-1",
+        "cash_advance_fee_pct": 0.0,
+        "cash_advance_limit": null,
+        "credit_limit": 5176.672434771865,
+        "current_balance": 1293.2367024329033,
+        "grace_period_eligible": true,
+        "minimum_payment": 38.8,
+        "payment_due_day": 16,
+        "purchase_apr": 0.2399,
+        "statement_close_day": 22
+      }
+    ],
+    "holdings": [
+      {
+        "account": "taxable",
+        "current_price": 244.82553173347344,
+        "symbol": "VTI",
+        "tax_lots": [
+          {
+            "cost_basis_per_share": 248.1523865060328,
+            "lot_id": "VTI-lot-1",
+            "purchase_date": "2025-04-11",
+            "quantity": 44.128401970766234,
+            "symbol": "VTI"
+          },
+          {
+            "cost_basis_per_share": 223.37010319744965,
+            "lot_id": "VTI-lot-2",
+            "purchase_date": "2024-11-26",
+            "quantity": 21.518390299711577,
+            "symbol": "VTI"
+          }
+        ]
+      },
+      {
+        "account": "taxable",
+        "current_price": 202.0854849221313,
+        "symbol": "VXUS",
+        "tax_lots": [
+          {
+            "cost_basis_per_share": 217.18386214664685,
+            "lot_id": "VXUS-lot-1",
+            "purchase_date": "2026-05-24",
+            "quantity": 32.972455324493595,
+            "symbol": "VXUS"
+          },
+          {
+            "cost_basis_per_share": 198.04568560735257,
+            "lot_id": "VXUS-lot-2",
+            "purchase_date": "2025-10-18",
+            "quantity": 1.1121531846435024,
+            "symbol": "VXUS"
+          }
+        ]
+      },
+      {
+        "account": "traditional",
+        "current_price": 73.0869860326824,
+        "symbol": "TARGET2055",
+        "tax_lots": [
+          {
+            "cost_basis_per_share": 58.80872039984178,
+            "lot_id": "traditional-lot-1",
+            "purchase_date": "2025-06-21",
+            "quantity": 191.8532350127827,
+            "symbol": "TARGET2055"
+          }
+        ]
+      },
+      {
+        "account": "roth",
+        "current_price": 73.0869860326824,
+        "symbol": "TARGET2055",
+        "tax_lots": [
+          {
+            "cost_basis_per_share": 58.80872039984178,
+            "lot_id": "roth-lot-1",
+            "purchase_date": "2025-06-21",
+            "quantity": 82.2228150054783,
+            "symbol": "TARGET2055"
+          }
+        ]
+      }
+    ],
+    "opening_cash": 3001.7417748726193,
+    "roth_remaining_basis": 1200.0
+  },
+  "integrity": "8f8244054ab135c37f52fdd605b1b11b54248bb89d92e51805f98bd15cd678ca",
+  "numerical_tolerances": {
+    "atol": 1e-07,
+    "rtol": 1e-10
+  },
+  "output_integrity": "70ef174d992212ebbb92b8fe43249bea3df399cb23957b23d2af3de4c4be7169",
+  "plan": {
+    "credit_account_id": "card-1",
+    "credit_draw": 0.0,
+    "early_penalty": 0.1,
+    "external_transfer_days": 2,
+    "long_term_rate": 0.15,
+    "ordinary_rate": 0.24,
+    "pay_in_full": true,
+    "settlement_days": 1,
+    "spending_days": 30,
+    "spending_fraction": 0.0,
+    "unfunded_cash": 0.0,
+    "use_business_days": false,
+    "withdrawals": [
+      [
+        "taxable:VTI-lot-1",
+        3165.3188268487247
+      ]
+    ]
+  },
+  "prepared": {
+    "training": {
+      "bytes": 6461,
+      "path": "training",
+      "sha256": "149bc75531232338cfc45747c61c88a6a57875ff5fd86440b36c8b46310125be"
+    },
+    "training_1": {
+      "bytes": 6458,
+      "path": "training_1",
+      "sha256": "9735acde6661461dd8fb3143f70b46a43e08357fcda25aadb71aab1420ca4518"
+    },
+    "training_2": {
+      "bytes": 6461,
+      "path": "training_2",
+      "sha256": "37ea0e2e21a52cab417e3a106cf85fc32207c25e490d14709990cc584e1187f4"
+    },
+    "validation": {
+      "bytes": 6467,
+      "path": "validation",
+      "sha256": "cf9403d61dea0e204e0868f8f2dfa4ddfcf835b19e650c68279bcd26de601b67"
+    }
+  },
+  "report": {
+    "comparison": "Selected plan and predeclared no-action plan share all validation futures (paired common random numbers).",
+    "context_counters": {
+      "cache_hits": 20,
+      "history_preparations": 1,
+      "path_materializations": 3,
+      "row_reductions": 4
+    },
+    "contract": {
+      "coverage_target": 0.95,
+      "max_buffer_breach_probability": null,
+      "max_cash_failure_probability": 0.05,
+      "max_credit_utilization": 1.0,
+      "mean_buffer_allowance": 1900.0,
+      "money_tolerance": 1e-06,
+      "objective": "cvar",
+      "objective_tolerance": 0.001,
+      "operating_buffer": 1000.0,
+      "overdraft_apr": 0.2999,
+      "policy_boundary_tolerance": 1e-06,
+      "probability_tolerance": 1e-12,
+      "signed_margin_coverage": null,
+      "tail_deficit_limit": null
+    },
+    "definitions": {
+      "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+      "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+      "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+      "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+      "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+      "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+      "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+      "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+      "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+    },
+    "dimensions": {
+      "material_horizon": 38,
+      "optimizer_path_day_cap": 200000,
+      "training_paths": 2000,
+      "validation_paths": 4000,
+      "visible_horizon": 30
+    },
+    "equivalence": "Replay compares frozen plan execution, objective and feasibility with tolerances. Nonunique optimal action coefficients need not match a re-solve.",
+    "fixture": "canonical synthetic repair",
+    "no_action_interval": {
+      "confidence": 0.95,
+      "failures": 1385,
+      "high": 0.3612272734514173,
+      "low": 0.33149763738116705,
+      "method": "Clopper-Pearson fixed-sample exact binomial",
+      "paths": 4000,
+      "scope": "Marginal per predeclared plan; not simultaneous across comparisons; no early stopping"
+    },
+    "no_action_validation": {
+      "constraints": [
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "credit_nonnegative",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "spending_lower",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "spending_upper",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "no_double_counted_cash",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 1900.0,
+          "direction": "<=",
+          "measured": 6696.334842721203,
+          "name": "mean_buffer_dollar_days",
+          "slack": -4796.334842721203,
+          "status": "fail",
+          "tolerance": 0.0019,
+          "units": "dollar-days",
+          "violation": 4796.334842721203
+        }
+      ],
+      "definitions": {
+        "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+        "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+        "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+        "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+        "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+        "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+        "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+        "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+        "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+      },
+      "execution": {
+        "availability_day": null,
+        "credit_draw": 0.0,
+        "credit_fee": 0.0,
+        "credit_interest": 0.0,
+        "pay_in_full": true,
+        "repayment": 0.0,
+        "repayment_day": null,
+        "spending_days": 30,
+        "spending_fraction": 0.0,
+        "withdrawal_gross": 0.0,
+        "withdrawal_net": 0.0,
+        "withdrawal_penalty": 0.0,
+        "withdrawal_tax": 0.0
+      },
+      "identity": {
+        "calculation": "decision-verification-v1",
+        "contract": "2285103710a235487daae26a3356f07eb24a3a0f032c7bfebe170711d2ff67cc",
+        "discretionary": "b027468e1f92035b617b20801ace1785fbe974199e364b905c87b97655f27b93",
+        "financial_controls": "9f3e414c5b3a681b1373bf8b14cbf0d7e41864ae8b97ff16d8fec793331eddc8",
+        "plan": "d2a00f71d11f47c5694525a4b71f799a7fe99087de7077ee88c63951908f2f4b",
+        "prepared_inputs": {
+          "draws": "4e846dd18696bfaff69494a2703a016fcf6612fe70cdd411755c8b68d4af91f3",
+          "horizons": "7dab3827d826bb9626290fdb0ab38dacc5230cd84f8637960dcb90a3c0855a3c",
+          "preparation": "ae5225f214b8467297dbe5137e4dc2bb26aecd14801eb12b25ded570d53044d6",
+          "schedule": "8a93e24ef6d47d377056551a82388ef9f47421e634facec1d346daefe14960c4"
+        },
+        "weights": "332db24e64f527c0cf343bac52f42bed1d519fbe7c6d9177fd6480c63f0ca30f"
+      },
+      "metrics": {
+        "buffer_breach_probability": 0.6387500000000002,
+        "buffer_deficit_cvar": 3161.6714149656946,
+        "cash_failure_probability": 0.34625000000000017,
+        "cvar_cost": 18.61760987394848,
+        "expected_buffer_dollar_days": 6696.334842721203,
+        "expected_cost": 1.77738359677031,
+        "expected_max_cash_deficit": 336.3446731532278,
+        "legacy_buffer_breach_probability": 0.6387500000000002,
+        "legacy_cash_failure_probability": 0.34625000000000017,
+        "objective": 18.61760987394848,
+        "required_liquidity_reserve": 5783.819751193363,
+        "signed_margin_cvar": null,
+        "var_cost": 12.000304397744051
+      },
+      "policy_checks": [
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.34625000000000017,
+          "name": "cash_failure_probability_strict",
+          "slack": -0.2962500000000002,
+          "status": "fail",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.2962500000000002
+        },
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.34625000000000017,
+          "name": "cash_failure_probability_legacy_boundary",
+          "slack": -0.2962500000000002,
+          "status": "fail",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.2962500000000002
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "credit_utilization",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "fraction",
+          "violation": 0.0
+        }
+      ],
+      "policy_status": "fail",
+      "reason": "mean_buffer_dollar_days",
+      "status": "failed"
+    },
+    "plan": {
+      "credit_account_id": "card-1",
+      "credit_draw": 0.0,
+      "early_penalty": 0.1,
+      "external_transfer_days": 2,
+      "long_term_rate": 0.15,
+      "ordinary_rate": 0.24,
+      "pay_in_full": true,
+      "settlement_days": 1,
+      "spending_days": 30,
+      "spending_fraction": 0.0,
+      "unfunded_cash": 0.0,
+      "use_business_days": false,
+      "withdrawals": [
+        [
+          "taxable:VTI-lot-1",
+          3165.3188268487247
+        ]
+      ]
+    },
+    "schema": 1,
+    "scope": "Validation against the frozen simulator; not real-world forecast calibration, formal verification, or population optimality.",
+    "selection": "Training replicate 0 only. Validation never selects a winner; no refitting or pathwise reoptimization.",
+    "solver": {
+      "absolute_gap": 0.0,
+      "bound_method": "Lagrangian supporting-plane bound with finite-box residual correction",
+      "candidate_objective": 0.0,
+      "evaluation_draw_id": "a3f237bc034b96a7ef2bb71480b30cdac1636d107e3a3b450d4ddd7b17a8ca0b",
+      "evaluation_weight_hash": "7c0aa128f8b88df61f92c6756ac8058eec1cbe75f131161bfc19d50c8479121a",
+      "executed_objective": 0.0,
+      "feasibility_tolerance": 1.0000000000000002e-06,
+      "global_bound_status": "unavailable outside this declared convex subproblem",
+      "global_lower_bound": null,
+      "independent_primal_checks": [
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "credit_nonnegative",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "spending_lower",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "spending_upper",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "no_double_counted_cash",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_entry_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 10803.7594770413,
+          "direction": "<=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_capacity:taxable:VTI-lot-1",
+          "slack": 7638.440650192575,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 38.0,
+          "direction": "<=",
+          "measured": 3.0,
+          "name": "sale_available_within_material_evaluation",
+          "slack": 35.0,
+          "status": "pass",
+          "tolerance": 0,
+          "units": "day",
+          "violation": 0.0
+        },
+        {
+          "bound": 1900.0,
+          "direction": "<=",
+          "measured": 14.778020480484747,
+          "name": "mean_buffer_dollar_days",
+          "slack": 1885.2219795195153,
+          "status": "pass",
+          "tolerance": 0.0019,
+          "units": "dollar-days",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_objective",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_cash_failure_probability",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.022499999999999992,
+          "direction": "==",
+          "measured": 0.022500000000000006,
+          "name": "reported_buffer_breach_probability",
+          "slack": -1.3877787807814457e-17,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 1.3877787807814457e-17
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_cvar_cost",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_var_cost",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_expected_cost",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 14.778020480484743,
+          "direction": "==",
+          "measured": 14.778020480484747,
+          "name": "reported_mean_buffer_dollar_days",
+          "slack": -3.552713678800501e-15,
+          "status": "pass",
+          "tolerance": 0.0019,
+          "units": "dollar-days",
+          "violation": 3.552713678800501e-15
+        },
+        {
+          "bound": 144.00634471254654,
+          "direction": "==",
+          "measured": 144.00634471254662,
+          "name": "reported_tail_deficit",
+          "slack": -8.526512829121202e-14,
+          "status": "pass",
+          "tolerance": 0.0001440063447125466,
+          "units": "dollars",
+          "violation": 8.526512829121202e-14
+        },
+        {
+          "bound": 3165.3188268487247,
+          "direction": "==",
+          "measured": 3165.3188268487247,
+          "name": "reported_withdrawal_net",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 3165.3188268487247,
+          "direction": "==",
+          "measured": 3165.3188268487247,
+          "name": "reported_withdrawal_gross",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_withdrawal_tax",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "reported_withdrawal_penalty",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "lower_bound_below_executed_objective",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "no_postprocessing_cost_increase",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 0.001,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "==",
+          "measured": 1.0,
+          "name": "frozen_plan_identity",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 0,
+          "units": "boolean",
+          "violation": 0.0
+        }
+      ],
+      "iterations": 1,
+      "lower_bound": 0.0,
+      "master_complementarity_residual": 0.0,
+      "master_iterations": 0,
+      "master_primal_objective": 0.0,
+      "master_primal_residual": 0.0,
+      "mean_buffer_allowance": 1900.0,
+      "objective_gap_tolerance": 9.999999999999999e-05,
+      "objective_kind": "cvar",
+      "objective_units": "dollars",
+      "plan_identity": "f3938e060411bffc7a5daf05b1116a69056bc7810c040b5f39919880a30dd02e",
+      "postprocessing": "clip to bounds; reconstruct net quotes; trim free withdrawals; equal charges prefer taxable, Roth, traditional, then unit key",
+      "postprocessing_objective_difference": 0.0,
+      "relative_gap": 0.0,
+      "reported_objective": 0.0,
+      "scenario_day_limit": 200000,
+      "scipy_adapter_version": "1.18.1",
+      "scope": "finite supplied scenarios; fixed selected credit account; continuous fixed-price withdrawal units; no unexamined regimes",
+      "sensitivities": {
+        "buffer": {
+          "sign": "objective change approximately -value * allowance increase",
+          "units": "dollars / dollar-day",
+          "value": 0.0
+        },
+        "credit": {
+          "sign": "objective change approximately -value * available-credit increase",
+          "units": "dollars / dollar",
+          "value": 0.0
+        }
+      },
+      "signed_margin_coverage": null,
+      "solver": "highs_constraint_generation",
+      "solver_version": "1.12.0",
+      "tail_deficit_limit": null,
+      "termination_reason": "full_path_feasible_and_gap",
+      "time_limit_seconds": 10.0
+    },
+    "stability": [
+      {
+        "actions": {
+          "credit_account_id": "card-1",
+          "credit_draw": 0.0,
+          "early_penalty": 0.1,
+          "external_transfer_days": 2,
+          "long_term_rate": 0.15,
+          "ordinary_rate": 0.24,
+          "pay_in_full": true,
+          "settlement_days": 1,
+          "spending_days": 30,
+          "spending_fraction": 0.0,
+          "unfunded_cash": 0.0,
+          "use_business_days": false,
+          "withdrawals": [
+            [
+              "taxable:VTI-lot-1",
+              3165.3188268487247
+            ]
+          ]
+        },
+        "failure": null,
+        "objective": 0.0,
+        "replicate": 0,
+        "status": "selected",
+        "stream": {
+          "bit_generator": "PCG64",
+          "bits": null,
+          "derived_seed": 11025734643351223888,
+          "dimension": 75,
+          "domain": 710,
+          "draw_id": "a3f237bc034b96a7ef2bb71480b30cdac1636d107e3a3b450d4ddd7b17a8ca0b",
+          "history_length": 730,
+          "mapping_version": 1,
+          "material_horizon": 38,
+          "mean_block_length": 14,
+          "optimization": null,
+          "paths": 2000,
+          "replicate": 0,
+          "root_seed": 20260920,
+          "sampler": "mc",
+          "sampler_version": 1,
+          "scramble": null,
+          "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+          "stream_layout": "C-order fixed-width float64"
+        }
+      },
+      {
+        "actions": {
+          "credit_account_id": "card-1",
+          "credit_draw": 0.0,
+          "early_penalty": 0.1,
+          "external_transfer_days": 2,
+          "long_term_rate": 0.15,
+          "ordinary_rate": 0.24,
+          "pay_in_full": true,
+          "settlement_days": 1,
+          "spending_days": 30,
+          "spending_fraction": 0.0,
+          "unfunded_cash": 0.0,
+          "use_business_days": false,
+          "withdrawals": [
+            [
+              "taxable:VTI-lot-1",
+              2892.284881651238
+            ]
+          ]
+        },
+        "failure": null,
+        "objective": 0.0,
+        "prepared_reference": "training_1",
+        "replicate": 1,
+        "status": "diagnostic_only",
+        "stream": {
+          "bit_generator": "PCG64",
+          "bits": null,
+          "derived_seed": 1138215137424173389,
+          "dimension": 75,
+          "domain": 710,
+          "draw_id": "415d91279c77db95f3f596e2cbf44bac58772514ce869b45c9457062d28c0aa1",
+          "history_length": 730,
+          "mapping_version": 1,
+          "material_horizon": 38,
+          "mean_block_length": 14,
+          "optimization": null,
+          "paths": 2000,
+          "replicate": 1,
+          "root_seed": 20260920,
+          "sampler": "mc",
+          "sampler_version": 1,
+          "scramble": null,
+          "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+          "stream_layout": "C-order fixed-width float64"
+        },
+        "verification": {
+          "constraints": [
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 0.0,
+              "name": "credit_nonnegative",
+              "slack": 0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 0.0,
+              "name": "spending_lower",
+              "slack": 0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "fraction",
+              "violation": 0.0
+            },
+            {
+              "bound": 1.0,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "spending_upper",
+              "slack": 1.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "fraction",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": "==",
+              "measured": 0.0,
+              "name": "no_double_counted_cash",
+              "slack": -0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 2892.284881651238,
+              "name": "withdrawal_entry_nonnegative:taxable:VTI-lot-1",
+              "slack": 2892.284881651238,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 2892.284881651238,
+              "name": "withdrawal_nonnegative:taxable:VTI-lot-1",
+              "slack": 2892.284881651238,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 10803.7594770413,
+              "direction": "<=",
+              "measured": 2892.284881651238,
+              "name": "withdrawal_capacity:taxable:VTI-lot-1",
+              "slack": 7911.474595390062,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 38.0,
+              "direction": "<=",
+              "measured": 3.0,
+              "name": "sale_available_within_material_evaluation",
+              "slack": 35.0,
+              "status": "pass",
+              "tolerance": 0,
+              "units": "day",
+              "violation": 0.0
+            },
+            {
+              "bound": 1900.0,
+              "direction": "<=",
+              "measured": 40.24529508733377,
+              "name": "mean_buffer_dollar_days",
+              "slack": 1859.7547049126663,
+              "status": "pass",
+              "tolerance": 0.0019,
+              "units": "dollar-days",
+              "violation": 0.0
+            }
+          ],
+          "definitions": {
+            "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+            "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+            "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+            "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+            "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+            "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+            "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+            "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+            "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+          },
+          "execution": {
+            "availability_day": 3,
+            "credit_draw": 0.0,
+            "credit_fee": 0.0,
+            "credit_interest": 0.0,
+            "pay_in_full": true,
+            "repayment": 0.0,
+            "repayment_day": null,
+            "spending_days": 30,
+            "spending_fraction": 0.0,
+            "withdrawal_gross": 2892.284881651238,
+            "withdrawal_net": 2892.284881651238,
+            "withdrawal_penalty": 0.0,
+            "withdrawal_tax": 0.0
+          },
+          "identity": {
+            "calculation": "decision-verification-v1",
+            "contract": "2285103710a235487daae26a3356f07eb24a3a0f032c7bfebe170711d2ff67cc",
+            "discretionary": "28bcf07ffb1741d2c6e6e52b0d6fec5a2fc21cf6e783a01dcebfc9d333a8b30e",
+            "financial_controls": "9f3e414c5b3a681b1373bf8b14cbf0d7e41864ae8b97ff16d8fec793331eddc8",
+            "plan": "032155c0c05338784d99fb571fe8894aecf6c0214b6699a6ad2a477916411e70",
+            "prepared_inputs": {
+              "draws": "2b5ac0381a6692a883023d6111e97fe854465e734465921b16c27420f9b1353d",
+              "horizons": "7dab3827d826bb9626290fdb0ab38dacc5230cd84f8637960dcb90a3c0855a3c",
+              "preparation": "ae5225f214b8467297dbe5137e4dc2bb26aecd14801eb12b25ded570d53044d6",
+              "schedule": "8a93e24ef6d47d377056551a82388ef9f47421e634facec1d346daefe14960c4"
+            },
+            "weights": "a1d742c8d7efac1edd437605ddd0f81a7b39771d145a2489cea2e4c0aa27fd8e"
+          },
+          "metrics": {
+            "buffer_breach_probability": 0.04500000000000002,
+            "buffer_deficit_cvar": 360.4507051500354,
+            "cash_failure_probability": 0.0,
+            "cvar_cost": 0.0,
+            "expected_buffer_dollar_days": 40.24529508733377,
+            "expected_cost": 0.0,
+            "expected_max_cash_deficit": 0.0,
+            "legacy_buffer_breach_probability": 0.04500000000000002,
+            "legacy_cash_failure_probability": 0.0,
+            "objective": 0.0,
+            "required_liquidity_reserve": 2928.7991127308815,
+            "signed_margin_cvar": null,
+            "var_cost": 0.0
+          },
+          "policy_checks": [
+            {
+              "bound": 0.05,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "cash_failure_probability_strict",
+              "slack": 0.05,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "probability",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.05,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "cash_failure_probability_legacy_boundary",
+              "slack": 0.05,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "probability",
+              "violation": 0.0
+            },
+            {
+              "bound": 1.0,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "credit_utilization",
+              "slack": 1.0,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "fraction",
+              "violation": 0.0
+            }
+          ],
+          "policy_status": "pass",
+          "reason": null,
+          "status": "verified"
+        }
+      },
+      {
+        "actions": {
+          "credit_account_id": "card-1",
+          "credit_draw": 0.0,
+          "early_penalty": 0.1,
+          "external_transfer_days": 2,
+          "long_term_rate": 0.15,
+          "ordinary_rate": 0.24,
+          "pay_in_full": true,
+          "settlement_days": 1,
+          "spending_days": 30,
+          "spending_fraction": 0.0,
+          "unfunded_cash": 0.0,
+          "use_business_days": false,
+          "withdrawals": [
+            [
+              "taxable:VTI-lot-1",
+              3218.162261369085
+            ]
+          ]
+        },
+        "failure": null,
+        "objective": 0.0,
+        "prepared_reference": "training_2",
+        "replicate": 2,
+        "status": "diagnostic_only",
+        "stream": {
+          "bit_generator": "PCG64",
+          "bits": null,
+          "derived_seed": 15775132941046837460,
+          "dimension": 75,
+          "domain": 710,
+          "draw_id": "4c0756ded8fc749f93ee687ab3f28180d97f38d3cd956a57fcc35f21e692021d",
+          "history_length": 730,
+          "mapping_version": 1,
+          "material_horizon": 38,
+          "mean_block_length": 14,
+          "optimization": null,
+          "paths": 2000,
+          "replicate": 2,
+          "root_seed": 20260920,
+          "sampler": "mc",
+          "sampler_version": 1,
+          "scramble": null,
+          "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+          "stream_layout": "C-order fixed-width float64"
+        },
+        "verification": {
+          "constraints": [
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 0.0,
+              "name": "credit_nonnegative",
+              "slack": 0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 0.0,
+              "name": "spending_lower",
+              "slack": 0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "fraction",
+              "violation": 0.0
+            },
+            {
+              "bound": 1.0,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "spending_upper",
+              "slack": 1.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "fraction",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": "==",
+              "measured": 0.0,
+              "name": "no_double_counted_cash",
+              "slack": -0.0,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 3218.162261369085,
+              "name": "withdrawal_entry_nonnegative:taxable:VTI-lot-1",
+              "slack": 3218.162261369085,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.0,
+              "direction": ">=",
+              "measured": 3218.162261369085,
+              "name": "withdrawal_nonnegative:taxable:VTI-lot-1",
+              "slack": 3218.162261369085,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 10803.7594770413,
+              "direction": "<=",
+              "measured": 3218.162261369085,
+              "name": "withdrawal_capacity:taxable:VTI-lot-1",
+              "slack": 7585.597215672215,
+              "status": "pass",
+              "tolerance": 1e-06,
+              "units": "dollars",
+              "violation": 0.0
+            },
+            {
+              "bound": 38.0,
+              "direction": "<=",
+              "measured": 3.0,
+              "name": "sale_available_within_material_evaluation",
+              "slack": 35.0,
+              "status": "pass",
+              "tolerance": 0,
+              "units": "day",
+              "violation": 0.0
+            },
+            {
+              "bound": 1900.0,
+              "direction": "<=",
+              "measured": 23.15917814086601,
+              "name": "mean_buffer_dollar_days",
+              "slack": 1876.840821859134,
+              "status": "pass",
+              "tolerance": 0.0019,
+              "units": "dollar-days",
+              "violation": 0.0
+            }
+          ],
+          "definitions": {
+            "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+            "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+            "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+            "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+            "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+            "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+            "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+            "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+            "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+          },
+          "execution": {
+            "availability_day": 3,
+            "credit_draw": 0.0,
+            "credit_fee": 0.0,
+            "credit_interest": 0.0,
+            "pay_in_full": true,
+            "repayment": 0.0,
+            "repayment_day": null,
+            "spending_days": 30,
+            "spending_fraction": 0.0,
+            "withdrawal_gross": 3218.162261369085,
+            "withdrawal_net": 3218.162261369085,
+            "withdrawal_penalty": 0.0,
+            "withdrawal_tax": 0.0
+          },
+          "identity": {
+            "calculation": "decision-verification-v1",
+            "contract": "2285103710a235487daae26a3356f07eb24a3a0f032c7bfebe170711d2ff67cc",
+            "discretionary": "011e90f0cfb420e7c6ba29b43d44c12a2af31d394e3a44cb694f4ca85723f074",
+            "financial_controls": "9f3e414c5b3a681b1373bf8b14cbf0d7e41864ae8b97ff16d8fec793331eddc8",
+            "plan": "48467d374a51125bf4e2451ea13d44fa52109784e8c185d55947095e3022890f",
+            "prepared_inputs": {
+              "draws": "88be40ac8d311513f809c7f0f4191ca7fdacc488c48e66dcfaec42158e2d1eb6",
+              "horizons": "7dab3827d826bb9626290fdb0ab38dacc5230cd84f8637960dcb90a3c0855a3c",
+              "preparation": "ae5225f214b8467297dbe5137e4dc2bb26aecd14801eb12b25ded570d53044d6",
+              "schedule": "8a93e24ef6d47d377056551a82388ef9f47421e634facec1d346daefe14960c4"
+            },
+            "weights": "a1d742c8d7efac1edd437605ddd0f81a7b39771d145a2489cea2e4c0aa27fd8e"
+          },
+          "metrics": {
+            "buffer_breach_probability": 0.025500000000000005,
+            "buffer_deficit_cvar": 157.17909911438358,
+            "cash_failure_probability": 0.0,
+            "cvar_cost": 0.0,
+            "expected_buffer_dollar_days": 23.15917814086601,
+            "expected_cost": 0.0,
+            "expected_max_cash_deficit": 0.0,
+            "legacy_buffer_breach_probability": 0.025500000000000005,
+            "legacy_cash_failure_probability": 0.0,
+            "objective": 0.0,
+            "required_liquidity_reserve": 2568.5356451095977,
+            "signed_margin_cvar": null,
+            "var_cost": 0.0
+          },
+          "policy_checks": [
+            {
+              "bound": 0.05,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "cash_failure_probability_strict",
+              "slack": 0.05,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "probability",
+              "violation": 0.0
+            },
+            {
+              "bound": 0.05,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "cash_failure_probability_legacy_boundary",
+              "slack": 0.05,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "probability",
+              "violation": 0.0
+            },
+            {
+              "bound": 1.0,
+              "direction": "<=",
+              "measured": 0.0,
+              "name": "credit_utilization",
+              "slack": 1.0,
+              "status": "pass",
+              "tolerance": 1e-12,
+              "units": "fraction",
+              "violation": 0.0
+            }
+          ],
+          "policy_status": "pass",
+          "reason": null,
+          "status": "verified"
+        }
+      }
+    ],
+    "stability_summary": {
+      "credit_range_dollars": 0.0,
+      "interpretation": "Different actions with essentially equal costs are consistent with a flat/nonunique empirical optimum; no plan was selected using validation.",
+      "objective_range_dollars": 0.0,
+      "spending_fraction_range": 0.0,
+      "successful_replications": 3,
+      "withdrawal_range_dollars": 325.87737971784736
+    },
+    "streams": {
+      "separation": {
+        "limitation": "PRNG independence assumption; repeated sampled histories are legitimate.",
+        "method": "SeedSequence namespace separation / PCG64",
+        "status": "disjoint_initializations",
+        "training_key": [
+          20260920,
+          710,
+          0
+        ],
+        "validation_key": [
+          20260920,
+          711,
+          0
+        ]
+      },
+      "training": {
+        "bit_generator": "PCG64",
+        "bits": null,
+        "derived_seed": 11025734643351223888,
+        "dimension": 75,
+        "domain": 710,
+        "draw_id": "a3f237bc034b96a7ef2bb71480b30cdac1636d107e3a3b450d4ddd7b17a8ca0b",
+        "history_length": 730,
+        "mapping_version": 1,
+        "material_horizon": 38,
+        "mean_block_length": 14,
+        "optimization": null,
+        "paths": 2000,
+        "replicate": 0,
+        "root_seed": 20260920,
+        "sampler": "mc",
+        "sampler_version": 1,
+        "scramble": null,
+        "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+        "stream_layout": "C-order fixed-width float64"
+      },
+      "validation": {
+        "bit_generator": "PCG64",
+        "bits": null,
+        "derived_seed": 7552303652442347429,
+        "dimension": 75,
+        "domain": 711,
+        "draw_id": "0a9e7b18b1083f96a44aad098e4648e99e8529097ee4ac8cc1c6672a39032a06",
+        "history_length": 730,
+        "mapping_version": 1,
+        "material_horizon": 38,
+        "mean_block_length": 14,
+        "optimization": null,
+        "paths": 4000,
+        "replicate": 0,
+        "root_seed": 20260920,
+        "sampler": "mc",
+        "sampler_version": 1,
+        "scramble": null,
+        "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+        "stream_layout": "C-order fixed-width float64"
+      }
+    },
+    "synthetic": true,
+    "timings_seconds": {
+      "end_to_end_without_artifact_io": 0.3006001180037856,
+      "historical_preparation": 0.00304753099771915,
+      "holdout_preparation_and_evaluation": 0.03581577799923252,
+      "independent_verification": 0.004174116998910904,
+      "optimization_including_gate": 0.11947752199921524,
+      "path_summaries_cold": 0.0017768409961718135,
+      "path_summaries_reused": 0.00013495299936039373,
+      "scenario_preparation": 0.0026033809990622103,
+      "training_draw_generation": 0.002081054000882432,
+      "training_replications": 0.12237924299552105,
+      "validation_draw_generation": 0.0037896290014032274
+    },
+    "training": {
+      "constraints": [
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "credit_nonnegative",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "spending_lower",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "spending_upper",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "no_double_counted_cash",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_entry_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 10803.7594770413,
+          "direction": "<=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_capacity:taxable:VTI-lot-1",
+          "slack": 7638.440650192575,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 38.0,
+          "direction": "<=",
+          "measured": 3.0,
+          "name": "sale_available_within_material_evaluation",
+          "slack": 35.0,
+          "status": "pass",
+          "tolerance": 0,
+          "units": "day",
+          "violation": 0.0
+        },
+        {
+          "bound": 1900.0,
+          "direction": "<=",
+          "measured": 14.778020480484747,
+          "name": "mean_buffer_dollar_days",
+          "slack": 1885.2219795195153,
+          "status": "pass",
+          "tolerance": 0.0019,
+          "units": "dollar-days",
+          "violation": 0.0
+        }
+      ],
+      "definitions": {
+        "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+        "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+        "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+        "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+        "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+        "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+        "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+        "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+        "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+      },
+      "execution": {
+        "availability_day": 3,
+        "credit_draw": 0.0,
+        "credit_fee": 0.0,
+        "credit_interest": 0.0,
+        "pay_in_full": true,
+        "repayment": 0.0,
+        "repayment_day": null,
+        "spending_days": 30,
+        "spending_fraction": 0.0,
+        "withdrawal_gross": 3165.3188268487247,
+        "withdrawal_net": 3165.3188268487247,
+        "withdrawal_penalty": 0.0,
+        "withdrawal_tax": 0.0
+      },
+      "identity": {
+        "calculation": "decision-verification-v1",
+        "contract": "2285103710a235487daae26a3356f07eb24a3a0f032c7bfebe170711d2ff67cc",
+        "discretionary": "6e34da57c97afbed2152a6e29fa2e07d98e167e2f23c3c8e1a89f8bc44c501e1",
+        "financial_controls": "9f3e414c5b3a681b1373bf8b14cbf0d7e41864ae8b97ff16d8fec793331eddc8",
+        "plan": "f3938e060411bffc7a5daf05b1116a69056bc7810c040b5f39919880a30dd02e",
+        "prepared_inputs": {
+          "draws": "6b07d5a85b91a5665e18db61c873f6fcf1c696c9326719ad3b232858676130d0",
+          "horizons": "7dab3827d826bb9626290fdb0ab38dacc5230cd84f8637960dcb90a3c0855a3c",
+          "preparation": "ae5225f214b8467297dbe5137e4dc2bb26aecd14801eb12b25ded570d53044d6",
+          "schedule": "8a93e24ef6d47d377056551a82388ef9f47421e634facec1d346daefe14960c4"
+        },
+        "weights": "a1d742c8d7efac1edd437605ddd0f81a7b39771d145a2489cea2e4c0aa27fd8e"
+      },
+      "metrics": {
+        "buffer_breach_probability": 0.022500000000000006,
+        "buffer_deficit_cvar": 144.00634471254662,
+        "cash_failure_probability": 0.0,
+        "cvar_cost": 0.0,
+        "expected_buffer_dollar_days": 14.778020480484747,
+        "expected_cost": 0.0,
+        "expected_max_cash_deficit": 0.0,
+        "legacy_buffer_breach_probability": 0.022500000000000006,
+        "legacy_cash_failure_probability": 0.0,
+        "objective": 0.0,
+        "required_liquidity_reserve": 2627.4068689537144,
+        "signed_margin_cvar": null,
+        "var_cost": 0.0
+      },
+      "policy_checks": [
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "cash_failure_probability_strict",
+          "slack": 0.05,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "cash_failure_probability_legacy_boundary",
+          "slack": 0.05,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "credit_utilization",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "fraction",
+          "violation": 0.0
+        }
+      ],
+      "policy_status": "pass",
+      "reason": null,
+      "status": "verified"
+    },
+    "validation": {
+      "constraints": [
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "credit_nonnegative",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 0.0,
+          "name": "spending_lower",
+          "slack": 0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "spending_upper",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "fraction",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": "==",
+          "measured": 0.0,
+          "name": "no_double_counted_cash",
+          "slack": -0.0,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_entry_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.0,
+          "direction": ">=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_nonnegative:taxable:VTI-lot-1",
+          "slack": 3165.3188268487247,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 10803.7594770413,
+          "direction": "<=",
+          "measured": 3165.3188268487247,
+          "name": "withdrawal_capacity:taxable:VTI-lot-1",
+          "slack": 7638.440650192575,
+          "status": "pass",
+          "tolerance": 1e-06,
+          "units": "dollars",
+          "violation": 0.0
+        },
+        {
+          "bound": 38.0,
+          "direction": "<=",
+          "measured": 3.0,
+          "name": "sale_available_within_material_evaluation",
+          "slack": 35.0,
+          "status": "pass",
+          "tolerance": 0,
+          "units": "day",
+          "violation": 0.0
+        },
+        {
+          "bound": 1900.0,
+          "direction": "<=",
+          "measured": 11.549150497614754,
+          "name": "mean_buffer_dollar_days",
+          "slack": 1888.4508495023852,
+          "status": "pass",
+          "tolerance": 0.0019,
+          "units": "dollar-days",
+          "violation": 0.0
+        }
+      ],
+      "definitions": {
+        "buffer_breach": "P(min end-of-day cash < operating_buffer); equality is not breach",
+        "cash_failure": "P(min end-of-day cash < 0); opening cash added exactly once",
+        "dollar_days": "E[sum_day max(buffer-cash,0)], dollars \u00d7 days",
+        "objective": "CVaR or mean of interest + fees + earmarked taxes/penalties + spending forgone + overdraft dollar-days \u00d7 APR/365",
+        "policy_boundary": "Legacy app policy uses cash < -1e-06 and cash < buffer-1e-06; strict metrics are reported separately",
+        "quantile": "inverse CDF, float64-rounded long-double cumulative mass; q=1 maximum; tail ties share boundary mass proportionally",
+        "reserve": "inverse empirical CDF of max(0,buffer-min cumulative funded flows excluding opening cash)",
+        "scope": "Finite supplied scenarios, fixed prices/rates, continuous withdrawal units, selected credit account. Not a population optimum or real-world safety claim.",
+        "tail_deficit": "CVaR_q(max_day max(buffer-cash,0)), dollars"
+      },
+      "execution": {
+        "availability_day": 3,
+        "credit_draw": 0.0,
+        "credit_fee": 0.0,
+        "credit_interest": 0.0,
+        "pay_in_full": true,
+        "repayment": 0.0,
+        "repayment_day": null,
+        "spending_days": 30,
+        "spending_fraction": 0.0,
+        "withdrawal_gross": 3165.3188268487247,
+        "withdrawal_net": 3165.3188268487247,
+        "withdrawal_penalty": 0.0,
+        "withdrawal_tax": 0.0
+      },
+      "identity": {
+        "calculation": "decision-verification-v1",
+        "contract": "2285103710a235487daae26a3356f07eb24a3a0f032c7bfebe170711d2ff67cc",
+        "discretionary": "b027468e1f92035b617b20801ace1785fbe974199e364b905c87b97655f27b93",
+        "financial_controls": "9f3e414c5b3a681b1373bf8b14cbf0d7e41864ae8b97ff16d8fec793331eddc8",
+        "plan": "f3938e060411bffc7a5daf05b1116a69056bc7810c040b5f39919880a30dd02e",
+        "prepared_inputs": {
+          "draws": "4e846dd18696bfaff69494a2703a016fcf6612fe70cdd411755c8b68d4af91f3",
+          "horizons": "7dab3827d826bb9626290fdb0ab38dacc5230cd84f8637960dcb90a3c0855a3c",
+          "preparation": "ae5225f214b8467297dbe5137e4dc2bb26aecd14801eb12b25ded570d53044d6",
+          "schedule": "8a93e24ef6d47d377056551a82388ef9f47421e634facec1d346daefe14960c4"
+        },
+        "weights": "332db24e64f527c0cf343bac52f42bed1d519fbe7c6d9177fd6480c63f0ca30f"
+      },
+      "metrics": {
+        "buffer_breach_probability": 0.02225000000000001,
+        "buffer_deficit_cvar": 117.1004774069575,
+        "cash_failure_probability": 0.0,
+        "cvar_cost": 0.0,
+        "expected_buffer_dollar_days": 11.549150497614754,
+        "expected_cost": 0.0,
+        "expected_max_cash_deficit": 0.0,
+        "legacy_buffer_breach_probability": 0.02225000000000001,
+        "legacy_cash_failure_probability": 0.0,
+        "objective": 0.0,
+        "required_liquidity_reserve": 2618.5009243446384,
+        "signed_margin_cvar": null,
+        "var_cost": 0.0
+      },
+      "policy_checks": [
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "cash_failure_probability_strict",
+          "slack": 0.05,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.0
+        },
+        {
+          "bound": 0.05,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "cash_failure_probability_legacy_boundary",
+          "slack": 0.05,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "probability",
+          "violation": 0.0
+        },
+        {
+          "bound": 1.0,
+          "direction": "<=",
+          "measured": 0.0,
+          "name": "credit_utilization",
+          "slack": 1.0,
+          "status": "pass",
+          "tolerance": 1e-12,
+          "units": "fraction",
+          "violation": 0.0
+        }
+      ],
+      "policy_status": "pass",
+      "reason": null,
+      "status": "verified"
+    },
+    "validation_interval": {
+      "confidence": 0.95,
+      "failures": 0,
+      "high": 0.0009217947494830555,
+      "low": 0.0,
+      "method": "Clopper-Pearson fixed-sample exact binomial",
+      "paths": 4000,
+      "scope": "Marginal per predeclared plan; not simultaneous across comparisons; no early stopping"
+    }
+  },
+  "schema": 1,
+  "semantic_input_identity": "f82a8716361a855a0b49d6788f67d1a4a9b44f6ffdc19eeb6822c43b91c81e68"
+}

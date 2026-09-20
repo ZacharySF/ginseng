@@ -1,0 +1,45 @@
+{
+  "match": true,
+  "mismatches": [],
+  "summary": {
+    "cash_shortfall_probability": 0.38085937500000006,
+    "numerical_probability_interval": [
+      0.33122133270321513,
+      0.430497417296785
+    ],
+    "absolute_error_bound": 0.04963804229678492,
+    "requested_absolute_error": 0.05,
+    "confidence": 0.95,
+    "precision_met": true,
+    "stop_reason": "precision_reached",
+    "status": "precision_met",
+    "actual_n": 2048,
+    "interval_observations": 2048,
+    "method": "empirical-bernstein-alpha-spending-intersection-v2",
+    "model_identity": "ca33dde346290720cf5907affb60c4e9c354caf93986c61851bff66d705f32af"
+  },
+  "execution": {
+    "backend": "native",
+    "reason": "Explicit selection.",
+    "workers": 2,
+    "block_size": 1024,
+    "input_bytes": 65640,
+    "output_bytes": 98304,
+    "scratch_bound_bytes": 655360,
+    "native": {
+      "api_version": 1,
+      "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+      "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+      "compiler": "15.3.0",
+      "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+      "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+      "build_type": "Release",
+      "environment_compiler_flags": "",
+      "options": "C++20; no fast-math; no FP contraction; portable target",
+      "available": true,
+      "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+      "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+    }
+  },
+  "scope": "Exact captured futures and checkpoint arithmetic; wall-clock cancellation/deadline timing is recorded, not reproduced."
+}

@@ -382,6 +382,8 @@ research = [
     { name = "nbformat" },
 ]
 tui = [
+    { name = "httpx" },
+    { name = "pydantic" },
     { name = "textual" },
 ]
 
@@ -400,6 +402,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'app'", specifier = ">=0.115" },
     { name = "ginseng", extras = ["app", "optimization", "research", "tui"], marker = "extra == 'dev'" },
     { name = "httpx", marker = "extra == 'app'", specifier = ">=0.28" },
+    { name = "httpx", marker = "extra == 'tui'", specifier = ">=0.28" },
     { name = "ipykernel", marker = "extra == 'research'", specifier = ">=6.29" },
     { name = "matplotlib", marker = "extra == 'research'", specifier = ">=3.9" },
     { name = "nbclient", marker = "extra == 'research'", specifier = ">=0.10" },
@@ -408,10 +411,11 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2" },
     { name = "pybind11", marker = "extra == 'native-build'", specifier = "==2.13.6" },
     { name = "pydantic", marker = "extra == 'app'", specifier = ">=2.10" },
+    { name = "pydantic", marker = "extra == 'tui'", specifier = ">=2.10" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
     { name = "scikit-build-core", marker = "extra == 'native-build'", specifier = "==0.10.7" },
     { name = "scipy", specifier = ">=1.14" },
-    { name = "textual", marker = "extra == 'tui'", specifier = ">=0.60" },
+    { name = "textual", marker = "extra == 'tui'", specifier = ">=8.2" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'app'", specifier = ">=0.32" },
 ]
 provides-extras = ["native-build", "app", "optimization", "research", "tui", "dev"]

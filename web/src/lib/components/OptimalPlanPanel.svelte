@@ -46,9 +46,12 @@
 			{#if onLoadExample}<button type="button" onclick={onLoadExample}>Load repair example <span aria-hidden="true">↗</span></button>{/if}
 		</div>
 	{:else if plan && response}
-		<p class="intro">Minimizes modeled tail cost under the selected buffer deficit limits below.</p>
+		{#if plan.verification}
+            <p class="coverage-note">Numerical checks: {plan.verification.status === 'verified' ? 'passed' : 'failed'}. Strict probability checks: {plan.verification.policy_status === 'pass' ? 'passed' : 'outside limit'} on the supplied futures. Passing the mean dollar-day limit alone does not establish a cash-failure probability limit.</p>
+        {/if}
+        <p class="intro">Minimizes modeled tail cost under the selected buffer deficit limits below.</p>
 		{#if response.stress?.status === 'active' && !response.stress.recommendation_supported}<p class="coverage-note analysis-alert">The stress tail is too concentrated under the support policy. This computed mix is not a recommendation.</p>{/if}
-		{#if plan.meets_policy === false}<p class="coverage-note analysis-alert">Outside your policy: {plan.policy_reason ?? 'This mix does not meet every funding limit.'}</p>{:else if plan.meets_policy}<p class="coverage-note">Meets your policy on the evaluated paths. Historical validation is separate.</p>{/if}
+		{#if plan.meets_policy === false}<p class="coverage-note analysis-alert">Outside your policy: {plan.policy_reason ?? 'This mix does not meet every funding limit.'}</p>{:else if plan.meets_policy}<p class="coverage-note">Meets the app’s tolerance-based policy on the evaluated paths. Historical validation is separate.</p>{/if}
         <p class="run-context">{count.format(plan.evaluation_paths)} futures · {plan.evaluation_horizon_days}-day evaluation</p>
 		<div class="cost-grid">
 			<div>
@@ -95,6 +98,7 @@
 
 		<details>
 			<summary>Cost assumptions and buffer sensitivity</summary>
+            {#if plan.solver_evidence}<p>{plan.solver_evidence.lower_bound == null ? 'Numerical lower bound unavailable for this solve.' : `Finite-scenario subproblem lower bound: ${formatCurrency(plan.solver_evidence.lower_bound)}; numerical objective gap: ${formatCurrency(plan.solver_evidence.absolute_gap ?? 0)}.`} This is not a global certificate across other credit or tax regimes, or an interval for the true optimum.</p>{/if}
 			<p>Cost includes interest, account-specific taxes and early-withdrawal penalties, spending reductions valued dollar for dollar, and overdraft costs. Withdrawal principal is not counted as a cost: a $0 modeled cost can still require selling investments.</p>
 			<p>{plan.cost_is_path_dependent ? 'Evaluated costs differ across the modeled futures.' : 'Evaluated costs are effectively the same across the modeled futures.'}</p>
 			{#if !plan.buffer_constraint_binding}

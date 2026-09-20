@@ -80,6 +80,7 @@ class OptimizerStatus(BaseModel):
     message: str
     paths: int
     time_limit_seconds: float
+    verification: dict | None = None
 
 
 def optimizer_status(
@@ -116,6 +117,7 @@ def optimizer_status(
         message=message,
         paths=paths,
         time_limit_seconds=SOLVER_TIME_LIMIT_SECONDS,
+        verification=getattr(result, "verification", None),
     )
 
 class ScenarioResponse(BaseModel):
@@ -193,6 +195,21 @@ def evaluate_funding(state, bundle, obligations, gap, *, coverage_target, operat
     results = [evaluate_plan(state, comparison, obligations, spec, weights,
         operating_buffer=operating_buffer, overdraft_apr=overdraft_apr,
         evaluation_horizon_days=comparison.horizon_days, decision_horizon_days=bundle.horizon_days) for spec in specs]
+    from ginseng.verification import RiskContract, verify_named, verify_optimal
+    # Named candidates are checked for executable accounting separately from
+    # policy: the optimizer's mean-risk feasible set is not imposed on them.
+    checked=[]
+    for spec,result in zip(specs,results):
+        if result.feasible:
+            contract=RiskContract(operating_buffer,coverage_target,
+                max_cash_failure_probability=policy.max_cash_shortfall_probability,
+                max_buffer_breach_probability=policy.max_buffer_breach_probability,
+                overdraft_apr=overdraft_apr)
+            verification=verify_named(state,comparison,obligations,spec,result,contract,weights,bundle.horizon_days)
+            result=replace(result,verification=asdict(verification),feasible=verification.status=='verified',
+                infeasibility_reason=verification.reason)
+        checked.append(result)
+    results=checked
     plans, recommendation = to_contract(results, recommend(results, policy), policy)
     optimal = (optimize_funding(state, bundle, obligations, coverage_target=coverage_target,
         operating_buffer=operating_buffer, overdraft_apr=overdraft_apr,
@@ -200,6 +217,13 @@ def evaluate_funding(state, bundle, obligations, gap, *, coverage_target, operat
         tail_deficit_limit=tail_deficit_limit, funding_config=funding_config, funding_policy=policy,
         weights=weights, evaluation_horizon_days=comparison.horizon_days,
         decision_horizon_days=bundle.horizon_days) if include_optimizer else OptimizationFailure("no_funding_levers"))
+    if isinstance(optimal,OptimalPlan):
+        # Consumer gate also catches mocked/replaced/stale solver successes.
+        contract=RiskContract(operating_buffer,coverage_target,allowance,tail_deficit_limit,1-policy.max_buffer_breach_probability,
+            policy.max_cash_shortfall_probability,policy.max_buffer_breach_probability,policy.max_credit_utilization,overdraft_apr)
+        verification=verify_optimal(state,comparison,obligations,optimal,contract,weights,capital_gains_rate)
+        optimal=(replace(optimal,verification=asdict(verification)) if verification.status=='verified'
+                 else OptimizationFailure('invalid_solution',asdict(verification)))
     return plans, recommendation, optimal, policy, comparison
 
 

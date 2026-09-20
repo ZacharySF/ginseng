@@ -225,6 +225,7 @@ export interface BacktestWindow {
 }
 
 export interface BacktestSummary {
+    information_timing?: 'retrospective_current_records';
 	periods: number;
 	observed_coverage: number;
 	calibration: CalibrationReport;

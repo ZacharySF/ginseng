@@ -10,7 +10,9 @@ from ginseng.funding import PlanKind, PlanSpec, evaluate_plan_paths
 from ginseng.optimizer import OptimalPlan, OptimizationFailure, optimize_funding
 from ginseng.risk import cvar, quantile, weight_hash, balance_risk
 from ginseng.policy import policy_assessment, FundingPolicy
-from ginseng.simulate import draw_bundle
+from ginseng.sampling import prepare_history, sample_bundle
+from ginseng.decision_lab import contract_for_plan, evaluate_frozen, fixed_interval, stream_identity, VALIDATION_DOMAIN
+from ginseng.verification import executable_from_optimal
 from ginseng.stress import scenario_weights
 from ginseng.withdrawals import WithdrawalAssumptions
 
@@ -92,8 +94,11 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
     result["base"] = asdict(base)
     # Fresh random draws from the same historical model. Controls are frozen,
     # and this sample is never used to tune the solution or pick a frontier point.
-    holdout_seed = int(np.random.SeedSequence([bundle.seed, 98173]).generate_state(1)[0])
-    holdout = draw_bundle(state, bundle.horizon_days, bundle.n_paths, holdout_seed, bundle.mean_block_length)
+    history = prepare_history(state, bundle.mean_block_length)
+    holdout = sample_bundle(history, bundle.horizon_days, bundle.n_paths, bundle.seed,
+                            'mc', bundle.horizon_days, domain=VALIDATION_DOMAIN)
+    if holdout.seed == bundle.seed:
+        return {**result, 'status': 'unavailable', 'reason': 'stream_identity_collision'}
     holdout_weights, holdout_stress = scenario_weights(state, holdout, view)
     if holdout_stress["status"] == "unsupported":
         result["holdout"] = {"status": "unavailable", "message": "Fresh scenarios do not support the active stress assumption."}
@@ -106,6 +111,16 @@ def funding_analysis(state, bundle, obligations, specs, weights, view, parameter
             **observed,
             "within_mean_buffer_limit": observed["dollar_days_below_buffer"] <= base.buffer_tolerance_dollar_days + 1e-6,
             "within_tail_deficit_limit": observed["tail_deficit"] <= base.tail_deficit_limit + 1e-6 if base.tail_deficit_limit is not None else None}
+        verified = evaluate_frozen(state, holdout, obligations,
+            executable_from_optimal(base, parameters['capital_gains_rate']),
+            contract_for_plan(state, base, parameters), weights=holdout_weights)
+        uniform = np.array_equal(holdout_weights, np.full(holdout.n_paths, 1 / holdout.n_paths))
+        result['holdout'].update(verification=asdict(verified),
+            interval=fixed_interval(verified.metrics['cash_failure_probability'],holdout.n_paths) if uniform and holdout_stress['status'] != 'active' else None,
+            interval_status='fixed_sample_iid_mc' if uniform and holdout_stress['status'] != 'active' else 'unavailable_for_weighted_stress',
+            stream=stream_identity(holdout), training_stream=dict(seed=bundle.seed,sampler=bundle.sampler,metadata=dict(bundle.sampling_metadata)),
+            independence='Distinct PCG64 initialization via SeedSequence domain 711; holdout was not used in selection.',
+            frozen_plan_identity=verified.identity.plan)
         checked_policy = replace(policy,
                                  buffer_tolerance_dollar_days=base.buffer_tolerance_dollar_days,
                                  tail_deficit_limit=base.tail_deficit_limit)

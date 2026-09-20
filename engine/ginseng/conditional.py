@@ -54,8 +54,28 @@ def prepare_conditional(prepared, state, obligations=(), horizon=None):
     h = state.forecast_horizon if horizon is None else horizon
     if not isinstance(h, int) or h < 1:
         raise ValueError("Horizon must be a positive integer.")
-    net, daily, cash, identity = _inputs(prepared, state, obligations, h)
-    n = len(net)
+    net, daily, cash, _ = _inputs(prepared, state, obligations, h)
+    return prepare_conditional_arrays(net, daily, cash)
+
+
+def prepare_conditional_arrays(net, daily, cash):
+    """Same table construction from exact captured primitive inputs."""
+    net, daily = np.asarray(net, dtype=float), np.asarray(daily, dtype=float)
+    if (
+        net.ndim != 1
+        or daily.ndim != 1
+        or min(len(net), len(daily)) < 1
+        or not np.isfinite(net).all()
+        or not np.isfinite(daily).all()
+        or not np.isfinite(cash)
+    ):
+        raise ValueError("Finite nonempty conditional inputs required")
+    key = sha256()
+    for a in (net, daily, np.array([cash])):
+        key.update(np.asarray(a.shape, dtype="<i8").tobytes())
+        key.update(np.asarray(a, dtype="<f8").tobytes())
+    identity = key.hexdigest()
+    h, n = len(daily), len(net)
     if 48 * n * h > MAX_ARRAY_BYTES:
         raise ValueError(
             "Conditional preparation exceeds 512 MiB estimated array budget."

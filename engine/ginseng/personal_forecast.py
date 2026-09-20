@@ -105,6 +105,7 @@ class BacktestSummary(BaseModel):
     windows: list[BacktestWindow]
     warning: str | None
     calibration: dict | None = None
+    information_timing: str = "retrospective_current_records"
 
 
 class ForecastRun(BaseModel):

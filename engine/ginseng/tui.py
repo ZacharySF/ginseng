@@ -1,13 +1,8 @@
-"""Interactive terminal UI for ginseng simulate/exact, built on Textual.
+"""Ginseng's Sakura terminal research atelier.
 
-Presented as a dense instrument console (telemetry strip, subsystem nav,
-real-data charts) rather than a bordered-box dashboard. Launch with
-``ginseng tui`` (requires the ``tui`` extra: ``uv sync --extra tui``).
-
-Dressed by ``ginseng_rice``: nine coords (themes) control every color in
-the app, switch with ``t``, and the finished ``Dashboard`` widget renders
-every simulate/exact run -- see ``ginseng_rice/CLAUDE.md`` for how the two
-are wired together.
+Simulation and exact dashboards sit alongside the complete research studio,
+with ten semantic palettes, a searchable command palette and an anime portrait.
+Launch with ``ginseng tui``; see docs/tui-studio.md for optional engine extras.
 """
 
 from __future__ import annotations
@@ -50,6 +45,8 @@ from textual.widgets import (
 from textual.widgets.option_list import Option
 from textual.worker import Worker, WorkerState
 
+from ginseng.studio import EXPERIMENTS
+from ginseng.studio_ui import ResearchStudio, SakuraBanner
 from ginseng.exact import enumerate_exact
 from ginseng.ginseng_rice.dashboard.adapter import EngineRun, from_engine
 from ginseng.ginseng_rice.dashboard.board import Dashboard
@@ -63,7 +60,6 @@ from ginseng.ginseng_rice.dashboard.model import (
     Validation,
 )
 from ginseng.ginseng_rice.dress import COORDS, Dressable
-from ginseng.ginseng_rice.terminal import pick_coord
 from ginseng.inputs import fixture, load_input
 from ginseng.braille import rain_frame, ridge_surface
 from ginseng.numerical import diagnostics, environment, manifest, run_core
@@ -480,28 +476,30 @@ class BootScreen(Screen):
 
 
 class WelcomePanel(VerticalScroll):
-    def on_mount(self) -> None:
-        self.border_title = "╔═[ GINSENG // STATIONARY CASHFLOW ENGINE ]═╗"
-        env = environment()
-        self.query_one("#sys-info", Static).update(
-            f"PYTHON   {env.get('python', '--')}\n"
-            f"PLATFORM {env.get('platform', '--')}\n"
-            f"CPU      {env.get('cpu', '--')}"
-        )
-
     def compose(self) -> ComposeResult:
-        yield Static("stationary-bootstrap cash-flow simulator", classes="banner")
-        yield Static("offline · reproducible · ordinary CPU", classes="mono-dim")
-        yield Static("SYSTEM // ENVIRONMENT ─────────────────", classes="rule")
-        yield Static("", id="sys-info", classes="mono-block")
-        yield Static("OPERATIONS // AVAILABLE SUBSYSTEMS ───", classes="rule")
+        yield SakuraBanner(classes="welcome-banner")
+        yield Static("✧  YOUR QUIET CORNER OF THE QUANT UNIVERSE  ✧", classes="rule")
         yield Static(
-            "SIMULATE   MC / SOBOL ENGINE -- configure and run cash-path sampling\n"
-            "EXACT      ENUMERATION ORACLE -- independent rational validation\n"
-            "HISTORY    RUN ARCHIVE -- revisit saved runs\n",
-            classes="hint",
-        )
-        yield Static("> select a subsystem from OPERATIONS at left _", classes="prompt")
+            "Welcome to the atelier. Build a cash-flow model, follow its uncertain futures, "
+            "and keep the evidence behind every decision.", classes="welcome-copy")
+        with Horizontal(classes="welcome-cards"):
+            with Vertical(classes="welcome-card"):
+                yield Static("01  /  DREAM IN PATHS", classes="rule")
+                yield Static("Monte Carlo · scrambled Sobol\nExact oracle · conditional estimation", classes="welcome-copy")
+                yield Button("✦ Open simulation", id="home-simulate")
+            with Vertical(classes="welcome-card"):
+                yield Static("02  /  FOLLOW THE EVIDENCE", classes="rule")
+                yield Static("Precision · tail risk · stress\nFunding · portfolio · calibration", classes="welcome-copy")
+                yield Button("✧ Enter research studio", id="home-studio")
+        yield Static("♡  RESEARCH RITUAL", classes="rule")
+        yield Static(
+            "01   Choose a recipe and make its assumptions explicit.\n"
+            "02   Run the engine. Inspect the tables, tails and provenance.\n"
+            "03   Save a discovery to your notebook; return with a better question.",
+            classes="welcome-copy")
+        yield Static("✿  A WARDROBE FOR YOUR WORKSPACE", classes="rule")
+        yield Static("Press t for a new palette · Ctrl+P for every experiment · Ctrl+B for focus mode", classes="mono-dim")
+        yield Static("Synthetic fixtures are labeled. Numerical precision and historical evidence stay distinct.", classes="welcome-footnote")
 
 
 class SimulateForm(VerticalScroll):
@@ -768,17 +766,21 @@ class ErrorPanel(VerticalScroll):
 # ---------------------------------------------------------------------------
 
 NAV_OPTIONS = [
-    ("simulate", "SIMULATE", "MC / SOBOL ENGINE"),
-    ("exact", "EXACT", "ENUMERATION ORACLE"),
-    ("history", "HISTORY", "RUN ARCHIVE"),
-    ("quit", "QUIT", "TERMINATE SESSION"),
+    ("welcome", "♡ HOME", "THE ATELIER"),
+    ("simulate", "✦ SIMULATE", "CASH PATHS"),
+    ("exact", "◇ EXACT", "ORACLE"),
+    ("studio", "✿ RESEARCH", "24 EXPERIMENTS"),
+    ("surface", "▧ ATLAS", "CASH × TIME"),
+    ("portfolio", "◈ PORTFOLIO", "LOT LAB"),
+    ("history", "♡ ARCHIVE", "SAVED RUNS"),
+    ("quit", "QUIT", "UNTIL NEXT TIME"),
 ]
 
 
 def _nav_label(tag: str, hint: str) -> Content:
     # Content, not a markup string: an Option label built from plain str
     # brackets in `hint` could otherwise be misread as a markup tag.
-    return Content.assemble((tag, "bold $primary"), (f"    {hint}", "dim $g-muted"))
+    return Content.assemble((tag, "bold $primary"), (f"\n  {hint}", "dim $g-muted"))
 
 
 # The same defaults SimulateForm.collect() falls back to, for the command
@@ -801,6 +803,10 @@ class WardrobeCommands(Provider):
         commands.append(("run: canonical simulate (mc, 2048 paths)", "quick simulate launch",
                           (app.launch, "simulate", dict(QUICK_SIMULATE))))
         commands.append(("run: exact oracle", "quick exact-oracle launch", (app.launch, "exact", None)))
+        commands.extend((f"research: {entry.title}", entry.description,
+                         (app.open_studio, entry.key)) for entry in EXPERIMENTS)
+        commands.extend((f"workspace: {tag}", hint, (app.navigate, key))
+                        for key, tag, hint in NAV_OPTIONS if key != "quit")
         return commands
 
     async def discover(self) -> Hits:
@@ -817,15 +823,17 @@ class WardrobeCommands(Provider):
 
 class GinsengApp(Dressable, App):
     TITLE = "ginseng"
-    SUB_TITLE = "少女終端 // cashflow instrument"
-    DEFAULT_COORD = "gosurori"
+    SUB_TITLE = "桜のアトリエ // quant research studio"
+    DEFAULT_COORD = "sakura"
     COMMANDS = App.COMMANDS | {WardrobeCommands}
     CSS_PATH = ["ginseng_rice/rice.tcss", "ginseng_rice/dashboard/dashboard.tcss", "tui.tcss"]
 
     BINDINGS = [
         Binding("q", "quit", "Quit"),
         Binding("escape", "go_welcome", "Menu"),
-        Binding("t", "next_coord", "Coord"),
+        Binding("t", "next_coord", "Palette"),
+        Binding("ctrl+b", "toggle_sidebar", "Focus"),
+        Binding("ctrl+r", "research", "Research"),
     ]
 
     def __init__(self, coord: str | None = None):
@@ -847,11 +855,15 @@ class GinsengApp(Dressable, App):
         self._pulse = 0
         self._marquee = 0
         self._env: dict | None = None
+        self._sidebar_hidden = False
+        self._status = "READY"
+        self._simulation_busy = False
 
     def compose(self) -> ComposeResult:
         yield Static("", id="telemetry")
         with Horizontal(id="workspace"):
             with VerticalScroll(id="sidebar"):
+                yield Static("✿  GINSENG  /  ATELIER", id="sidebar-brand")
                 yield Portrait(id="portrait")
                 yield OperatorPanel(id="operator")
                 yield OptionList(
@@ -865,6 +877,7 @@ class GinsengApp(Dressable, App):
                 yield ResultPanel(id="panel-result")
                 yield HistoryPanel(id="panel-history")
                 yield ErrorPanel(id="panel-error")
+                yield ResearchStudio(id="panel-studio")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -882,7 +895,7 @@ class GinsengApp(Dressable, App):
         the telemetry strip's THREADS readout instead of re-shelling out
         on every 0.8s tick."""
         self._env = await asyncio.to_thread(environment)
-        self.update_telemetry("COMPLETE" if self.last_data else "READY")
+        self.update_telemetry(self._status)
 
     def _tick_pulse(self) -> None:
         """Small CRT-like heartbeat in the telemetry strip. Frozen under
@@ -893,7 +906,7 @@ class GinsengApp(Dressable, App):
             return
         self._pulse = (self._pulse + 1) % 4
         self._marquee += 2
-        self.update_telemetry("COMPLETE" if self.last_data else "READY")
+        self.update_telemetry(self._status)
 
     def on_resize(self, event) -> None:
         self._apply_responsive_layout()
@@ -905,9 +918,12 @@ class GinsengApp(Dressable, App):
         so a plain 80-column terminal (a common default -- wider than this
         used to require) still gets to see her, just smaller."""
         width = self.size.width
-        self.query_one(Portrait).display = width >= 40
+        self.query_one(Portrait).display = width >= 100 and self.size.height >= 32
         sidebar = self.query_one("#sidebar")
-        sidebar.styles.width = 50 if width >= 160 else (36 if width >= 100 else 24)
+        sidebar.styles.width = 38 if width >= 160 else (30 if width >= 110 else 22)
+        sidebar.display = not self._sidebar_hidden and width >= 65
+        self.screen.set_class(width < 110, "-compact")
+        self.screen.set_class(self.size.height < 32, "-short")
 
     def _marquee_text(self, width: int) -> str:
         """A real scroll through this session's own event log -- not
@@ -918,6 +934,7 @@ class GinsengApp(Dressable, App):
         return loop[offset:offset + width]
 
     def update_telemetry(self, status: str) -> None:
+        self._status = status
         pulse = ("|", "/", "-", "\\")[self._pulse]
         threads = self._env["threads"] if self._env else {}
         thread_bits = " ".join(f"{k.split('_')[0]}={v or '-'}" for k, v in threads.items()) or "loading..."
@@ -940,19 +957,45 @@ class GinsengApp(Dressable, App):
     def action_go_welcome(self) -> None:
         self.query_one("#body", ContentSwitcher).current = "panel-welcome"
 
-    # ---- navigation ---------------------------------------------------
-    @on(OptionList.OptionSelected, "#nav")
-    def _nav_selected(self, event: OptionList.OptionSelected) -> None:
-        key = event.option.id
-        if key == "simulate":
+    def action_toggle_sidebar(self) -> None:
+        self._sidebar_hidden = not self._sidebar_hidden
+        self._apply_responsive_layout()
+
+    def action_research(self) -> None:
+        self.open_studio()
+
+    def open_studio(self, key: str | None = None) -> None:
+        self.query_one("#body", ContentSwitcher).current = "panel-studio"
+        self.query_one("#nav", OptionList).highlighted = next(i for i, option in enumerate(NAV_OPTIONS) if option[0] == "studio")
+        if key:
+            self.query_one(ResearchStudio).open_experiment(key)
+
+    def navigate(self, key: str) -> None:
+        if key == "welcome":
+            self.action_go_welcome()
+        elif key == "simulate":
             self.query_one("#body", ContentSwitcher).current = "panel-form"
         elif key == "exact":
             self.launch("exact", None)
+        elif key in ("studio", "surface", "portfolio"):
+            self.open_studio(None if key == "studio" else key)
         elif key == "history":
             self.refresh_history()
             self.query_one("#body", ContentSwitcher).current = "panel-history"
         elif key == "quit":
             self.exit()
+
+    @on(OptionList.OptionSelected, "#nav")
+    def _nav_selected(self, event: OptionList.OptionSelected) -> None:
+        self.navigate(event.option.id)
+
+    @on(Button.Pressed, "#home-simulate")
+    def _home_simulate(self) -> None:
+        self.navigate("simulate")
+
+    @on(Button.Pressed, "#home-studio")
+    def _home_studio(self) -> None:
+        self.open_studio()
 
     @on(Button.Pressed, "#btn-run")
     def _run_pressed(self) -> None:
@@ -968,22 +1011,37 @@ class GinsengApp(Dressable, App):
     def _save_pressed(self) -> None:
         if not self.last_data:
             return
-        ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        out = ARTIFACT_DIR / f"{stamp}.json"
-        out.write_text(json.dumps(_dashboard_to_dict(self.last_data), indent=2, allow_nan=False) + "\n")
-        self.notify(f"saved {out}", title="✓ saved", severity="information")
+        try:
+            ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+            stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+            out = ARTIFACT_DIR / f"{stamp}.json"
+            payload = {"dashboard": _dashboard_to_dict(self.last_data), "engine_result": self.last_result}
+            with out.open("x") as handle:
+                handle.write(json.dumps(payload, indent=2, allow_nan=False) + "\n")
+            self.notify(f"saved {out}", title="♡ saved", severity="information")
+        except (OSError, ValueError) as error:
+            self.notify(str(error), title="Could not save run", severity="error")
 
     @on(DataTable.RowSelected, "#history-table")
     def _history_row_selected(self, event: DataTable.RowSelected) -> None:
         payload = self._history_payloads.get(str(event.row_key.value))
         if payload:
-            self._present_result(_dashboard_from_dict(payload), "RESULT // ARCHIVED RUN")
+            self.last_result = payload.get("engine_result")
+            self.last_data = _dashboard_from_dict(payload.get("dashboard", payload))
+            self._present_result(self.last_data, "RESULT // ARCHIVED RUN")
 
     # ---- background work ------------------------------------------------
     def launch(self, kind: str, params: dict | None) -> None:
+        if self._simulation_busy:
+            self.notify("A simulation is already running.")
+            return
         engine = params["sampler"] if kind == "simulate" else "oracle"
-        case = load_case(kind, params)
+        try:
+            case = load_case(kind, params)
+        except (ValueError, OSError, KeyError, TypeError) as error:
+            self.show_error(error)
+            return
+        self._simulation_busy = True
         self.query_one(OperatorPanel).set_busy(engine)
         self.query_one(Portrait).set_tone("thin")
         self.last_engine = engine.upper()
@@ -1010,6 +1068,8 @@ class GinsengApp(Dressable, App):
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         if event.worker.name != "run_job":
             return
+        if event.state in (WorkerState.SUCCESS, WorkerState.ERROR, WorkerState.CANCELLED):
+            self._simulation_busy = False
         if event.state == WorkerState.SUCCESS:
             kind, result, data, run = event.worker.result
             self.show_result(kind, result, data, run)
@@ -1064,7 +1124,7 @@ class GinsengApp(Dressable, App):
         self.query_one(OperatorPanel).set_error()
         self.query_one(Portrait).set_tone("short")
         self.set_urgency("short")
-        self.query_one("#error-text", Static).update(f"{type(error).__name__}: {error}")
+        self.query_one("#error-text", Static).update(Text(f"{type(error).__name__}: {error}"))
         self.update_telemetry("FAULT")
         self.query_one("#body", ContentSwitcher).current = "panel-error"
         self.notify(str(error), title="run failed", severity="error", timeout=8)
@@ -1076,17 +1136,19 @@ class GinsengApp(Dressable, App):
         rows = []
         if ARTIFACT_DIR.exists():
             rows = sorted(ARTIFACT_DIR.glob("*.json"), reverse=True)
-        self.query_one("#history-empty", Label).display = not rows
         for path in rows:
             try:
                 payload = json.loads(path.read_text())
-                reserve = money(payload["reserve_to_add"])
-                prob = f"{payload['shortfall_p']:.4f}"
-                plan, sampler = payload.get("plan", "?"), payload.get("sampler", "")
+                dashboard = payload.get("dashboard", payload)
+                _dashboard_from_dict(dashboard)
+                reserve = money(dashboard["reserve_to_add"])
+                prob = f"{dashboard['shortfall_p']:.4f}"
+                plan, sampler = dashboard.get("plan", "?"), dashboard.get("sampler", "")
             except (ValueError, OSError, KeyError, TypeError):
                 continue
             self._history_payloads[str(path)] = payload
             table.add_row(path.name, plan, sampler, reserve, prob, key=str(path))
+        self.query_one("#history-empty", Label).display = not self._history_payloads
 
 
 def main(argv=None) -> int:
@@ -1098,7 +1160,11 @@ def main(argv=None) -> int:
     # detection too: Rich's _TERM_COLORS maps "kitty" → EIGHT_BIT.
     os.environ.pop("NO_COLOR", None)
     os.environ.setdefault("COLORTERM", "truecolor")
-    coord = pick_coord()  # must run before Textual takes stdin
+    import argparse
+    parser = argparse.ArgumentParser(prog="ginseng tui", description="Sakura quant research studio")
+    parser.add_argument("--coord", choices=sorted(COORDS), help="Choose a palette")
+    args = parser.parse_args(argv)
+    coord = args.coord or os.environ.get("GINSENG_COORD") or "sakura"
     GinsengApp(coord=coord).run()
     return 0
 

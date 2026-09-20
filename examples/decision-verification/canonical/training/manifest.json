@@ -1,0 +1,229 @@
+{
+  "schema": 1,
+  "complete": true,
+  "source": "history",
+  "visible_horizon": 38,
+  "material_horizon": 38,
+  "scalars": {
+    "opening_cash": 3001.7417748726193,
+    "buffer": 1000.0,
+    "coverage_target": 0.95
+  },
+  "full": false,
+  "model": {
+    "sampler_version": 1,
+    "mapping_version": 1,
+    "material_horizon": 38,
+    "dimension": 75,
+    "root_seed": 20260920,
+    "replicate": 0,
+    "domain": 710,
+    "derived_seed": 11025734643351223888,
+    "seed_scheme": "SeedSequence([root, domain, method_id, replicate]).uint64",
+    "bit_generator": "PCG64",
+    "bits": null,
+    "scramble": null,
+    "optimization": null,
+    "stream_layout": "C-order fixed-width float64",
+    "sampler": "mc",
+    "paths": 2000,
+    "draw_id": "a3f237bc034b96a7ef2bb71480b30cdac1636d107e3a3b450d4ddd7b17a8ca0b",
+    "mean_block_length": 14,
+    "history_length": 730
+  },
+  "execution": {
+    "backend": "numpy",
+    "reason": "Explicit selection.",
+    "workers": 1,
+    "block_size": 1024,
+    "input_bytes": 625824,
+    "output_bytes": 96000,
+    "scratch_bound_bytes": 3112960,
+    "native": null,
+    "counters": {
+      "path_materializations": 0,
+      "row_reductions": 1,
+      "weight_normalizations": 1
+    },
+    "evaluation_seconds": 0.001117386003897991
+  },
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-x86_64-with-glibc2.42",
+    "cpu": "Intel(R) Core(TM) Ultra 7 256V",
+    "dependencies": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "scipy": "1.18.1",
+      "arch": "8.0.0",
+      "ginseng": "0.1.0"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "dtype": "float64",
+    "git_commit": "78b599e1508c6f8cc823762b70d9b13d874a3526",
+    "source_fingerprint": "18878f4a220acfd4b843b11b750249c2d36796513d4e2c89f9b61061936facd8"
+  },
+  "metrics": {
+    "required_liquidity_reserve": 5792.725695802439,
+    "cash_shortfall_probability": 0.3430000000000001,
+    "expected_max_cash_deficit": 330.53187743805773,
+    "avg_cash_deficit_when_short": 963.6497884491476,
+    "funding_gap": 2790.9839209298198,
+    "dollar_days_below_buffer": 6728.879505006467,
+    "overdraft_dollar_days": 2161.695259286084
+  },
+  "members": {
+    "input:history": {
+      "path": "input-history.npy",
+      "dtype": "<f8",
+      "shape": [
+        730,
+        3
+      ],
+      "nbytes": 17520,
+      "file_bytes": 17648,
+      "sha256": "1810a0c2c8339fce3ece1221027067a6d7b4d58ff74614b284788e49e96d0f70"
+    },
+    "input:indices": {
+      "path": "input-indices.npy",
+      "dtype": "<i8",
+      "shape": [
+        2000,
+        38
+      ],
+      "nbytes": 608000,
+      "file_bytes": 608128,
+      "sha256": "e0f0f818cc90200ce7e84fd5f9ed6737a896a6f7e5505c7322536644f350a657"
+    },
+    "input:direct": {
+      "path": "input-direct.npy",
+      "dtype": "<f8",
+      "shape": [
+        0,
+        0
+      ],
+      "nbytes": 0,
+      "file_bytes": 128,
+      "sha256": "4f7a75ba1f30ccc5743b356949f87a030833f6d0db3402d6ce7a35e0a659fb42"
+    },
+    "input:schedule": {
+      "path": "input-schedule.npy",
+      "dtype": "<f8",
+      "shape": [
+        38
+      ],
+      "nbytes": 304,
+      "file_bytes": 432,
+      "sha256": "cf43f0a8b1ea192916aa75c77cf00c0511ccb7e7071bd25c01325a2f90d27c50"
+    },
+    "input:weights": {
+      "path": "input-weights.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "fdfb894fa1bd99b6de91685f366f8e69fa26c8f8a393903cb6bc1b3d747bd636"
+    },
+    "input:discretionary": {
+      "path": "input-discretionary.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000,
+        38
+      ],
+      "nbytes": 608000,
+      "file_bytes": 608128,
+      "sha256": "61d7ddc57991f58259578f77b474dfcf169a2c3a36369d5d7f488c508a9094e8"
+    },
+    "output:stat_minima": {
+      "path": "output-stat_minima.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "4e1795685d2b523007dca45753b374da14772fd43c236f5ec4566bf88cd357fe"
+    },
+    "output:stat_terminal": {
+      "path": "output-stat_terminal.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "2d39aa3f8155a7a0f8c69e107ee14eae5dac058b7163249a707ee8d19e560279"
+    },
+    "output:stat_minimum_balance": {
+      "path": "output-stat_minimum_balance.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "9561a9217eccd0a9721c91104c60e12ddb8a18aac99eb6a01c7c8b07b9128d2f"
+    },
+    "output:stat_maximum_deficit": {
+      "path": "output-stat_maximum_deficit.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "e1186e94d7364767ba43c34b70647edf165fdb81de9e4814e6511aa74162f560"
+    },
+    "output:stat_buffer_dollar_days": {
+      "path": "output-stat_buffer_dollar_days.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "93ce197e7e9ef05ff925aac87c3547c73d71cc9e3728cf338bd5b3b9c59fc39b"
+    },
+    "output:stat_overdraft_dollar_days": {
+      "path": "output-stat_overdraft_dollar_days.npy",
+      "dtype": "<f8",
+      "shape": [
+        2000
+      ],
+      "nbytes": 16000,
+      "file_bytes": 16128,
+      "sha256": "8866864e8cb7cd01478a7c713a28a4c5b9494bae78ec317f6d01c680eef51b73"
+    },
+    "output:cash_failure": {
+      "path": "output-cash_failure.npy",
+      "dtype": "|u1",
+      "shape": [
+        2000
+      ],
+      "nbytes": 2000,
+      "file_bytes": 2128,
+      "sha256": "f9454d7bd8a6616ae02ce631d468778da89d4250c64070c11c488bc721b627f3"
+    },
+    "output:buffer_breach": {
+      "path": "output-buffer_breach.npy",
+      "dtype": "|u1",
+      "shape": [
+        2000
+      ],
+      "nbytes": 2000,
+      "file_bytes": 2128,
+      "sha256": "9393990c921527673a4491478ab035f7e63125c1f19fa517f3f5db5b8d9486e4"
+    }
+  },
+  "input_identity": "5dbe6bd22b1624d51dc6cc83bac7d3d55c9afd45dbf661b8f71c74a1026703ea",
+  "calculation_identity": "f9b8768cae61c328379159309082064b59e31410fa3e4fb6346000d83b12435e",
+  "output_digest": "da6ee5592b82e91cca476e36ad922bf4627b34b90a01e29a04052416218bbef9",
+  "run_identity": "f5cb59a77d4f384d8c476104f635df868e64e67934ccf0fb2748c26a3ee3fb78"
+}

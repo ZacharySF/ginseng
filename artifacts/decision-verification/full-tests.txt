@@ -1,0 +1,47 @@
+........................................................................ [ 15%]
+........................................................................ [ 30%]
+........................................................................ [ 45%]
+........................................................................ [ 60%]
+........................................................................ [ 75%]
+........................................................................ [ 91%]
+..........F...............................                               [100%]
+=================================== FAILURES ===================================
+_______________________________ test_boot_screen _______________________________
+
+snap_compare = <function snap_compare.<locals>.compare at 0x781f5b2e5760>
+
+    def test_boot_screen(snap_compare):
+        # No run_before: capture the boot splash itself, before it's dismissed.
+>       assert snap_compare(GinsengApp(coord="gothpunk"), terminal_size=SIZE)
+E       AssertionError: assert False
+E        +  where False = <function snap_compare.<locals>.compare at 0x781f5b2e5760>(GinsengApp(title='ginseng', classes={'-theme-ginseng-gothpunk', '-dark-mode'}, pseudo_classes={'focus', 'dark'}), terminal_size=(120, 45))
+E        +    where GinsengApp(title='ginseng', classes={'-theme-ginseng-gothpunk', '-dark-mode'}, pseudo_classes={'focus', 'dark'}) = GinsengApp(coord='gothpunk')
+
+engine/tests/test_tui_snapshots.py:85: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/xelo/ginseng/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+.venv/lib/python3.12/site-packages/starlette/testclient.py:53
+  /home/xelo/ginseng/.venv/lib/python3.12/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+.venv/lib/python3.12/site-packages/pytest_textual_snapshot.py:350
+  /home/xelo/ginseng/.venv/lib/python3.12/site-packages/pytest_textual_snapshot.py:350: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[1mTextual Snapshot Report[0m
+
+[1m1[0m mismatched snapshots
+
+[1mView the [0m]8;id=11298878;file:///home/xelo/ginseng/snapshot_report.html\[1mfailure report[0m]8;;\[1m.[0m
+
+[2m/home/xelo/ginseng/[0m[2msnapshot_report.html[0m
+
+--------------------------- snapshot report summary ----------------------------
+1 snapshot failed. 5 snapshots passed.
+=========================== short test summary info ============================
+FAILED engine/tests/test_tui_snapshots.py::test_boot_screen - AssertionError:...
+1 failed, 473 passed, 3 warnings in 51.79s

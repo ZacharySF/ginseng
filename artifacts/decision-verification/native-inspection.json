@@ -1,0 +1,28 @@
+{
+  "api_version": 1,
+  "native": {
+    "api_version": 1,
+    "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+    "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+    "compiler": "15.3.0",
+    "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+    "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+    "build_type": "Release",
+    "environment_compiler_flags": "",
+    "options": "C++20; no fast-math; no FP contraction; portable target",
+    "available": true,
+    "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+    "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+  },
+  "auto": {
+    "backend": "numpy",
+    "reason": "Conservative default; see measured report."
+  },
+  "boundary": "Prepared cash paths, summaries, risk metrics and optional charts; no solver/data-fetch replay.",
+  "exit_codes": {
+    "success": 0,
+    "invalid_input_or_artifact": 2,
+    "unexpected_mismatch": 3,
+    "scenario_difference": 4
+  }
+}

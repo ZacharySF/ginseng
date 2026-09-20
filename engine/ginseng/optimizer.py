@@ -80,6 +80,7 @@ OptimizationFailureReason = Literal[
 @dataclass(frozen=True)
 class OptimizationFailure:
     reason: OptimizationFailureReason
+    verification: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -124,6 +125,8 @@ class OptimalPlan:
     settlement_days: int = 1
     external_transfer_days: int = 2
     use_business_days: bool = False
+    verification: dict | None = None
+    solver_evidence: dict | None = None
 
 
 def _finite_nonnegative(value: float) -> bool:
@@ -516,6 +519,7 @@ def optimize_funding(
 
     problem = cp.Problem(cp.Minimize(objective), constraints)
     solver_method = "clarabel"
+    solver_evidence = {}
     if n_paths * horizon_days > CONSTRAINT_GENERATION_THRESHOLD:
         from ginseng.funding_cuts import solve_funding_cuts, CutSolveFailure
         try:
@@ -540,6 +544,11 @@ def optimize_funding(
         credit_dual_value = solution.credit_dual
         status = "optimal"
         solver_method = "highs_constraint_generation"
+        solver_evidence = dict(solution.evidence)
+        for name in ('lower_bound','master_primal_objective','candidate_objective','absolute_gap','master_primal_residual','master_complementarity_residual','feasibility_tolerance','objective_gap_tolerance'):
+            if solver_evidence.get(name) is not None: solver_evidence[name] *= _DOLLAR_SCALE
+        lower = solver_evidence.get('lower_bound')
+        solver_evidence['relative_gap'] = (max(0.,solver_evidence['candidate_objective']-lower)/max(1.,abs(solver_evidence['candidate_objective'])) if lower is not None else None)
     else:
         try:
             problem.solve(
@@ -571,6 +580,12 @@ def optimize_funding(
         objective_value = problem.value
         buffer_dual_value = buffer_constraint.dual_value
         credit_dual_value = credit_constraint.dual_value
+        solver_evidence = dict(lower_bound=None, global_lower_bound=None,
+            global_bound_status='unavailable: no independently validated Clarabel dual bound exposed by this adapter',
+            absolute_gap=None, relative_gap=None, iterations=getattr(problem.solver_stats,'num_iters',None),
+            termination_reason=status, master_primal_residual=None, master_complementarity_residual=None,
+            scope='finite supplied scenarios; fixed selected credit account and withdrawal charge regime',
+            feasibility_tolerance=1e-10, objective_gap_tolerance=1e-10)
 
     credit_value = _bounded_solution(None if credit.value is None else credit.value * _DOLLAR_SCALE, 0.0, available_credit)
     withdrawal_values = np.asarray(withdrawals.value, dtype=float) * _DOLLAR_SCALE if withdrawals.value is not None else np.array([])
@@ -721,5 +736,38 @@ def optimize_funding(
         external_transfer_days=resolved_funding_config.external_transfer_days,
         use_business_days=resolved_funding_config.use_business_days,
     )
-    from dataclasses import replace
-    return replace(result, **policy_assessment(result, resolved_funding_policy))
+    from dataclasses import replace, asdict
+    from importlib.metadata import version
+    from ginseng.verification import RiskContract, executable_from_optimal, verify_optimal
+    from ginseng.provenance import digest
+    solver_version = version('clarabel')
+    if solver_method.startswith('highs'):
+        try:
+            from scipy.optimize._highspy._core import _Highs
+            solver_version = _Highs().version()
+        except (ImportError, AttributeError):
+            solver_version = 'unavailable (SciPy adapter ' + version('scipy') + ')'
+    solver_evidence.update(solver=solver_method, solver_version=solver_version,
+        scipy_adapter_version=version('scipy') if solver_method.startswith('highs') else None,
+        evaluation_draw_id=evaluation_bundle.bootstrap_draw_id,evaluation_weight_hash=weight_hash(w),
+        objective_kind=objective_kind,mean_buffer_allowance=buffer_tolerance,
+        tail_deficit_limit=tail_deficit_limit,signed_margin_coverage=buffer_coverage_target,
+        time_limit_seconds=time_limit_seconds, scenario_day_limit=MAX_SCENARIO_DAYS,
+        reported_objective=cvar_value, executed_objective=result.cvar_cost if objective_kind=='cvar' else result.expected_cost,
+        objective_units='dollars', plan_identity=digest(asdict(executable_from_optimal(result,capital_gains_rate))),
+        postprocessing='clip to bounds; reconstruct net quotes; trim free withdrawals; equal charges prefer taxable, Roth, traditional, then unit key',
+        sensitivities=dict(buffer=dict(value=implied_liquidity_price,units='dollars / dollar-day',sign='objective change approximately -value * allowance increase'),
+                           credit=dict(value=implied_credit_price,units='dollars / dollar',sign='objective change approximately -value * available-credit increase')))
+    solver_evidence['postprocessing_objective_difference']=solver_evidence['executed_objective']-cvar_value
+    if solver_evidence.get('lower_bound') is not None:
+        solver_evidence['absolute_gap']=max(0.,solver_evidence['executed_objective']-solver_evidence['lower_bound'])
+        solver_evidence['relative_gap']=solver_evidence['absolute_gap']/max(1.,abs(solver_evidence['executed_objective']))
+    result=replace(result,solver_evidence=solver_evidence)
+    contract=RiskContract(operating_buffer,q,buffer_tolerance,tail_deficit_limit,buffer_coverage_target,
+        max_cash_shortfall_probability,resolved_funding_policy.max_buffer_breach_probability,max_credit_utilization,
+        overdraft_apr,objective_kind)
+    verification=verify_optimal(state,evaluation_bundle,obligations,result,contract,w,capital_gains_rate)
+    if verification.status!='verified':
+        return OptimizationFailure('invalid_solution',asdict(verification))
+    solver_evidence['independent_primal_checks']=[asdict(c) for c in verification.constraints]
+    return replace(result, solver_evidence=solver_evidence, verification=asdict(verification), **policy_assessment(result, resolved_funding_policy))

@@ -29,6 +29,7 @@ class CutSolution:
     buffer_dual: float
     credit_dual: float
     iterations: int
+    evidence: dict
 
 
 def solve_funding_cuts(base, savings, credit_effect, availability, capacities, net_rates,
@@ -128,8 +129,29 @@ def solve_funding_cuts(base, savings, credit_effect, availability, capacities, n
                 and (tail is None or tail <= tail_limit + feasibility_tolerance)
                 and (coverage is None or coverage <= feasibility_tolerance)
                 and cost <= result.fun + gap_tolerance):
+            # A conservative Lagrangian bound, including reduced-cost residuals
+            # over the finite control box. Never promote the primal master value
+            # itself to a certified lower bound.
+            dual = np.minimum(np.asarray(result.ineqlin.marginals), 0.)
+            cost_rows = np.array(rows)[:, -1] == -1
+            mass = -dual[cost_rows].sum()
+            if mass > 1: dual[cost_rows] /= mass * (1 + 1e-14)
+            reduced = objective - np.array(rows).T @ dual
+            lower = float(np.dot(rhs, dual) + np.dot(np.minimum(reduced[:-1], 0), upper))
+            if reduced[-1] < 0:
+                lower = None
+            evidence = dict(lower_bound=lower, master_primal_objective=float(result.fun),
+                candidate_objective=float(cost), absolute_gap=max(0.,cost-lower) if lower is not None else None,
+                relative_gap=max(0.,cost-lower)/max(1.,abs(cost)) if lower is not None else None,
+                master_primal_residual=float(max(0., -min(result.ineqlin.residual))),
+                master_complementarity_residual=float(np.max(np.abs(result.ineqlin.marginals * result.ineqlin.residual))),
+                iterations=iteration, master_iterations=int(result.nit), termination_reason='full_path_feasible_and_gap',
+                bound_method='Lagrangian supporting-plane bound with finite-box residual correction',
+                scope='finite supplied scenarios; fixed selected credit account; continuous fixed-price withdrawal units; no unexamined regimes',
+                global_lower_bound=None, global_bound_status='unavailable outside this declared convex subproblem',
+                feasibility_tolerance=feasibility_tolerance, objective_gap_tolerance=gap_tolerance)
             return CutSolution(float(x[0]), x[1:-1], float(x[-1]), float(cost), float(stochastic_var),
                 float(-np.sum(result.ineqlin.marginals[mean_rows])),
-                float(-result.upper.marginals[0]), iteration)
+                float(-result.upper.marginals[0]), iteration, evidence)
         add_planes(x, observation)
     raise CutSolveFailure("solver_limit")

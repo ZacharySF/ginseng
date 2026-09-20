@@ -1,4 +1,4 @@
-import type { OptimalPlan } from './types';
+import type { OptimalPlan, PlanVerification } from './types';
 
 export interface CalibrationSample {
 	spacing_days: number; overlapping: boolean; windows: number; covered: number;
@@ -6,6 +6,7 @@ export interface CalibrationSample {
 	mean_pinball_loss: number | null; mean_crps: number | null;
 }
 export interface CalibrationReport {
+    information_timing?: 'retrospective_current_records';
 	status: string; source: string; target: string; excluded: string;
 	history_days: number; training_days_minimum: number; horizon_days: number;
 	paths_per_forecast: number; nominal_coverage: number; primary: CalibrationSample;
@@ -28,6 +29,8 @@ export interface FundingAnalysisReport {
 	frontier: { limit: number; status: string; plan: OptimalPlan | null }[];
 	base?: OptimalPlan;
 	holdout: (LossMetrics & { status: 'ready'; label: string; paths: number;
+        verification?: PlanVerification; interval?: { low: number; high: number; method: string; confidence: number } | null;
+        interval_status?: string;
         meets_policy?: boolean; policy_reason?: string | null;
 		within_mean_buffer_limit: boolean; within_tail_deficit_limit: boolean | null })
 		| { status: 'unavailable'; message: string } | null;

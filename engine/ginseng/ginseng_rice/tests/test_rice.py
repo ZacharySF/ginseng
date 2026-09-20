@@ -15,7 +15,7 @@ def test_every_coord_passes_lint():
 
 
 def test_every_coord_becomes_a_theme_with_all_roles():
-    assert len(COORDS) == 9
+    assert len(COORDS) == 10
     for coord in COORDS.values():
         theme = coord.to_theme()
         assert theme.name == f"ginseng-{coord.name}"

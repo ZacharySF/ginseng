@@ -120,7 +120,7 @@ test('shows the enforced buffer target separately from the cost tail', () => {
  const data=response();
  Object.assign(data.optimal_plan,{buffer_coverage_target:.95,meets_policy:true});
  const output=text({response:data});
- assert.match(output,/Meets your policy on the evaluated paths/);
+ assert.match(output,/Meets the app’s tolerance-based policy on the evaluated paths/);
  assert.match(output,/conservatively enforces 95% buffer coverage/);
  assert.doesNotMatch(output,/older result has no buffer-coverage constraint/);
 });
@@ -130,7 +130,7 @@ test('solver success cannot conceal an outside-policy result', () => {
  Object.assign(data.optimal_plan,{meets_policy:false,policy_reason:'Buffer breach exceeds your limit.'});
  const output=text({response:data});
  assert.match(output,/Outside your policy: Buffer breach exceeds your limit/);
- assert.doesNotMatch(output,/Meets your policy on the evaluated paths/);
+ assert.doesNotMatch(output,/Meets the app’s tolerance-based policy on the evaluated paths/);
 });
 
 test('personal empty state never offers a synthetic repair action', () => {
@@ -138,4 +138,15 @@ test('personal empty state never offers a synthetic repair action', () => {
   optimizer_status:{code:'not_needed',message:'Current cash covers the reserve.'}})});
  assert.match(output,/No additional funding needed/);
  assert.doesNotMatch(output,/Load repair example/);
+});
+
+test('independent numerical success stays separate from a failed probability policy and unavailable bound', () => {
+    const data = response();
+    data.optimal_plan.verification = { status: 'verified', policy_status: 'fail' };
+    data.optimal_plan.solver_evidence = { lower_bound: null, global_lower_bound: null };
+    const output = text({ response: data });
+    assert.match(output, /Numerical checks: passed/);
+    assert.match(output, /Strict probability checks: outside limit/);
+    assert.match(output, /lower bound unavailable/);
+    assert.match(output, /mean dollar-day limit alone does not establish/);
 });

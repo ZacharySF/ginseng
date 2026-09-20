@@ -1,0 +1,6 @@
+supported baseline cold solve 0.0989393160052714 reused solve 0.02270144099747995
+supported numpy cold solve 0.12386037100077374 reused solve 0.04119420400093077
+supported native cold solve 0.12187480000284268 reused solve 0.04229641299752984
+offline_stress baseline cold solve 0.11103677999926731 reused solve 0.02862497099704342
+offline_stress numpy cold solve 0.14023406700289343 reused solve 0.054134844001964666
+offline_stress native cold solve 0.13878660200134618 reused solve 0.05397220799932256

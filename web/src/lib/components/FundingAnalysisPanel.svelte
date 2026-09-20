@@ -63,6 +63,8 @@
 			<h3>Original optimized mix on fresh futures</h3>
 			{#if report.holdout.status === 'ready'}
 				<p>{report.holdout.label}</p>
+                {#if report.holdout.verification}<p>Independent execution checks: {report.holdout.verification.status === 'verified' ? 'passed' : 'a training constraint was exceeded'}. Strict cash-failure frequency: {formatPercent(report.holdout.verification.metrics.cash_failure_probability ?? 0)}.</p>{/if}
+                {#if report.holdout.interval}<p>95% fixed-sample binomial interval: {formatPercent(report.holdout.interval.low)}–{formatPercent(report.holdout.interval.high)}. {report.holdout.interval.method}; marginal coverage for this frozen plan. Simulator validation is separate from historical calibration.</p>{:else if report.holdout.interval_status}<p>No iid binomial interval is reported for weighted stress estimates.</p>{/if}
                 {#if report.holdout.meets_policy !== undefined}<p><strong>{report.holdout.meets_policy ? 'Policy held in this fresh sample.' : 'Policy did not hold in this fresh sample.'}</strong> {report.holdout.policy_reason ?? ''}</p>{/if}
 				<div class="analysis-grid"><div><small>Average cost</small><strong>{formatCurrency(report.holdout.expected_cost)}</strong></div><div><small>Tail cost</small><strong>{formatCurrency(report.holdout.cvar_cost)}</strong></div><div><small>Cash shortfall</small><strong>{formatPercent(report.holdout.cash_shortfall_probability)}</strong></div></div>
 				<p>Mean buffer limit: {report.holdout.within_mean_buffer_limit ? 'held in this fresh sample' : 'exceeded in this fresh sample'}.{report.holdout.within_tail_deficit_limit === null ? '' : ` Tail deficit limit: ${report.holdout.within_tail_deficit_limit ? 'held' : 'exceeded'}.`}</p>

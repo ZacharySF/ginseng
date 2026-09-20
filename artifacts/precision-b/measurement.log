@@ -1,0 +1,4 @@
+Diagnostics rare: 128 / 512
+Diagnostics policy_threshold: 256 / 512
+Diagnostics difficult: 384 / 512
+Diagnostics tiny: 512 / 512
