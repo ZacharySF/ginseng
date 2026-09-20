@@ -34,5 +34,3 @@
        32    0.009    0.000    0.019    0.001 /home/xelo/ginseng/engine/ginseng/execution.py:234(numpy_block)
         1    0.000    0.000    0.018    0.018 /home/xelo/ginseng/engine/ginseng/portfolio.py:17(aligned_asset_returns)
       136    0.000    0.000    0.016    0.000 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)
-
-
