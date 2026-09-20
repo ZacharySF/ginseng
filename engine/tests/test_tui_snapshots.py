@@ -140,3 +140,52 @@ async def _show_atlas(pilot):
 def test_sakura_atlas(snap_compare, monkeypatch):
     monkeypatch.delenv('NO_COLOR', raising=False)
     assert snap_compare(GinsengApp(coord='sakura'), terminal_size=(140,48), run_before=_show_atlas)
+
+
+async def _open_wardrobe(pilot):
+    await _dismiss_boot(pilot)
+    pilot.app.action_wardrobe()
+    await pilot.pause()
+
+
+@pytest.mark.parametrize('coord', ['miku', 'evangelion', 'catppuccin'])
+def test_anime_wardrobe(snap_compare, coord):
+    assert snap_compare(GinsengApp(coord=coord), terminal_size=(140, 48), run_before=_open_wardrobe)
+
+
+async def _show_cash_signals(pilot):
+    await _dismiss_boot(pilot)
+    pilot.app.launch('simulate', dict(CANONICAL, fixture_name='drought-heavy', paths=256))
+    await _wait_for_result(pilot)
+    pilot.app.query_one('#cash-signals').scroll_visible(top=True, animate=False)
+    await pilot.pause()
+
+
+def test_cash_signals(snap_compare):
+    assert snap_compare(GinsengApp(coord='moonrise'), terminal_size=(140, 48), run_before=_show_cash_signals)
+
+
+async def _show_tail_plot(pilot):
+    from ginseng.studio import run_experiment
+    from ginseng.studio_ui import ResearchStudio
+    from textual.widgets import Select
+    await _dismiss_boot(pilot)
+    pilot.app.open_studio('tails')
+    record = run_experiment('tails', dict(fixture='drought-heavy', paths=256, horizon=30))
+    record['elapsed_seconds'] = 0
+    pilot.app.query_one(ResearchStudio).present(record)
+    pilot.app.query_one('#studio-table-choice', Select).value = 'first_passage'
+    await pilot.pause()
+    pilot.app.query_one('#plot-x', Select).value = 'day'
+    pilot.app.query_one('#plot-y', Select).value = 'probability'
+    pilot.app.query_one('#studio-visual').scroll_visible(top=True, animate=False)
+    await pilot.pause()
+
+
+def test_research_scatter(snap_compare):
+    assert snap_compare(GinsengApp(coord='lain'), terminal_size=(140, 48), run_before=_show_tail_plot)
+
+
+def test_compact_wardrobe_without_color(snap_compare, monkeypatch):
+    monkeypatch.setenv('NO_COLOR', '1')
+    assert snap_compare(GinsengApp(coord='akira'), terminal_size=(80, 24), run_before=_open_wardrobe)

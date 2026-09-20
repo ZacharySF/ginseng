@@ -1,15 +1,15 @@
 # ginseng_rice
 
-Coords and a finished dashboard for the Ginseng TUI. A coord is one complete outfit: 21 color roles, a border and glyph kit, transition settings and voice lines, stored as a TOML file and turned into a Textual theme at startup. The dashboard draws one engine run: reserve card, cash-path fan chart, trough histogram, funding options, ledger and a voice line.
+Coords and a finished dashboard for the Ginseng TUI. A coord is one complete outfit: 22 color roles, a border and glyph kit, transition settings and voice lines, stored as a TOML file and turned into a Textual theme at startup. The dashboard draws one engine run: reserve card, cash-path fan chart, trough histogram, funding options, ledger and a voice line.
 
-Tested on Textual 8.2.8 and Python 3.12: 38 tests pass (13 behavior, 25 snapshot), all 8 coords pass the lint. Integration steps for Claude Code are in `CLAUDE.md`.
+The integrated TUI has sixteen coords, an ASCII wardrobe, cash-signal and funding charts, and research scatter plots. See [the TUI guide](../../../docs/tui-studio.md) for controls, terminal skins and Unixporn references. Palette lint checks contrast, color-vision separation and glyph widths for every coord.
 
 ## Run it
 
 ```bash
-uv run python -m your.package.ginseng_rice.dashboard.app   # t: next coord   1/2/3: calm/thin/short   q: quit
-uv run pytest path/to/ginseng_rice/tests
-uv run python -m your.package.ginseng_rice.lint
+uv run python -m ginseng.ginseng_rice.dashboard.app   # t: next coord   1/2/3: calm/thin/short   q: quit
+uv run pytest engine/ginseng/ginseng_rice/tests
+uv run python -m ginseng.ginseng_rice.lint
 ```
 
 The dashboard app runs on `dashboard/fixture.py`, a seeded toy simulation. Its numbers are not Ginseng's.
@@ -18,7 +18,7 @@ The dashboard app runs on `dashboard/fixture.py`, a seeded toy simulation. Its n
 
 | Path | What it does |
 |---|---|
-| `coords/*.toml` | The eight coords. Hex values resolved from OKLCH specs in `tools/palettes.py`. |
+| `coords/*.toml` | Sixteen coords. The original eight have OKLCH specs in `tools/palettes.py`; later palettes are authored in TOML. |
 | `tokens.py` | Loads a coord, fails if a role is missing, builds a Textual `Theme` with `$g-*` variables. |
 | `dress.py` | `Dressable` mixin: registers coords, switches between them, runs the ornament budget. |
 | `henshin.py` | Transition through in-between themes mixed in OKLab, cleaned up afterward. |
@@ -30,7 +30,7 @@ The dashboard app runs on `dashboard/fixture.py`, a seeded toy simulation. Its n
 | `rice.tcss` | Role classes and ornament-budget rules, all prefixed `g-`. |
 | `lint.py` | Contrast, color-blind separation, glyph widths, voice placeholders. Exits 1 on failure. |
 | `demo.py`, `demo.tcss` | Smaller fitting-room demo. |
-| `tests/` | Behavior tests and 25 snapshot SVGs in `tests/__snapshots__`. |
+| `tests/` | Behavior tests and per-palette snapshot SVGs in `tests/__snapshots__`. |
 | `tools/` | OKLCH palette specs, audit, and a writer that pushes specs into the TOMLs. |
 
 ## The coords
@@ -45,6 +45,14 @@ The dashboard app runs on `dashboard/fixture.py`, a seeded toy simulation. Its n
 | decora デコラ | #FFF3FA | #352053 | Good months. Maximal, and the first to undress when numbers turn. |
 | stage ヴィジュアル系 | #000000 | #FFFFFF | Projectors and demo day. Okabe–Ito colors, safest for color-blind viewers. |
 | rococo ロリータ | #FAF3E3 | #4A291A | Month-end review. Lace edges, courteous voice. |
+| gosurori ゴスロリ | #01050F | #E0E9F1 | Gothic atelier. |
+| sakura 桜 | #14111F | #F4EAF5 | The default rose-and-lavender research atelier. |
+| moonrise 月光 | #101426 | #F4EAF5 | Lunar gold and magical-girl starlight. |
+| evangelion 初号機 | #14101F | #F4EAF5 | Violet mecha armor and acid lime. |
+| miku ミク | #0C1B22 | #F4EAF5 | Teal digital-idol studio. |
+| catppuccin 猫 | #1E1E2E | #F4EAF5 | Mocha, mauve, peach and a neko cafe. |
+| akira 新東京 | #191416 | #F4EAF5 | Coral neon over dark city streets. |
+| lain 接続 | #0C1918 | #F4EAF5 | Phosphor-green wired terminal. |
 
 ## Ornament budget
 
@@ -96,6 +104,6 @@ Quick fix: edit the hex in the TOML and run the lint. Perceptual change: edit th
 
 `dashboard/adapter.py: from_engine()` maps a real `ginseng.tui` simulate/exact run onto `DashboardData` -- see its module docstring for exactly which fields are the engine's own numbers as-is (`shortfall_p`, `reserve_to_add`) versus new reductions of the engine's path matrix computed with `ginseng.risk`'s own primitives (`cvar95_trough`, `deficit_dollar_days`, `solvent_days`, `bands`). Funding options call `ginseng.funding.build_candidates`/`evaluate_plan` directly and are only available for simulate runs (the exact oracle has no `FinancialState`). `engine/ginseng/tui.py`'s `GinsengApp` mixes in `Dressable`, dresses with `pick_coord()` at startup, and shows every run through `Dashboard`.
 
-## Not in here yet
+## Ricing guide
 
-- The long-form ricing guide.
+See [Anime rice in the TUI guide](../../../docs/tui-studio.md#anime-rice) for the integrated wardrobe and matching terminal skins.

@@ -1,7 +1,7 @@
 """Ginseng's Sakura terminal research atelier.
 
 Simulation and exact dashboards sit alongside the complete research studio,
-with ten semantic palettes, a searchable command palette and an anime portrait.
+with sixteen semantic palettes, searchable commands and an ASCII art wardrobe.
 Launch with ``ginseng tui``; see docs/tui-studio.md for optional engine extras.
 """
 
@@ -47,6 +47,8 @@ from textual.worker import Worker, WorkerState
 
 from ginseng.studio import EXPERIMENTS
 from ginseng.studio_ui import ResearchStudio, SakuraBanner
+from ginseng.rice_ui import SCENES, RiceHero, WardrobePanel, active_scene, scene_content
+from ginseng.rice_charts import FundingBars, PathSignals
 from ginseng.exact import enumerate_exact
 from ginseng.ginseng_rice.dashboard.adapter import EngineRun, from_engine
 from ginseng.ginseng_rice.dashboard.board import Dashboard
@@ -63,9 +65,7 @@ from ginseng.ginseng_rice.dress import COORDS, Dressable
 from ginseng.inputs import fixture, load_input
 from ginseng.braille import rain_frame, ridge_surface
 from ginseng.numerical import diagnostics, environment, manifest, run_core
-from ginseng.portrait import render_portrait
 from ginseng.provenance import source_fingerprint
-from ginseng.splash import WIDTH as SPLASH_WIDTH, render_splash, shade_rows
 from ginseng.sampling import prepare_history
 
 FIXTURES = ["canonical", "tiny", "zero-heavy", "drought-heavy"]
@@ -226,10 +226,11 @@ class Portrait(Static):
     `OperatorPanel`, so the two never disagree."""
 
     DEFAULT_CSS = "Portrait { text-wrap: nowrap; text-overflow: clip; }"
+    DEFAULT_CLASSES = "g-glyphs"
     tone: reactive[str] = reactive("thin")
 
     def render(self):
-        return Content.assemble((render_portrait(self.size.width or 48), f"$g-{self.tone}"))
+        return scene_content(active_scene(self.app), self.size.width or 28, self.tone, max_height=14)
 
     def set_tone(self, tone: str) -> None:
         self.tone = tone
@@ -288,41 +289,16 @@ class OperatorPanel(Static):
 # ---------------------------------------------------------------------------
 
 
-_SHADE_OPACITY = {"1": 35, "2": 45, "3": 55, "4": 65, "5": 75, "6": 85, "7": 92, "8": 100}
-
-
 class Splash(Static):
-    """The second portrait. Lives only on `BootScreen` -- never alongside the
-    sidebar portrait, so only one piece of art is ever on screen at once.
+    """Wear the selected outfit's supplied portrait on the boot screen."""
 
-    Centered by hand-padding each line to `self.size.width`: a `width: auto`
-    container only shrink-wraps reliably once Textual has settled on a final
-    layout, and on the very first paint (especially on a wide terminal) it
-    can still be reporting the full screen width, which reads as
-    left-aligned instead of centered."""
+    DEFAULT_CLASSES = "g-glyphs"
 
     def render(self):
-        width = self.size.width or SPLASH_WIDTH
-        render_width = min(width, SPLASH_WIDTH)
-        lines = render_splash(render_width).splitlines()
-        pad = " " * max(0, (width - max((len(line) for line in lines), default=0)) // 2)
-        shades = shade_rows(render_width)
-        if shades is None:
-            return "\n".join(pad + line for line in lines)
-
-        # Below native width `render_splash` has already been resampled by
-        # `braille.scale`, which invents fresh dot patterns `shades` can't
-        # describe -- `shade_rows` returns None then and this branch is
-        # skipped, falling back to the flat single-color line above.
-        parts: list[str | tuple[str, str]] = []
-        for i, (line, shade) in enumerate(zip(lines, shades)):
-            if i:
-                parts.append("\n")
-            parts.append(pad)
-            for ch, level in zip(line, shade):
-                opacity = _SHADE_OPACITY.get(level)
-                parts.append((ch, f"$g-thin {opacity}%") if opacity else ch)
-        return Content.assemble(*parts)
+        return scene_content(
+            active_scene(self.app), self.size.width or 65,
+            max_height=max(4, min(24, self.app.size.height - 16)),
+        )
 
 
 GINSENG_LOGO = r"""
@@ -478,6 +454,7 @@ class BootScreen(Screen):
 class WelcomePanel(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield SakuraBanner(classes="welcome-banner")
+        yield RiceHero(classes="g-ornament-2")
         yield Static("✧  YOUR QUIET CORNER OF THE QUANT UNIVERSE  ✧", classes="rule")
         yield Static(
             "Welcome to the atelier. Build a cash-flow model, follow its uncertain futures, "
@@ -498,7 +475,8 @@ class WelcomePanel(VerticalScroll):
             "03   Save a discovery to your notebook; return with a better question.",
             classes="welcome-copy")
         yield Static("✿  A WARDROBE FOR YOUR WORKSPACE", classes="rule")
-        yield Static("Press t for a new palette · Ctrl+P for every experiment · Ctrl+B for focus mode", classes="mono-dim")
+        yield Static("t palette · a ASCII scene · Ctrl+W wardrobe · Ctrl+B focus mode", classes="mono-dim")
+        yield Button("✦ Open wardrobe", id="home-wardrobe")
         yield Static("Synthetic fixtures are labeled. Numerical precision and historical evidence stay distinct.", classes="welcome-footnote")
 
 
@@ -730,6 +708,9 @@ class RunningPanel(VerticalScroll):
 class ResultPanel(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield Dashboard(id="dashboard")
+        with Horizontal(id="cash-signals"):
+            yield PathSignals(id="path-signals")
+            yield FundingBars(id="funding-bars")
         with Horizontal(id="surface-row"):
             with Vertical(classes="surface-col"):
                 yield Static("CASH PATHS // HIDDEN-LINE SURFACE ──────", classes="rule")
@@ -769,10 +750,11 @@ NAV_OPTIONS = [
     ("welcome", "♡ HOME", "THE ATELIER"),
     ("simulate", "✦ SIMULATE", "CASH PATHS"),
     ("exact", "◇ EXACT", "ORACLE"),
-    ("studio", "✿ RESEARCH", "24 EXPERIMENTS"),
+    ("studio", "✿ RESEARCH", f"{len(EXPERIMENTS)} EXPERIMENTS"),
     ("surface", "▧ ATLAS", "CASH × TIME"),
     ("portfolio", "◈ PORTFOLIO", "LOT LAB"),
     ("history", "♡ ARCHIVE", "SAVED RUNS"),
+    ("wardrobe", "✧ WARDROBE", "PALETTES + ASCII"),
     ("quit", "QUIT", "UNTIL NEXT TIME"),
 ]
 
@@ -803,6 +785,9 @@ class WardrobeCommands(Provider):
         commands.append(("run: canonical simulate (mc, 2048 paths)", "quick simulate launch",
                           (app.launch, "simulate", dict(QUICK_SIMULATE))))
         commands.append(("run: exact oracle", "quick exact-oracle launch", (app.launch, "exact", None)))
+        commands.extend((f"art: {scene.label}", scene.caption, (app.set_art, name))
+                        for name, scene in SCENES.items())
+        commands.append(("art: match the outfit", "Automatic scene for each palette", (app.set_art, "auto")))
         commands.extend((f"research: {entry.title}", entry.description,
                          (app.open_studio, entry.key)) for entry in EXPERIMENTS)
         commands.extend((f"workspace: {tag}", hint, (app.navigate, key))
@@ -832,6 +817,8 @@ class GinsengApp(Dressable, App):
         Binding("q", "quit", "Quit"),
         Binding("escape", "go_welcome", "Menu"),
         Binding("t", "next_coord", "Palette"),
+        Binding("a", "next_art", "Art"),
+        Binding("ctrl+w", "wardrobe", "Wardrobe"),
         Binding("ctrl+b", "toggle_sidebar", "Focus"),
         Binding("ctrl+r", "research", "Research"),
     ]
@@ -839,6 +826,7 @@ class GinsengApp(Dressable, App):
     def __init__(self, coord: str | None = None):
         super().__init__()
         self.start_coord = coord
+        self.art_choice = "auto"
         self.last_result: dict | None = None
         self.last_data: DashboardData | None = None
         self.last_kind: str | None = None
@@ -878,6 +866,7 @@ class GinsengApp(Dressable, App):
                 yield HistoryPanel(id="panel-history")
                 yield ErrorPanel(id="panel-error")
                 yield ResearchStudio(id="panel-studio")
+                yield WardrobePanel(id="panel-wardrobe")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -924,6 +913,7 @@ class GinsengApp(Dressable, App):
         sidebar.display = not self._sidebar_hidden and width >= 65
         self.screen.set_class(width < 110, "-compact")
         self.screen.set_class(self.size.height < 32, "-short")
+        self.query_one(Footer).compact = width < 110
 
     def _marquee_text(self, width: int) -> str:
         """A real scroll through this session's own event log -- not
@@ -964,6 +954,24 @@ class GinsengApp(Dressable, App):
     def action_research(self) -> None:
         self.open_studio()
 
+    def action_wardrobe(self) -> None:
+        self.navigate("wardrobe")
+
+    def set_art(self, name: str) -> None:
+        if name == self.art_choice:
+            return
+        if name != "auto" and name not in SCENES:
+            raise ValueError(f"Unknown scene: {name}")
+        self.art_choice = name
+        self._redress()
+
+    def action_next_art(self) -> None:
+        names = list(SCENES)
+        self.set_art(names[(names.index(active_scene(self)) + 1) % len(names)])
+
+    def on_coord_changed(self, coord) -> None:
+        self.sub_title = f"{coord.label} / research atelier"
+
     def open_studio(self, key: str | None = None) -> None:
         self.query_one("#body", ContentSwitcher).current = "panel-studio"
         self.query_one("#nav", OptionList).highlighted = next(i for i, option in enumerate(NAV_OPTIONS) if option[0] == "studio")
@@ -982,6 +990,11 @@ class GinsengApp(Dressable, App):
         elif key == "history":
             self.refresh_history()
             self.query_one("#body", ContentSwitcher).current = "panel-history"
+        elif key == "wardrobe":
+            self.query_one("#body", ContentSwitcher).current = "panel-wardrobe"
+            self.query_one("#nav", OptionList).highlighted = next(
+                i for i, option in enumerate(NAV_OPTIONS) if option[0] == "wardrobe"
+            )
         elif key == "quit":
             self.exit()
 
@@ -996,6 +1009,10 @@ class GinsengApp(Dressable, App):
     @on(Button.Pressed, "#home-studio")
     def _home_studio(self) -> None:
         self.open_studio()
+
+    @on(Button.Pressed, "#home-wardrobe")
+    def _home_wardrobe(self) -> None:
+        self.action_wardrobe()
 
     @on(Button.Pressed, "#btn-run")
     def _run_pressed(self) -> None:
@@ -1088,6 +1105,8 @@ class GinsengApp(Dressable, App):
         panel = self.query_one(ResultPanel)
         panel.border_title = title
         panel.query_one(Dashboard).show(data)
+        panel.query_one(PathSignals).data = data
+        panel.query_one(FundingBars).data = data
         panel.query_one("#event-log", Static).update("\n".join(self.event_log[-6:]))
         panel.query_one(VolSurface).matrix = run.matrix if run is not None else None
         panel.query_one(IndexRain).bundle = run.bundle if run is not None else None

@@ -5,11 +5,38 @@ Launch the terminal workspace:
 ```sh
 uv sync --locked --extra tui --extra optimization --extra research
 uv run --no-sync ginseng tui
-# Pick any of the ten palettes explicitly:
+# Pick any of the sixteen palettes explicitly:
 uv run --no-sync ginseng tui --coord sakura
 ```
 
-Sakura is the default: midnight plum, rose highlights, lavender panels and an anime portrait. The existing nine wardrobes remain available. `t` cycles palettes, `Ctrl+P` finds every workspace and experiment, `Ctrl+R` opens research, `Ctrl+B` toggles the sidebar, and Escape returns home. Small terminals collapse decoration; `GINSENG_MOTION=0` disables motion. The fullscreen command preserves the upstream color fix: it clears `NO_COLOR` and defaults `COLORTERM` to `truecolor`. Monochrome rendering remains covered by the direct application snapshot tests.
+Sakura is the default: midnight plum, rose highlights, lavender panels and an anime portrait. `t` cycles all sixteen palettes, `a` cycles artwork, and `Ctrl+W` opens the live wardrobe. `Ctrl+P` finds every workspace, outfit, scene and experiment, `Ctrl+R` opens research, `Ctrl+B` toggles the sidebar, and Escape returns home. Small terminals collapse decoration; `GINSENG_MOTION=0` disables motion. The fullscreen command preserves the upstream color fix: it clears `NO_COLOR` and defaults `COLORTERM` to `truecolor`. Monochrome rendering remains covered by the direct application snapshot tests.
+
+## Anime rice
+
+The wardrobe adds six outfits to the original ten:
+
+| Launch name | Look | Matching art |
+|---|---|---|
+| `moonrise` | Moonlit navy, lavender and lunar gold | Starry eyes |
+| `evangelion` | Violet armor and acid lime | Cyberpunk portrait |
+| `miku` | Teal, ice blue and pink | Twin-tail idol |
+| `catppuccin` | Mocha, mauve and peach | Black cat |
+| `akira` | Charcoal, coral neon and amber | Shadow portrait |
+| `lain` | Green phosphor and pale cyan | Laptop girl |
+
+The artwork is the user's supplied collection of **18 Braille pieces**, replacing the earlier simple ASCII drawings. It includes the horned chibi, starry face, black cat, winking girl, laptop girl, two eye panels, ghost, cat-eared chibi, cyberpunk portrait, floppy-eared friend, two spiky-haired characters, twin-tail idol, bird, shadow portrait, negative portrait and twin-tail portrait. Each original is stored in `engine/ginseng/art/*.txt`; joined pieces were separated without changing their nonblank glyphs.
+
+Choose **Match the outfit** for automatic art, or select a piece to retain it while changing palettes. Scene overrides last for the session. Use `ginseng tui --coord miku` or `GINSENG_COORD=miku` for your preferred launch palette. Boot, sidebar and home use the same selection; the wardrobe gives it a larger preview. Rendering trims only empty outer margins and scales the complete dot image to the available space. It retains thin strokes when shrinking, without cropping or substituting a generic face. No Nerd Font or terminal image support is required; use a font with Braille glyphs. High-risk results still reduce decorative clutter.
+
+The initial layout references were [this Sailor Moon Unixporn rice](https://www.reddit.com/r/unixporn/comments/1jr3qki/hyprland_first_rice_guess_my_favorite_childhood/) and [this purple Hyprland rice](https://www.reddit.com/r/unixporn/comments/1fgrfnn). The requested “dollete” search also surfaced the [Dollette text-art collection](https://emojicombos.com/dollette) for future browsing. The shipped art comes from the user's paste.
+
+Matching skins for **all sixteen** palettes live in `engine/ginseng/ginseng_rice/skins/`. For Kitty, include the desired `kitty/ginseng-<coord>.conf` in your configuration. For Ghostty, copy `ghostty/ginseng-<coord>` to `~/.config/ghostty/themes/` and select `theme = ginseng-<coord>`. These files are generated with `python -m ginseng.ginseng_rice.skins`; your terminal configuration is not modified automatically.
+
+## More ways to see a run
+
+Below the simulation/exact dashboard, **Cash signals** plots daily p5 cash, median cash and the p95–p5 spread. Each sparkline reports its own dollar range; rows use independent scales. Negative balances carry the shortfall color. **Funding / cost & residual risk** compares expected dollar costs on a common zero-based scale, with each candidate's availability day and remaining shortfall probability. Runs without funding candidates explicitly say so. Both views work on saved dashboards as well as new runs.
+
+Research results add **Data scope** above the selected table. Choose any numeric x and y columns to make a Braille scatter plot. The default x axis is row number, preserving the table's order; select a day/cash/etc. column for numeric spacing. Missing values, booleans and nonfinite values are omitted, with the plotted pair count shown. Dots are observations, with no interpolated curve or uncertainty claim. Tables over 5,000 rows are explicitly labeled as previews; the original tables and full exports remain available. Text-only tables hide the plot. The existing atlas, cash-path fan, histogram and path surface remain available.
 
 ## Workflows
 

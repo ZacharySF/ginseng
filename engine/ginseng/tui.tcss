@@ -186,3 +186,44 @@ Screen.-short #studio-operation { width: 2fr; }
 Screen.-short #studio-quick { margin: 0; }
 Screen.-short #studio-recipe { padding: 0; }
 Screen.-short #studio-recipe > Static { display: none; }
+
+/* Anime rice: native terminal art, coordinated swatches and inspectable plots. */
+#nav { height: 18; }
+RiceHero {
+    height: auto; min-height: 14; margin: 1 0;
+    border: round $g-rule; background: $g-panel;
+    padding: 1 2;
+}
+.rice-scene { width: 30; height: auto; color: $g-focus; text-wrap: nowrap; }
+.rice-identity { width: 1fr; height: auto; margin-left: 3; text-wrap: nowrap; }
+.wardrobe-controls { height: 5; margin: 1 0; }
+#rice-palette-strip { height: auto; padding: 1; background: $g-panel; }
+#panel-result Dashboard { height: auto; min-height: 29; }
+#cash-signals { height: auto; margin: 1 0; }
+PathSignals, FundingBars {
+    width: 1fr; height: auto; padding: 1;
+    border: round $g-rule; background: $g-panel 60%;
+}
+PathSignals { margin-right: 1; }
+TableVisual { height: auto; margin-top: 1; padding: 0 1 1 1; border: round $g-rule; }
+.plot-controls { height: 3; margin: 1 0; }
+.plot-controls Select { width: 1fr; }
+#plot-x { margin-right: 1; }
+ResearchPlot { height: 13; text-wrap: nowrap; }
+Footer, FooterKey { scrollbar-size: 0 0; overflow-y: hidden; }
+Screen.-compact RiceHero { layout: vertical; padding: 1; }
+Screen.-compact .rice-scene { width: 1fr; }
+Screen.-compact .rice-identity { width: 1fr; margin: 1 0 0 0; }
+Screen.-compact #cash-signals { layout: vertical; }
+Screen.-compact PathSignals { margin: 0 0 1 0; }
+Screen.-compact .wardrobe-controls { layout: vertical; height: 10; }
+Screen.-compact .plot-controls { layout: vertical; height: 6; }
+Screen.-short #panel-welcome RiceHero { display: none; }
+
+/* The wardrobe gives the supplied portraits room to retain their fine detail. */
+.rice-gallery {
+    width: 1fr; height: auto; margin: 1 0;
+    padding: 1; border: round $g-rule; background: $g-panel;
+    text-wrap: nowrap;
+}
+.wardrobe-identity { height: auto; padding: 1 2; margin-bottom: 1; background: $g-panel; }

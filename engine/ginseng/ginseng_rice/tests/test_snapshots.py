@@ -1,4 +1,4 @@
-"""Visual regression for the dashboard: 8 coords x 3 states, plus NO_COLOR.
+"""Visual regression for the dashboard: 16 coords x 3 states, plus NO_COLOR.
 
 First run on a new machine or Textual version:  pytest --snapshot-update  then open the
 SVGs in tests/__snapshots__ and check them by eye before committing.

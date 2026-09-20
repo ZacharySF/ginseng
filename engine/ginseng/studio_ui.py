@@ -31,6 +31,7 @@ from textual.widgets import (
 )
 
 from ginseng.studio import BY_KEY, EXPERIMENTS, SERVICE_ROUTES, result_tables
+from ginseng.rice_charts import TableVisual
 
 NOTEBOOK_DIR = Path("artifacts/tui/notebook")
 
@@ -191,6 +192,7 @@ class ResearchStudio(Vertical):
                     yield Select(
                         [], id="studio-table-choice", prompt="Select a result table"
                     )
+                    yield TableVisual(id="studio-visual")
                     yield DataTable(
                         id="studio-table", cursor_type="row", zebra_stripes=True
                     )
@@ -230,6 +232,7 @@ class ResearchStudio(Vertical):
             BY_KEY[self.active_key].description
         )
         self.query_one("#studio-atlas").display = False
+        self.query_one(TableVisual).display = False
         self.query_one("#studio-route").display = False
         self.query_one("#studio-notebook-table", DataTable).add_columns(
             "#", "Experiment", "Source", "Elapsed"
@@ -591,6 +594,7 @@ class ResearchStudio(Vertical):
             self.show_table(str(selector.value))
         else:
             self.query_one("#studio-table", DataTable).clear(columns=True)
+            self.query_one(TableVisual).display = False
         self.query_one("#studio-table").display = bool(self.tables)
         selector.display = bool(self.tables)
         self.query_one("#studio-tabs", TabbedContent).active = "studio-results"
@@ -599,6 +603,7 @@ class ResearchStudio(Vertical):
         if key not in self.tables:
             return
         columns, rows = self.tables[key]
+        self.query_one(TableVisual).show(columns, rows)
         table = self.query_one("#studio-table", DataTable)
         table.clear(columns=True)
         table.add_columns(*(c.replace("_", " ") for c in columns))
