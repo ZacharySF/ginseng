@@ -137,6 +137,7 @@ class PlanResult:
     buffer_breach_probability: float = 0.0
     dollar_days_below_buffer: float = 0.0
     tail_deficit: float = 0.0
+    verification: dict | None = None
 
 
 @dataclass(frozen=True)

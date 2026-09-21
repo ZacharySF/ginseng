@@ -33,7 +33,7 @@ uv run --no-sync ginseng report --input artifacts/standard --out artifacts/repor
 uv run --no-sync python notebooks/execute.py
 ```
 
-`python -m ginseng` is equivalent to the installed command. Omit `--out` for simulation/exact JSON on stdout; diagnostics use stderr and failures return nonzero status. `uv sync --extra tui && uv run ginseng tui` opens an interactive [Textual](https://github.com/Textualize/textual)-based terminal UI for configuring and running `simulate`/`exact`, viewing color-coded risk results, and browsing saved runs under `artifacts/tui/`. `--material-horizon 60 --horizon 30` predeclares a plan whose earlier days remain stable when the visible horizon grows. New bundles reject extensions beyond that plan. `--sampler legacy_mc` exposes the original generator for comparison; existing HTTP callers retain it by default.
+`python -m ginseng` is equivalent to the installed command. Omit `--out` for simulation/exact JSON on stdout; diagnostics use stderr and failures return nonzero status. `uv sync --extra tui --extra optimization --extra research && uv run ginseng tui` opens the [Sakura research atelier](docs/tui-studio.md): an anime-inspired terminal workspace with simulation/exact dashboards, 27 research recipes, funding and portfolio analysis, personal forecasts, engine replay, cash-risk heatmaps, a notebook and JSON/CSV export. Its live wardrobe (`Ctrl+W`) offers 16 palettes and 18 supplied Braille portraits; `t` changes palettes and `a` changes art. Cash-signal sparklines, funding bars and selectable research scatter plots add more ways to inspect each run. Press `Ctrl+P` to search every workflow. `--material-horizon 60 --horizon 30` predeclares a plan whose earlier days remain stable when the visible horizon grows. New bundles reject extensions beyond that plan. `--sampler legacy_mc` exposes the original generator for comparison; existing HTTP callers retain it by default.
 
 The complete [local-input example](examples/tiny-history.json) records explicit joint daily rows, declared history boundaries, separate opening cash and one-indexed future bills. Missing dates, duplicate rows, negative spending and nonfinite values are rejected. No observations are invented between history end and the opening date.
 
@@ -87,3 +87,23 @@ uv run --no-sync ginseng engine replay examples/engine/canonical --backend nativ
 ```
 
 See [the engineering report](docs/quant-engineering.md) for capture/diff commands, ownership and memory contracts, installation verification, tests, raw benchmarks, small-workload regressions and measured native tradeoffs.
+
+### Decision Verification Lab (Prompt A)
+
+Independently check executable funding plans, distinguish mean dollar-day limits from cash-failure policy, evaluate frozen actions on independent MC futures, and replay captured inputs offline. The existing optimizer and execution backends are reused.
+
+```bash
+uv run --no-sync ginseng decision run --fixture canonical --paths 2000 --validation-paths 4000 --replications 3 --output /tmp/ginseng-decision-demo
+uv run --no-sync ginseng decision replay /tmp/ginseng-decision-demo
+uv run --no-sync ginseng decision replay examples/decision-verification/canonical
+```
+
+See the [audit](docs/decision-verification-audit.md) and [design, measured results, commands and limitations](docs/decision-verification.md). Numerical verification and simulator validation do not establish real-world safety or forecast calibration.
+
+### Precision-Controlled Failure Estimation (Prompt B)
+
+The existing risk panel and `ginseng precision` now accept numerical error/confidence targets, observation and resource limits, and expose precision, exhaustion and cancellation outcomes. Exact synthetic captures replay offline with `ginseng precision-replay examples/precision-b/path`. See the [implementation, method, commands and limitations](docs/precision-b.md), [audit](docs/precision-b-audit.md), and [512-run fixed/adaptive evidence](artifacts/precision-b/diagnostics.md). This workflow reuses the existing MC/conditional-MC engine; the separate Prompt C experiment is described below.
+
+### Two-decision funding experiment (Prompt C)
+
+Run `ginseng two-decision run --output /tmp/ginseng-two-decision`, then `ginseng two-decision replay /tmp/ginseng-two-decision`. The same experiment and replay are available in Quant Studio. It compares static, nonanticipative review and infeasible hindsight policies under a separate bounded synthetic model, with independent frozen-policy validation. See [information/accounting contracts, results and limits](docs/two-decision.md). Existing production funding recommendations remain on the single-decision model.

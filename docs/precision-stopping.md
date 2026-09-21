@@ -12,6 +12,8 @@ uv run ginseng precision --input /path/to/finances.json --max-paths 131072 --bat
 
 ## Why repeated checks are valid
 
+In Prompt B, each checkpoint interval is intersected with all previous checkpoint intervals. An empty or zero-width intersection is a numerical-failure result, never a precision success. The final interval inherits simultaneous coverage from the construction below.
+
 At predetermined cumulative sample counts, the command uses a two-sided empirical Bernstein bound for independent observations X in [0,1]. Ordinary failure indicators and conditional failure contributions both satisfy that range and have the same target mean p.
 
 For look k, allocate `delta_k = (1-confidence)/(k*(k+1))`. With unbiased sample variance s² and count n, use
@@ -35,17 +37,17 @@ Stop when the greater distance from the sample mean to either clipped endpoint i
 - `precision_met=true`, `stop_reason=precision_reached`: the reported interval meets the requested error criterion.
 - `precision_met=false`, `stop_reason=max_paths_reached`: the budget was exhausted. The estimate and wider valid interval are returned. This is a completed computation, so the CLI exits successfully; automation should inspect `precision_met`.
 - No observed failures still gives a positive upper endpoint. Zero empirical variance retains the additive term in the bound; it cannot produce a false zero-width interval.
-- The cap is an observation count, not a wall-clock deadline. CMC observations each average over initial starts. Batch processing bounds sample-array memory; table preparation has its own memory guard.
+- The observation cap is separate from the cooperative wall-clock deadline and array-memory budget. Cancellation and deadlines are checked between bounded chunks; they cannot preempt preparation or a running chunk. CMC observations each average over initial starts. See [Prompt B limits](precision-b.md).
 - Only independent `mc` is accepted. Sobol points within a net are dependent; applying this IID formula to individual Sobol points would not be justified. Legacy MC and supplied weights are also rejected.
-- This command takes historical version-1 inputs. It does not accept prospective path bundles, generate reserve precision intervals, or replace the existing `simulate` command or website.
+- This command takes historical version-1 inputs. It does not accept prospective path bundles, generate reserve precision intervals, or replace the existing `simulate` command. Existing website and CLI consumers expose this opt-in workflow.
 
 ## Reproducibility and implementation
 
-`engine/ginseng/precision.py` owns the statistical bound, stable online mean/variance accumulation and streaming orchestration. A single PCG64 generator advances through bounded chunks in the existing fixed-coordinate mapping. It never repeatedly adds a nested sample prefix as if it were fresh data. Its independent seed domain is 400, separate from earlier experiments (100) and numerical references (200). With a fixed material horizon, changing batch size preserves the generated stream, although it changes checkpoint locations and can change when a run stops.
+`engine/ginseng/precision.py` owns the statistical bound, stable online mean/variance accumulation and streaming orchestration. `PrecisionStream` addresses complete float64 rows of the existing PCG64 stream using `advance`, in the existing fixed-material-coordinate mapping. It never repeatedly adds a nested sample prefix as if it were fresh data. Its independent seed domain is 400, separate from earlier experiments (100) and numerical references (200). With a fixed material horizon, changing batch size preserves the generated stream, although it changes checkpoint locations and can change when a run stops.
 
-The sampler still consumes the complete material-horizon coordinate width and CMC still records actual first-restart lengths. The visible horizon is fixed before sampling. Conditional tables are prepared once per run and remain tied to that run's immutable historical model. Only online moments and logarithmically many checkpoint records are retained; paths from prior batches are released.
+The sampler still consumes the complete material-horizon coordinate width and CMC still records actual first-restart lengths. The visible horizon is fixed before sampling. Conditional tables are prepared once per run and remain tied to that run's immutable historical model. By default only online moments and logarithmically many checkpoint records are retained; paths from prior batches are released. Explicit capture additionally retains bounded exact indices and conditional traces for offline replay.
 
-The manifest records input and index hashes, CMC trace/table identity when applicable, seed derivation, block resolution, coordinate mapping, interval version, stopping configuration and environment. The result hash covers the summary and checkpoints but excludes elapsed time. `core_seconds` includes input preparation, sampling, conditional preparation and interval checks; it excludes environment/provenance collection and JSON serialization.
+The manifest records input and index hashes, CMC trace/table identity when applicable, seed derivation, block resolution, coordinate mapping, interval version, stopping configuration and environment. The result hash covers the summary and checkpoints but excludes elapsed time. In version 2, `core_seconds` includes preparation, sampling, evaluation, interval checks and environment/provenance collection; it excludes capture and JSON serialization.
 
 ## Validation and measured results
 
@@ -60,4 +62,4 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 uv run python -m gins
 
 The [generated report](../artifacts/precision/results.md), raw checkpoint observations and budget-exhaustion example accompany the frozen config. There are 32 independent replicates for each of four cases and two estimators. Tiny has exact truth; larger cases retain the earlier independent numerical reference intervals and checked fixture identities. Their reference-point inclusion counts are not true-coverage measurements.
 
-**Adoption:** retain this as an optional offline capability. It provides an explicit precision or budget outcome. Its bound is conservative and its timing measurements do not establish an optimal stopping rule or justify replacing existing defaults. The previous CMC benchmark measured full-output RMSE, which is a different accuracy criterion and computational workload.
+**Historical release evidence above:** the original benchmark described the earlier implementation. For current integration, statuses, resource controls and fresh fixed/adaptive evidence, see [Prompt B](precision-b.md). Retain precision as an optional capability. It provides an explicit precision or budget outcome. Its bound is conservative and its timing measurements do not establish an optimal stopping rule or justify replacing existing defaults. The previous CMC benchmark measured full-output RMSE, which is a different accuracy criterion and computational workload.

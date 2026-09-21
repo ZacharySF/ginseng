@@ -70,3 +70,20 @@ def test_compact_solver_cannot_spend_traditional_gross_proceeds(monkeypatch):
     result = optimize_funding(state, draw_bundle(state, 30, 10, 9),
         (Obligation("bill", "Bill", 700, 5),), operating_buffer=0, tail_deficit_limit=0)
     assert result == OptimizationFailure("infeasible")
+
+
+def test_exported_lower_bound_contains_independent_full_lp_objective(monkeypatch):
+    state = _state(holdings=(_taxable_holding(1000,0),))
+    bundle=draw_bundle(state,30,8,17)
+    bills=(Obligation('bill','Bill',100,3),)
+    monkeypatch.setattr(optimizer,'CONSTRAINT_GENERATION_THRESHOLD',0)
+    plan=optimize_funding(state,bundle,bills,operating_buffer=0,buffer_tolerance_dollar_days=0)
+    assert isinstance(plan,OptimalPlan)
+    oracle_cost=100/.76*.24
+    e=plan.solver_evidence
+    assert e['lower_bound']<=oracle_cost+1e-7
+    assert e['executed_objective']>=oracle_cost-1e-6
+    assert e['absolute_gap']<.001
+    assert e['iterations']>=1
+    assert e['solver_version']!='unavailable'
+    assert e['global_lower_bound'] is None

@@ -48,3 +48,17 @@ test('infeasible solves retain the completed named-plan comparison', () => {
 	assert.match(output, /Credit Bridge/);
 	assert.match(output, /Funding operation unavailable/);
 });
+
+test('frozen holdout shows numerical policy failures and a named fixed-sample interval', () => {
+    setResult({ status: 'ready', paths: 100, evaluation_horizon_days: 38,
+        frontier: [], shadow_checks: [], anchors: [],
+        holdout: { status: 'ready', label: 'Frozen selected plan', expected_cost: 3, cvar_cost: 5,
+            cash_shortfall_probability: .2, within_mean_buffer_limit: false, within_tail_deficit_limit: null,
+            verification: { status: 'failed', metrics: { cash_failure_probability: .2 } },
+            interval: { low: .1, high: .3, method: 'Clopper-Pearson fixed-sample exact binomial' } },
+        loss_definition: '', risk_definition: '' });
+    const output = render(Panel).body;
+    assert.match(output, /training constraint was exceeded/);
+    assert.match(output, /Clopper-Pearson/);
+    assert.match(output, /Simulator validation is separate from historical calibration/);
+});

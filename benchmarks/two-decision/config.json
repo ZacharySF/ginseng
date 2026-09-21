@@ -1,0 +1,11 @@
+{
+  "root_seed": 20260920,
+  "cases": [
+    {"name": "canonical", "model": {}, "training_paths": 128, "validation_paths": 4096, "replications": 5},
+    {"name": "no_fixed_sale_fee", "model": {"sale_fee": 0.0}, "training_paths": 128, "validation_paths": 4096, "replications": 5},
+    {"name": "late_settlement", "model": {"settlement_days": 4}, "training_paths": 128, "validation_paths": 4096, "replications": 5},
+    {"name": "small_training", "model": {}, "training_paths": 8, "validation_paths": 4096, "replications": 10},
+    {"name": "offline_stress", "model": {}, "training_paths": 4096, "validation_paths": 32768, "replications": 10}
+  ],
+  "warm_repeats": 3
+}

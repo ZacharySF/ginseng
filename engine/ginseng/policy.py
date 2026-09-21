@@ -357,6 +357,7 @@ def to_contract(
                 "realized_gain_loss": result.realized_gain_loss,
                 "deferred_spending": result.deferred_spending,
                 "feasible": result.feasible,
+                "verification": result.verification,
                 "dominated": dominated,
                 "dominated_by": dominated_by,
                 "recommended": result.id == recommendation.plan_id,

@@ -194,7 +194,8 @@ def walk_forward(state: FinancialState, horizon: int, paths: int, seed: int, q: 
     return {
         "status": "ready" if primary_starts else "insufficient_history",
         "source": ("Synthetic history; this does not validate a real household." if source == "demo"
-                   else "Classified personal history. Reconstructed forecasts use only records available before each held-out period."),
+                   else "Retrospective evaluation using current classified records filtered by effective date; historical arrival and revision times are unavailable."),
+        "information_timing": "retrospective_current_records",
         "target": "Starting cash required to preserve the buffer at each end of day, including routine variable flows and fixed monthly flows inferred from prior records.",
         "excluded": "Irregular expenses, investment transactions, transfers, and today's added scenario events are outside this historical target.",
         "history_days": history_days, "training_days_minimum": training_days,

@@ -28,7 +28,8 @@ try{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  let fail=false;
  let surfaceRequests=0;
- await page.route('**/mock/demo/numerics',async route=>{const {options}=route.request().postDataJSON();if(options.action==='surface')surfaceRequests++;await route.fulfill({status:fail?503:200,contentType:'application/json',body:JSON.stringify(fixture[options.action])});});
+ let precisionResponse=fixture.precision,lastPrecision=null;
+ await page.route('**/mock/demo/numerics',async route=>{const {options}=route.request().postDataJSON();if(options.action==='surface')surfaceRequests++;else lastPrecision=options;await route.fulfill({status:fail?503:200,contentType:'application/json',body:JSON.stringify(options.action==='precision'?precisionResponse:fixture[options.action])});});
  await page.goto(`http://127.0.0.1:${address.port}`);
  assert.equal(await page.locator('.plot').count(),0,'the cash graph starts collapsed without a canvas');
  assert.equal(await page.locator('.empty,.lab-axis-key').count(),0,'collapsed cash exploration does not render an axes preview or empty chart');
@@ -135,6 +136,14 @@ try{
  await page.evaluate(async root=>{const m=await import('/@fs'+root+'/src/lib/theme.svelte.ts');m.themeStore.toggle();},root);
  await page.waitForFunction(()=>document.querySelector('.plot')?.layout?.paper_bgcolor==='#f7f7f2');
  if(shots) await page.screenshot({path:join(shots,'risk-mobile-light.png'),fullPage:true});
+ await page.getByLabel('Confidence',{exact:true}).selectOption({label:'99%'});
+ await page.getByLabel('Time budget',{exact:true}).selectOption({label:'5 seconds'});
+ precisionResponse={...fixture.precision,summary:{...fixture.precision.summary,confidence:.99,precision_met:false,status:'budget_exhausted',stop_reason:'time_budget_exhausted',actual_n:0,interval_observations:0,cash_shortfall_probability:null,numerical_probability_interval:[0,1]}};
+ await page.getByRole('button',{name:'Refine estimate',exact:true}).click();
+ await page.getByText('Time budget exhausted',{exact:true}).waitFor();
+ assert.equal(await page.getByText('Not estimated',{exact:true}).count(),1);
+ assert.equal(await page.getByText('99% numerical interval',{exact:true}).count(),1);
+ assert.equal(lastPrecision.confidence,.99);assert.equal(lastPrecision.time_limit_seconds,5);assert.equal(lastPrecision.estimator,'path');
  fail=true;await page.getByRole('button',{name:'Refine estimate',exact:true}).click();await page.getByRole('alert').first().waitFor();
  assert.equal(await page.getByText('Precision target reached',{exact:true}).count(),0);
  assert.deepEqual(errors,[]);

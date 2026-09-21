@@ -1,0 +1,217 @@
+{
+  "match": true,
+  "mismatches": [],
+  "results": {
+    "training": {
+      "verification": "verified",
+      "policy": "pass",
+      "metrics": {
+        "cash_failure_probability": 0.0,
+        "buffer_breach_probability": 0.022500000000000006,
+        "expected_buffer_dollar_days": 14.778020480484747,
+        "expected_max_cash_deficit": 0.0,
+        "buffer_deficit_cvar": 144.00634471254662,
+        "signed_margin_cvar": null,
+        "required_liquidity_reserve": 2627.4068689537144,
+        "legacy_cash_failure_probability": 0.0,
+        "legacy_buffer_breach_probability": 0.022500000000000006,
+        "expected_cost": 0.0,
+        "cvar_cost": 0.0,
+        "var_cost": 0.0,
+        "objective": 0.0
+      }
+    },
+    "training_1": {
+      "verification": "verified",
+      "policy": "pass",
+      "metrics": {
+        "cash_failure_probability": 0.0,
+        "buffer_breach_probability": 0.04500000000000002,
+        "expected_buffer_dollar_days": 40.24529508733377,
+        "expected_max_cash_deficit": 0.0,
+        "buffer_deficit_cvar": 360.4507051500354,
+        "signed_margin_cvar": null,
+        "required_liquidity_reserve": 2928.7991127308815,
+        "legacy_cash_failure_probability": 0.0,
+        "legacy_buffer_breach_probability": 0.04500000000000002,
+        "expected_cost": 0.0,
+        "cvar_cost": 0.0,
+        "var_cost": 0.0,
+        "objective": 0.0
+      }
+    },
+    "training_2": {
+      "verification": "verified",
+      "policy": "pass",
+      "metrics": {
+        "cash_failure_probability": 0.0,
+        "buffer_breach_probability": 0.025500000000000005,
+        "expected_buffer_dollar_days": 23.15917814086601,
+        "expected_max_cash_deficit": 0.0,
+        "buffer_deficit_cvar": 157.17909911438358,
+        "signed_margin_cvar": null,
+        "required_liquidity_reserve": 2568.5356451095977,
+        "legacy_cash_failure_probability": 0.0,
+        "legacy_buffer_breach_probability": 0.025500000000000005,
+        "expected_cost": 0.0,
+        "cvar_cost": 0.0,
+        "var_cost": 0.0,
+        "objective": 0.0
+      }
+    },
+    "validation": {
+      "verification": "verified",
+      "policy": "pass",
+      "metrics": {
+        "cash_failure_probability": 0.0,
+        "buffer_breach_probability": 0.02225000000000001,
+        "expected_buffer_dollar_days": 11.549150497614754,
+        "expected_max_cash_deficit": 0.0,
+        "buffer_deficit_cvar": 117.1004774069575,
+        "signed_margin_cvar": null,
+        "required_liquidity_reserve": 2618.5009243446384,
+        "legacy_cash_failure_probability": 0.0,
+        "legacy_buffer_breach_probability": 0.02225000000000001,
+        "expected_cost": 0.0,
+        "cvar_cost": 0.0,
+        "var_cost": 0.0,
+        "objective": 0.0
+      }
+    },
+    "no_action_validation": {
+      "verification": "failed",
+      "policy": "fail",
+      "metrics": {
+        "cash_failure_probability": 0.34625000000000017,
+        "buffer_breach_probability": 0.6387500000000002,
+        "expected_buffer_dollar_days": 6696.334842721203,
+        "expected_max_cash_deficit": 336.3446731532278,
+        "buffer_deficit_cvar": 3161.6714149656946,
+        "signed_margin_cvar": null,
+        "required_liquidity_reserve": 5783.819751193363,
+        "legacy_cash_failure_probability": 0.34625000000000017,
+        "legacy_buffer_breach_probability": 0.6387500000000002,
+        "expected_cost": 1.77738359677031,
+        "cvar_cost": 18.61760987394848,
+        "var_cost": 12.000304397744051,
+        "objective": 18.61760987394848
+      }
+    }
+  },
+  "execution": {
+    "training": {
+      "backend": "native",
+      "reason": "Explicit selection.",
+      "workers": 2,
+      "block_size": 1024,
+      "input_bytes": 625824,
+      "output_bytes": 96000,
+      "scratch_bound_bytes": 6225920,
+      "native": {
+        "api_version": 1,
+        "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+        "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+        "compiler": "15.3.0",
+        "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+        "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+        "build_type": "Release",
+        "environment_compiler_flags": "",
+        "options": "C++20; no fast-math; no FP contraction; portable target",
+        "available": true,
+        "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+        "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+      },
+      "counters": {
+        "path_materializations": 0,
+        "row_reductions": 1,
+        "weight_normalizations": 1
+      }
+    },
+    "training_1": {
+      "backend": "native",
+      "reason": "Explicit selection.",
+      "workers": 2,
+      "block_size": 1024,
+      "input_bytes": 625824,
+      "output_bytes": 96000,
+      "scratch_bound_bytes": 6225920,
+      "native": {
+        "api_version": 1,
+        "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+        "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+        "compiler": "15.3.0",
+        "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+        "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+        "build_type": "Release",
+        "environment_compiler_flags": "",
+        "options": "C++20; no fast-math; no FP contraction; portable target",
+        "available": true,
+        "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+        "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+      },
+      "counters": {
+        "path_materializations": 0,
+        "row_reductions": 1,
+        "weight_normalizations": 1
+      }
+    },
+    "training_2": {
+      "backend": "native",
+      "reason": "Explicit selection.",
+      "workers": 2,
+      "block_size": 1024,
+      "input_bytes": 625824,
+      "output_bytes": 96000,
+      "scratch_bound_bytes": 6225920,
+      "native": {
+        "api_version": 1,
+        "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+        "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+        "compiler": "15.3.0",
+        "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+        "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+        "build_type": "Release",
+        "environment_compiler_flags": "",
+        "options": "C++20; no fast-math; no FP contraction; portable target",
+        "available": true,
+        "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+        "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+      },
+      "counters": {
+        "path_materializations": 0,
+        "row_reductions": 1,
+        "weight_normalizations": 1
+      }
+    },
+    "validation": {
+      "backend": "native",
+      "reason": "Explicit selection.",
+      "workers": 2,
+      "block_size": 1024,
+      "input_bytes": 1233824,
+      "output_bytes": 192000,
+      "scratch_bound_bytes": 6225920,
+      "native": {
+        "api_version": 1,
+        "source_hash": "71a96a464251743829bce4124d1a6952f36f01f1774849c67e65fa33fb843672",
+        "kernel_hash": "92c896b1015560b80440e2ac304e0b353e08768989a4a1c856df7cfdaf1af211",
+        "compiler": "15.3.0",
+        "cmake_hash": "ab5fb8eebc3d4cd32a685e4d92e0df2611b12c40f874dbcf47d02f7c2fa79677",
+        "package_hash": "0776e15d1ec3d7abcad685952ceaa05a29fe91f7d0e46caf9d21462959545c4b",
+        "build_type": "Release",
+        "environment_compiler_flags": "",
+        "options": "C++20; no fast-math; no FP contraction; portable target",
+        "available": true,
+        "path": "/home/xelo/ginseng/.venv/lib/python3.12/site-packages/ginseng_native/_core.cpython-312-x86_64-linux-gnu.so",
+        "binary_hash": "1dc76f80bcefd74633902c5ee2b8b9a03fccf4f813f9eece40a6a04b33e9003a"
+      },
+      "counters": {
+        "path_materializations": 0,
+        "row_reductions": 1,
+        "weight_normalizations": 1
+      }
+    }
+  },
+  "scope": "Offline frozen-plan execution replay, including successful training replications and no-action comparison; no network and no optimizer invocation.",
+  "semantic_input_identity": "f82a8716361a855a0b49d6788f67d1a4a9b44f6ffdc19eeb6822c43b91c81e68"
+}

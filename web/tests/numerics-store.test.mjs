@@ -36,3 +36,13 @@ test('errors clear stale data and support retry',async()=>{
  const retry=store.run('/demo/numerics',{},'surface');calls.at(-1).resolve({status:'ok',data:{input_id:'retry'}});await retry;
  assert.equal(store.error,'');assert.equal(store.data.input_id,'retry');
 });
+test('precision controls reach the consumer and cancel discards the response',async()=>{
+ const store=new NumericalStore();
+ const options={absolute_error:.005,confidence:.99,max_paths:16384,time_limit_seconds:5,estimator:'path'};
+ const run=store.run('/finance/numerics',{expected_revision:3},'precision',options);
+ const call=calls.at(-1);
+ assert.deepEqual(JSON.parse(call.init.body).options,{...options,action:'precision'});
+ store.reset();assert.equal(call.init.signal.aborted,true);assert.equal(store.loading,false);
+ call.resolve({status:'ok',data:{summary:{status:'cancelled',actual_n:512}}});await run;
+ assert.equal(store.data,null);
+});

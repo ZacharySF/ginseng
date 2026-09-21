@@ -1,0 +1,36 @@
+         923755 function calls (839906 primitive calls) in 0.278 seconds
+
+   Ordered by: cumulative time
+   List reduced from 2301 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     5430    0.001    0.000    0.123    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1308(asdict)
+54098/5430    0.031    0.000    0.121    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1332(_asdict_inner)
+   488/31    0.001    0.000    0.097    0.003 <frozen importlib._bootstrap>:1349(_find_and_load)
+   485/31    0.001    0.000    0.097    0.003 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+    407/3    0.001    0.000    0.095    0.032 <frozen importlib._bootstrap>:911(_load_unlocked)
+    400/3    0.000    0.000    0.095    0.032 <frozen importlib._bootstrap_external>:993(exec_module)
+   942/36    0.000    0.000    0.095    0.003 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
+    445/3    0.003    0.000    0.095    0.032 {built-in method builtins.exec}
+        1    0.000    0.000    0.094    0.094 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/__init__.py:1(<module>)
+        1    0.000    0.000    0.090    0.090 /home/xelo/ginseng/engine/ginseng/execution.py:546(wrapped)
+        1    0.000    0.000    0.090    0.090 /home/xelo/ginseng/engine/ginseng/metrics.py:193(compute_scenario_metrics)
+        4    0.001    0.000    0.080    0.020 /home/xelo/ginseng/engine/ginseng/simulate.py:157(_joint_history)
+     5432    0.001    0.000    0.063    0.000 /home/xelo/ginseng/engine/ginseng/simulate.py:166(<genexpr>)
+33262/20726    0.031    0.000    0.062    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/copy.py:118(deepcopy)
+20298/4214    0.003    0.000    0.061    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1373(<genexpr>)
+        1    0.000    0.000    0.055    0.055 /home/xelo/ginseng/engine/ginseng/simulate.py:460(portfolio_value_paths)
+        1    0.000    0.000    0.053    0.053 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/problems/problem.py:1(<module>)
+        1    0.000    0.000    0.052    0.052 /home/xelo/ginseng/engine/ginseng/simulate.py:441(discretionary_resampled_paths)
+        1    0.000    0.000    0.052    0.052 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/reductions/__init__.py:1(<module>)
+      9/7    0.000    0.000    0.049    0.007 /home/xelo/ginseng/engine/ginseng/execution.py:302(remember)
+        2    0.000    0.000    0.047    0.023 /home/xelo/ginseng/engine/ginseng/execution.py:559(prepare_scenario)
+    52/34    0.000    0.000    0.047    0.001 {built-in method builtins.__import__}
+        1    0.000    0.000    0.039    0.039 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/atoms/__init__.py:1(<module>)
+  461/397    0.000    0.000    0.035    0.000 <frozen importlib._bootstrap>:1390(_handle_fromlist)
+        1    0.000    0.000    0.031    0.031 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/reductions/solvers/solving_chain.py:1(<module>)
+        1    0.000    0.000    0.029    0.029 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/problems/problem_form.py:1(<module>)
+        1    0.000    0.000    0.029    0.029 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/reductions/solvers/defines.py:1(<module>)
+   129/17    0.000    0.000    0.027    0.002 {built-in method fromkeys}
+        2    0.000    0.000    0.027    0.014 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/reductions/solvers/defines.py:120(installed_solvers)
+       12    0.000    0.000    0.027    0.002 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/cvxpy/reductions/solvers/defines.py:122(<genexpr>)

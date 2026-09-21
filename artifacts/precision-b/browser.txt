@@ -1,0 +1,17 @@
+$ node tests/risk-browser.mjs
+6:26:09 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.selectOption: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByLabel('Confidence', { exact: true })[22m
+
+    at /home/xelo/ginseng/web/tests/risk-browser.mjs:139:51 {
+  log: [ "  - waiting for getByLabel('Confidence', { exact: true })" ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.20.0
+error: script "test:risk-browser" exited with code 1

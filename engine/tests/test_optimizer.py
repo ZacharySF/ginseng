@@ -386,9 +386,11 @@ def test_cost_variation_is_detected_from_cash_paths_without_market_history(monke
     _require_cvxpy()
     state = _state(holdings=(_taxable_holding(1.0, 1.0),))
     cash = np.array([[0.0] * 5, [0.0, 0.0, -100.0, -100.0, -100.0]])
-    monkeypatch.setattr(optimizer, "cash_paths", lambda *args: cash)
+    direct=PathBundle(source="direct",seed=42,horizon_days=5,n_paths=2,bootstrap_draw_id="cost-variation",
+        daily_cash_flows=np.diff(np.column_stack((np.zeros(2),cash)),axis=1),
+        known_income_daily=np.zeros(5),known_obligation_daily=np.zeros(5),discretionary_daily=np.zeros((2,5)))
     plan = optimize_funding(
-        state, _bundle(state, 5, n_paths=2), (),
+        state, direct, (),
         operating_buffer=0.0, buffer_tolerance_dollar_days=1e9, overdraft_apr=0.365,
     )
 

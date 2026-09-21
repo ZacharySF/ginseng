@@ -1,0 +1,36 @@
+         378207 function calls (339424 primitive calls) in 0.431 seconds
+
+   Ordered by: cumulative time
+   List reduced from 680 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        2    0.000    0.000    0.431    0.216 /home/xelo/ginseng/engine/ginseng/execution.py:546(wrapped)
+        1    0.000    0.000    0.430    0.430 /home/xelo/ginseng/engine/ginseng/metrics.py:193(compute_scenario_metrics)
+      102    0.019    0.000    0.239    0.002 /home/xelo/ginseng/engine/ginseng/risk.py:53(quantiles)
+      380    0.000    0.000    0.226    0.001 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:48(_wrapfunc)
+      103    0.000    0.000    0.198    0.002 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:1115(argsort)
+      109    0.198    0.002    0.198    0.002 {method 'argsort' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.148    0.148 /home/xelo/ginseng/engine/ginseng/metrics.py:166(percentile_cash_paths)
+        1    0.005    0.005    0.148    0.148 /home/xelo/ginseng/engine/ginseng/execution.py:504(charts)
+        1    0.000    0.000    0.113    0.113 /home/xelo/ginseng/engine/ginseng/simulate.py:460(portfolio_value_paths)
+       42    0.000    0.000    0.100    0.002 /home/xelo/ginseng/engine/ginseng/metrics.py:36(required_liquidity_reserve)
+       42    0.000    0.000    0.100    0.002 /home/xelo/ginseng/engine/ginseng/risk.py:75(quantile)
+        1    0.001    0.001    0.099    0.099 /home/xelo/ginseng/engine/ginseng/metrics.py:98(reserve_buffer_curve)
+      5/4    0.000    0.000    0.081    0.020 /home/xelo/ginseng/engine/ginseng/execution.py:302(remember)
+        1    0.000    0.000    0.075    0.075 /home/xelo/ginseng/engine/ginseng/simulate.py:473(create)
+        1    0.021    0.021    0.073    0.073 /home/xelo/ginseng/engine/ginseng/simulate.py:380(_uncached_portfolio_value_paths)
+     2715    0.001    0.000    0.062    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1308(asdict)
+27049/2715    0.015    0.000    0.061    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1332(_asdict_inner)
+        2    0.000    0.000    0.040    0.020 /home/xelo/ginseng/engine/ginseng/simulate.py:157(_joint_history)
+        1    0.004    0.004    0.032    0.032 /home/xelo/ginseng/engine/ginseng/execution.py:313(evaluate)
+     2716    0.000    0.000    0.031    0.000 /home/xelo/ginseng/engine/ginseng/simulate.py:166(<genexpr>)
+16631/10363    0.015    0.000    0.031    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/copy.py:118(deepcopy)
+10149/2107    0.002    0.000    0.031    0.000 /home/xelo/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/dataclasses.py:1373(<genexpr>)
+      528    0.028    0.000    0.028    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+        1    0.000    0.000    0.027    0.027 /home/xelo/ginseng/engine/ginseng/execution.py:559(prepare_scenario)
+        1    0.000    0.000    0.022    0.022 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:2342(sum)
+        2    0.000    0.000    0.022    0.011 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:66(_wrapreduction)
+       32    0.000    0.000    0.019    0.001 /home/xelo/ginseng/engine/ginseng/execution.py:371(block)
+       32    0.009    0.000    0.019    0.001 /home/xelo/ginseng/engine/ginseng/execution.py:234(numpy_block)
+        1    0.000    0.000    0.018    0.018 /home/xelo/ginseng/engine/ginseng/portfolio.py:17(aligned_asset_returns)
+      136    0.000    0.000    0.016    0.000 /home/xelo/ginseng/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:2876(cumsum)

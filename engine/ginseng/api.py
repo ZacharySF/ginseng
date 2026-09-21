@@ -93,7 +93,7 @@ from ginseng.workspace import (
 
 from ginseng.risk_explorer import NumericalOptions, explore
 from ginseng.inputs import InputCase
-from ginseng.resources import forecast_capacity
+from ginseng.resources import forecast_capacity, cancellable_calculation
 
 DEMO_MAX_HORIZON_DAYS = 365
 DEMO_MAX_PATHS = 3_000
@@ -644,19 +644,21 @@ class DemoNumericalRequest(ScenarioRequest):
 
 
 @app.post('/demo/numerics')
-def numerical_demo(request: DemoNumericalRequest,
+async def numerical_demo(request: DemoNumericalRequest, http_request: Request,
                    _: Annotated[AuthenticatedIdentity, Depends(require_identity)]):
-    with forecast_capacity():
-        if request.drought_view is not None:
-            raise HTTPException(status_code=422,detail='Disable stress weighting to use historical risk exploration.')
-        state = replace(_cached_persona(request.seed),operating_buffer=request.operating_buffer,
-                        coverage_target=request.coverage_target,forecast_horizon=request.horizon_days)
-        obligations = tuple(Obligation(item.id,item.label,item.amount,item.due_in_days) for item in request.obligations)
-        try:
-            return explore(InputCase('synthetic-demo',state,obligations,request.seed),request.options,
-                           seed=request.seed,block_length=request.mean_block_length)
-        except ValueError as error:
-            raise HTTPException(status_code=422,detail=str(error)) from error
+    def calculate(cancelled):
+        with forecast_capacity():
+            if request.drought_view is not None:
+                raise HTTPException(status_code=422,detail='Disable stress weighting to use historical risk exploration.')
+            state = replace(_cached_persona(request.seed),operating_buffer=request.operating_buffer,
+                            coverage_target=request.coverage_target,forecast_horizon=request.horizon_days)
+            obligations = tuple(Obligation(item.id,item.label,item.amount,item.due_in_days) for item in request.obligations)
+            try:
+                return explore(InputCase('synthetic-demo',state,obligations,request.seed),request.options,
+                               seed=request.seed,block_length=request.mean_block_length,cancelled=cancelled)
+            except ValueError as error:
+                raise HTTPException(status_code=422,detail=str(error)) from error
+    return await cancellable_calculation(http_request, calculate)
 
 
 @app.post("/analysis/frontier")

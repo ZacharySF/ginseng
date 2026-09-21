@@ -1,0 +1,42 @@
+{
+  "profiler_only": true,
+  "rows": [
+    {
+      "workload": "supported",
+      "paths": 2000,
+      "horizon": 30,
+      "result": "OptimalPlan",
+      "reason": null
+    },
+    {
+      "workload": "offline-large",
+      "paths": 32768,
+      "horizon": 60,
+      "result": "OptimizationFailure",
+      "reason": "resource_limit"
+    }
+  ],
+  "native": {
+    "available": false
+  },
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Linux-7.2.5-x86_64-with-glibc2.42",
+    "cpu": "Intel(R) Core(TM) Ultra 7 256V",
+    "dependencies": {
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "scipy": "1.18.1",
+      "arch": "8.0.0",
+      "ginseng": "0.1.0"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": null,
+      "OPENBLAS_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    },
+    "dtype": "float64",
+    "git_commit": "78b599e1508c6f8cc823762b70d9b13d874a3526",
+    "source_fingerprint": "ed95f0daaf05cf9cf19063012bfefe105a7ca78d71c08ef994e5b6520bc59122"
+  }
+}

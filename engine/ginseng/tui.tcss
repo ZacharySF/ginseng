@@ -125,3 +125,105 @@ CommandPalette { background: $background 55%; }
 CommandPalette > Vertical { background: $panel 70%; }
 CommandPalette #--input { border: none; border-bottom: solid $g-rule; }
 CommandPalette #--input.--list-visible { border-bottom: solid $primary; }
+
+/* Sakura atelier: semantic colors keep all ten wardrobes coherent. */
+#sidebar-brand { height: 3; color: $primary; text-style: bold; content-align: center middle; }
+#sidebar { background: $panel 45%; padding: 0 1; }
+#nav { height: 16; }
+#nav > .option-list--option { padding: 0; }
+#nav > .option-list--option-highlighted { background: $primary 14%; border-left: thick $primary; }
+#body > * { background: $background; padding: 1 2; border-bottom: none; }
+#telemetry { background: $panel; border-bottom: solid $primary 40%; }
+.sakura-banner { height: 4; padding: 0 1; color: $primary; border-bottom: solid $g-rule; }
+.welcome-banner { height: 6; padding: 1 2; margin-top: 1; color: $primary; border: round $g-rule; background: $panel; }
+.welcome-copy { height: auto; margin: 1 0; color: $foreground; }
+.welcome-cards { height: auto; margin: 1 0; }
+.welcome-card { width: 1fr; height: auto; padding: 0 2 1 2; margin-right: 1; border: round $g-rule; background: $panel 70%; }
+.welcome-card:hover { border: round $primary; }
+.welcome-footnote { height: auto; margin-top: 2; color: $g-muted; }
+Button { height: 3; min-width: 12; padding: 0 1; border: round $g-rule; background: $panel; margin-right: 1; }
+Button.-primary { background: $primary 18%; color: $primary; border: round $primary; }
+Button:hover, Button:focus { border: round $primary; background: $primary 25%; }
+.studio-picker { height: 3; margin-top: 1; }
+#studio-search { width: 1fr; margin-right: 1; }
+#studio-operation { width: 2fr; }
+#studio-description { height: auto; max-height: 5; padding: 1 0; color: $g-muted; }
+#studio-tabs { height: 1fr; }
+#studio-tabs ContentSwitcher { height: 1fr; }
+#studio-recipe, #studio-results, #studio-notebook { height: 1fr; padding: 1 0 0 0; }
+#studio-params { height: 1fr; min-height: 5; border: round $g-rule; background: $panel 60%; }
+TextArea:focus { border: round $primary; }
+.studio-actions { height: 3; margin-top: 1; }
+#studio-status { height: auto; max-height: 4; color: $primary; padding: 1 0 0 0; }
+#studio-summary { height: auto; padding: 1; margin-bottom: 1; border: round $g-rule; background: $panel; }
+#studio-atlas { height: auto; margin: 1 0; padding: 1; border: round $g-rule; }
+#studio-table { height: 16; margin-top: 1; border: round $g-rule; }
+#studio-json { height: 20; margin-top: 1; border: round $g-rule; }
+#studio-notebook-table { height: 1fr; min-height: 4; }
+#studio-import-path { margin-top: 1; }
+#studio-result-scroll { height: 1fr; }
+Screen.-compact .welcome-cards { layout: vertical; }
+Screen.-compact .welcome-card { width: 1fr; margin-bottom: 1; }
+Screen.-compact #body > * { padding: 0 1; }
+Screen.-compact .studio-picker { height: 6; layout: vertical; }
+Screen.-compact #studio-search, Screen.-compact #studio-operation { width: 1fr; }
+Screen.-compact .sakura-banner { height: 3; }
+Screen.-compact #studio-description { max-height: 4; }
+#studio-quick { height: auto; max-height: 14; margin: 0 0 1 0; padding: 0; border: none; background: $panel 35%; }
+.quick-fields { height: 4; }
+#studio-route { margin-bottom: 1; }
+Button.-style-default { color: $g-focus; background: $g-panel; border: round $g-rule; }
+Button.-style-default.-primary { color: $g-focus; background: $g-focus 15%; border: round $g-focus; }
+Button.-style-default.-success { color: $g-safe; background: $g-safe 12%; }
+Screen.-compact .studio-actions Button { min-width: 8; padding: 0; margin-right: 0; }
+#studio-results .studio-actions Button { width: 1fr; }
+Screen.-short .sakura-banner { display: none; }
+Screen.-short #studio-description { max-height: 2; padding: 0; }
+Screen.-short #studio-status { height: 1; padding: 0; }
+Screen.-short .studio-picker { height: 3; layout: horizontal; margin-top: 0; }
+Screen.-short #studio-search { width: 1fr; }
+Screen.-short #studio-operation { width: 2fr; }
+Screen.-short #studio-quick { margin: 0; }
+Screen.-short #studio-recipe { padding: 0; }
+Screen.-short #studio-recipe > Static { display: none; }
+
+/* Anime rice: native terminal art, coordinated swatches and inspectable plots. */
+#nav { height: 18; }
+RiceHero {
+    height: auto; min-height: 14; margin: 1 0;
+    border: round $g-rule; background: $g-panel;
+    padding: 1 2;
+}
+.rice-scene { width: 30; height: auto; color: $g-focus; text-wrap: nowrap; }
+.rice-identity { width: 1fr; height: auto; margin-left: 3; text-wrap: nowrap; }
+.wardrobe-controls { height: 5; margin: 1 0; }
+#rice-palette-strip { height: auto; padding: 1; background: $g-panel; }
+#panel-result Dashboard { height: auto; min-height: 29; }
+#cash-signals { height: auto; margin: 1 0; }
+PathSignals, FundingBars {
+    width: 1fr; height: auto; padding: 1;
+    border: round $g-rule; background: $g-panel 60%;
+}
+PathSignals { margin-right: 1; }
+TableVisual { height: auto; margin-top: 1; padding: 0 1 1 1; border: round $g-rule; }
+.plot-controls { height: 3; margin: 1 0; }
+.plot-controls Select { width: 1fr; }
+#plot-x { margin-right: 1; }
+ResearchPlot { height: 13; text-wrap: nowrap; }
+Footer, FooterKey { scrollbar-size: 0 0; overflow-y: hidden; }
+Screen.-compact RiceHero { layout: vertical; padding: 1; }
+Screen.-compact .rice-scene { width: 1fr; }
+Screen.-compact .rice-identity { width: 1fr; margin: 1 0 0 0; }
+Screen.-compact #cash-signals { layout: vertical; }
+Screen.-compact PathSignals { margin: 0 0 1 0; }
+Screen.-compact .wardrobe-controls { layout: vertical; height: 10; }
+Screen.-compact .plot-controls { layout: vertical; height: 6; }
+Screen.-short #panel-welcome RiceHero { display: none; }
+
+/* The wardrobe gives the supplied portraits room to retain their fine detail. */
+.rice-gallery {
+    width: 1fr; height: auto; margin: 1 0;
+    padding: 1; border: round $g-rule; background: $g-panel;
+    text-wrap: nowrap;
+}
+.wardrobe-identity { height: auto; padding: 1 2; margin-bottom: 1; background: $g-panel; }

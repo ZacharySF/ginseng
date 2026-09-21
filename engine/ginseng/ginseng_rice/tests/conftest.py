@@ -7,3 +7,4 @@ import pytest
 @pytest.fixture(autouse=True)
 def _no_motion(monkeypatch):
     monkeypatch.setenv("GINSENG_MOTION", "0")
+    monkeypatch.delenv("NO_COLOR", raising=False)

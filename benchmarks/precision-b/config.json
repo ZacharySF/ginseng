@@ -1,0 +1,23 @@
+{
+  "root_seed": 90210,
+  "replicates": 32,
+  "absolute_error": 0.005,
+  "confidence": 0.95,
+  "max_paths": 65536,
+  "batch_size": 512,
+  "chunk_size": 1024,
+  "cases": {
+    "rare": 0.001,
+    "policy_threshold": 0.05,
+    "difficult": 0.5,
+    "tiny": 0.3903826080696829
+  },
+  "estimators": [
+    "path",
+    "initial-block-cmc"
+  ],
+  "modes": [
+    "adaptive",
+    "fixed"
+  ]
+}
