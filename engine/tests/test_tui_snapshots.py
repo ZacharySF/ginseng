@@ -13,7 +13,6 @@ import asyncio
 from datetime import datetime
 
 import pytest
-
 from ginseng import tui as tui_module
 from ginseng.tui import GinsengApp
 
@@ -92,12 +91,12 @@ def test_boot_screen(snap_compare):
         log.write("[dim]sha256[/] 0123456789abcdef  verification.py")
         log.write("[bold]source_fingerprint[/] " + "0123456789abcdef" * 4)
         await pilot.pause()
-    assert snap_compare(GinsengApp(coord="gothpunk"), terminal_size=SIZE, run_before=stable_provenance)
+    assert snap_compare(GinsengApp(), terminal_size=SIZE, run_before=stable_provenance)
 
 
 def test_boot_screen_dismisses_on_key():
     async def run():
-        app = GinsengApp(coord="gothpunk")
+        app = GinsengApp()
         async with app.run_test(size=SIZE) as pilot:
             await pilot.pause()
             assert len(app.screen_stack) == 2
@@ -109,21 +108,21 @@ def test_boot_screen_dismisses_on_key():
 
 
 def test_calm_simulate_run(snap_compare):
-    assert snap_compare(GinsengApp(coord="mori"), terminal_size=SIZE, run_before=_run_simulate)
+    assert snap_compare(GinsengApp(), terminal_size=SIZE, run_before=_run_simulate)
 
 
 def test_short_exact_run(snap_compare):
-    assert snap_compare(GinsengApp(coord="stage"), terminal_size=SIZE, run_before=_run_exact)
+    assert snap_compare(GinsengApp(), terminal_size=SIZE, run_before=_run_exact)
 
 
 def test_short_exact_run_without_color(snap_compare, monkeypatch):
     monkeypatch.setenv("NO_COLOR", "1")
-    assert snap_compare(GinsengApp(coord="mori"), terminal_size=SIZE, run_before=_run_exact)
+    assert snap_compare(GinsengApp(), terminal_size=SIZE, run_before=_run_exact)
 
 
-def test_sakura_home(snap_compare, monkeypatch):
+def test_softclub_home(snap_compare, monkeypatch):
     monkeypatch.delenv('NO_COLOR', raising=False)
-    assert snap_compare(GinsengApp(coord='sakura'), terminal_size=(140,48), run_before=_dismiss_boot)
+    assert snap_compare(GinsengApp(), terminal_size=(140,48), run_before=_dismiss_boot)
 
 
 async def _show_atlas(pilot):
@@ -137,20 +136,19 @@ async def _show_atlas(pilot):
     await pilot.pause()
 
 
-def test_sakura_atlas(snap_compare, monkeypatch):
+def test_softclub_atlas(snap_compare, monkeypatch):
     monkeypatch.delenv('NO_COLOR', raising=False)
-    assert snap_compare(GinsengApp(coord='sakura'), terminal_size=(140,48), run_before=_show_atlas)
+    assert snap_compare(GinsengApp(), terminal_size=(140,48), run_before=_show_atlas)
 
 
-async def _open_wardrobe(pilot):
+async def _open_collection(pilot):
     await _dismiss_boot(pilot)
-    pilot.app.action_wardrobe()
+    pilot.app.action_art_collection()
     await pilot.pause()
 
 
-@pytest.mark.parametrize('coord', ['miku', 'evangelion', 'catppuccin'])
-def test_anime_wardrobe(snap_compare, coord):
-    assert snap_compare(GinsengApp(coord=coord), terminal_size=(140, 48), run_before=_open_wardrobe)
+def test_art_collection(snap_compare):
+    assert snap_compare(GinsengApp(), terminal_size=(140, 48), run_before=_open_collection)
 
 
 async def _show_cash_signals(pilot):
@@ -162,7 +160,7 @@ async def _show_cash_signals(pilot):
 
 
 def test_cash_signals(snap_compare):
-    assert snap_compare(GinsengApp(coord='moonrise'), terminal_size=(140, 48), run_before=_show_cash_signals)
+    assert snap_compare(GinsengApp(), terminal_size=(140, 48), run_before=_show_cash_signals)
 
 
 async def _show_tail_plot(pilot):
@@ -183,9 +181,34 @@ async def _show_tail_plot(pilot):
 
 
 def test_research_scatter(snap_compare):
-    assert snap_compare(GinsengApp(coord='lain'), terminal_size=(140, 48), run_before=_show_tail_plot)
+    assert snap_compare(GinsengApp(), terminal_size=(140, 48), run_before=_show_tail_plot)
 
 
-def test_compact_wardrobe_without_color(snap_compare, monkeypatch):
+def test_compact_collection_without_color(snap_compare, monkeypatch):
     monkeypatch.setenv('NO_COLOR', '1')
-    assert snap_compare(GinsengApp(coord='akira'), terminal_size=(80, 24), run_before=_open_wardrobe)
+    assert snap_compare(GinsengApp(), terminal_size=(80, 24), run_before=_open_collection)
+
+
+@pytest.mark.parametrize("size", [(80, 24), (60, 20)])
+def test_compact_home(snap_compare, size):
+    assert snap_compare(GinsengApp(), terminal_size=size, run_before=_dismiss_boot)
+
+
+async def _open_recipe(pilot):
+    await _dismiss_boot(pilot)
+    pilot.app.open_studio()
+    await pilot.pause()
+
+
+def test_softclub_recipe(snap_compare):
+    assert snap_compare(GinsengApp(), terminal_size=(140, 48), run_before=_open_recipe)
+
+
+async def _show_simulation_form(pilot):
+    await _dismiss_boot(pilot)
+    pilot.app.navigate("simulate")
+    await pilot.pause()
+
+
+def test_instrument_simulation_form(snap_compare):
+    assert snap_compare(GinsengApp(), terminal_size=(140, 48), run_before=_show_simulation_form)

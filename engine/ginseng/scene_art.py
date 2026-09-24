@@ -1,4 +1,4 @@
-"""User-supplied Braille artwork, kept as lossless UTF-8 text assets."""
+"""The single supplied Braille portrait, kept as a lossless UTF-8 text asset."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from pathlib import Path
 from ginseng.braille import _BITS, _cells_from_canvas
 
 ART_DIR = Path(__file__).with_name("art")
+DEFAULT_SCENE = "cyberpunk"
 
 
 @dataclass(frozen=True)
@@ -23,46 +24,7 @@ def _scene(name: str, label: str, caption: str) -> Scene:
 
 
 SCENES = {
-    "anya": _scene("anya", "Horned chibi", "a little curiosity"),
-    "starry": _scene("starry", "Starry eyes", "a sky full of possibilities"),
-    "black-cat": _scene("black-cat", "Black cat", "your midnight companion"),
-    "wink": _scene("wink", "Winking girl", "one more discovery"),
-    "study": _scene("study", "Laptop girl", "the late-night study session"),
-    "soft-eyes": _scene("soft-eyes", "Soft eyes", "a quiet moment"),
-    "ghost": _scene("ghost", "Little ghost", "a friendly haunting"),
-    "catgirl": _scene("catgirl", "Cat-eared chibi", "welcome to the neko cafe"),
     "cyberpunk": _scene("cyberpunk", "Cyberpunk portrait", "after-hours transmission"),
-    "cinnamoroll": _scene(
-        "cinnamoroll", "Floppy-eared friend", "a softer kind of afternoon"
-    ),
-    "gojo-chibi": _scene(
-        "gojo-chibi", "Blindfold chibi", "limitless little possibilities"
-    ),
-    "framed-eyes": _scene("framed-eyes", "Manga eyes", "between the panels"),
-    "gojo": _scene("gojo", "Sunglasses portrait", "looking toward tomorrow"),
-    "miku": _scene("miku", "Twin-tail idol", "a song for the late shift"),
-    "bird": _scene("bird", "Little bird", "just passing through"),
-    "shadow": _scene("shadow", "Shadow portrait", "a face in the neon"),
-    "negative": _scene("negative", "Negative portrait", "light through the dark"),
-    "twintails": _scene("twintails", "Twin-tail portrait", "the last encore"),
-}
-THEME_SCENES = {
-    "sakura": "anya",
-    "moonrise": "starry",
-    "evangelion": "cyberpunk",
-    "miku": "miku",
-    "catppuccin": "black-cat",
-    "akira": "shadow",
-    "lain": "study",
-    "mori": "cinnamoroll",
-    "dojima": "gojo",
-    "decora": "catgirl",
-    "rococo": "wink",
-    "gosurori": "negative",
-    "gothpunk": "cyberpunk",
-    "seifuku": "twintails",
-    "stage": "framed-eyes",
-    "techwear": "gojo-chibi",
 }
 
 

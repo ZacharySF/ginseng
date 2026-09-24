@@ -1,4 +1,4 @@
-"""Sakura research studio: editable recipes, inspectable results and notebook."""
+"""Soft club research studio: editable recipes, inspectable results and notebook."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ import csv
 import io
 import json
 import os
-from pathlib import Path
 import signal
 import sys
 import tempfile
 from datetime import datetime, timezone
+from pathlib import Path
 
 from rich.text import Text
 from textual import on, work
@@ -30,18 +30,10 @@ from textual.widgets import (
     TextArea,
 )
 
-from ginseng.studio import BY_KEY, EXPERIMENTS, SERVICE_ROUTES, result_tables
 from ginseng.rice_charts import TableVisual
+from ginseng.studio import BY_KEY, EXPERIMENTS, SERVICE_ROUTES, result_tables
 
 NOTEBOOK_DIR = Path("artifacts/tui/notebook")
-
-
-class SakuraBanner(Static):
-    def render(self):
-        return Text.from_markup(
-            "[bold]✿  G I N S E N G[/bold]   /   research atelier\n"
-            "    a little starlight. a lot of evidence."
-        )
 
 
 class RiskAtlas(Static):
@@ -108,7 +100,7 @@ class ResearchStudio(Vertical):
         self.cooperative = False
 
     def compose(self) -> ComposeResult:
-        yield SakuraBanner(classes="sakura-banner")
+        yield Static("RESEARCH / EXPERIMENT WORKBENCH", classes="panel-heading")
         with Horizontal(classes="studio-picker"):
             yield Input(
                 placeholder="Search experiments… tail, portfolio, replay",
@@ -122,7 +114,7 @@ class ResearchStudio(Vertical):
             )
         yield Static("", id="studio-description", markup=False)
         with TabbedContent(id="studio-tabs"):
-            with TabPane("✧ Recipe", id="studio-recipe"):
+            with TabPane("Recipe", id="studio-recipe"):
                 yield Select(
                     [
                         (label, str(i))
@@ -178,24 +170,28 @@ class ResearchStudio(Vertical):
                     soft_wrap=False,
                 )
                 with Horizontal(classes="studio-actions"):
-                    yield Button("✦ Run experiment", id="studio-run", variant="primary")
+                    yield Button("Run experiment", id="studio-run", variant="primary")
                     yield Button("Reset recipe", id="studio-reset")
                     yield Button("Cancel", id="studio-cancel", disabled=True)
-            with TabPane("◈ Results", id="studio-results"):
+            with TabPane("Results", id="studio-results"):
                 with VerticalScroll(id="studio-result-scroll"):
-                    yield Static(
-                        "Your next discovery starts with a recipe.",
-                        id="studio-summary",
-                        markup=False,
-                    )
-                    yield RiskAtlas(id="studio-atlas")
-                    yield Select(
-                        [], id="studio-table-choice", prompt="Select a result table"
-                    )
-                    yield TableVisual(id="studio-visual")
-                    yield DataTable(
-                        id="studio-table", cursor_type="row", zebra_stripes=True
-                    )
+                    with Horizontal(id="studio-analysis"):
+                        with Vertical(id="studio-evidence", classes="instrument-panel"):
+                            yield Static("EVIDENCE / TABLE + SIGNAL", classes="panel-heading")
+                            yield Select(
+                                [], id="studio-table-choice", prompt="Select a result table"
+                            )
+                            yield DataTable(
+                                id="studio-table", cursor_type="row", zebra_stripes=True
+                            )
+                            yield TableVisual(id="studio-visual")
+                            yield RiskAtlas(id="studio-atlas")
+                        with VerticalScroll(id="studio-findings", classes="instrument-panel"):
+                            yield Static("RUN / FINDINGS", classes="panel-heading")
+                            yield Static(
+                                "No result yet. Configure a recipe and run the experiment.",
+                                id="studio-summary", markup=False,
+                            )
                     yield Label(
                         "Complete result · parameters + provenance + engine output",
                         classes="field-label",
@@ -208,7 +204,7 @@ class ResearchStudio(Vertical):
                     yield Button("CSV", id="studio-csv")
                     yield Button("Pin", id="studio-pin")
                     yield Button("Compare", id="studio-compare")
-            with TabPane("♡ Notebook", id="studio-notebook"):
+            with TabPane("Notebook", id="studio-notebook"):
                 yield Static(
                     "Session discoveries · select a run to revisit it. Exports persist the complete recipe.",
                     classes="mono-dim",
@@ -222,7 +218,7 @@ class ResearchStudio(Vertical):
                 )
                 yield Button("Open saved experiment", id="studio-import")
         yield Static(
-            "✧ Ready when you are.  Ctrl+P opens every workspace.",
+            "Ready when you are.  Ctrl+P opens every workspace.",
             id="studio-status",
             markup=False,
         )
@@ -298,7 +294,7 @@ class ResearchStudio(Vertical):
         self.query_one("#studio-status", Static).update(
             f"{len(matches)} experiments match"
             if words
-            else "✧ Explore a recipe. Every result comes from the engine."
+            else "Explore a recipe. Every result comes from the engine."
         )
 
     @on(Select.Changed, "#studio-route")
@@ -440,7 +436,7 @@ class ResearchStudio(Vertical):
         self.query_one("#studio-run", Button).disabled = True
         self.query_one("#studio-cancel", Button).disabled = False
         self.query_one("#studio-status", Static).update(
-            f"✦ Computing {BY_KEY[self.active_key].title}… you can keep browsing or cancel."
+            f"Computing {BY_KEY[self.active_key].title}… you can keep browsing or cancel."
         )
         self.job = self.studio_job(self.active_key, params)
 
@@ -491,7 +487,7 @@ class ResearchStudio(Vertical):
             if key in ("precision-replay", "two-decision-replay"):
                 outcome = "replay matched" if payload["match"] else "REPLAY MISMATCH"
             self.query_one("#studio-status", Static).update(
-                f"♡ {BY_KEY[key].title} · {outcome} · {record['elapsed_seconds']:.2f}s · added to notebook"
+                f"{BY_KEY[key].title} · {outcome} · {record['elapsed_seconds']:.2f}s · added to notebook"
             )
         except asyncio.CancelledError:
             self.query_one("#studio-status", Static).update(
@@ -579,7 +575,7 @@ class ResearchStudio(Vertical):
             )
             scalars.extend(f"Mismatch: {value}" for value in payload["mismatches"])
         self.query_one("#studio-summary", Static).update(
-            f"✦ {BY_KEY[record['operation']].title}\n" + "\n".join(scalars[:14])
+            f"{BY_KEY[record['operation']].title}\n" + "\n".join(scalars[:14])
         )
         self.query_one(RiskAtlas).show(payload)
         selector = self.query_one("#studio-table-choice", Select)

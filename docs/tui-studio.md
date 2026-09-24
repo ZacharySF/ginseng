@@ -1,42 +1,48 @@
-# Sakura research atelier
+# Ginseng / soft club
 
 Launch the terminal workspace:
 
 ```sh
 uv sync --locked --extra tui --extra optimization --extra research
 uv run --no-sync ginseng tui
-# Pick any of the sixteen palettes explicitly:
-uv run --no-sync ginseng tui --coord sakura
 ```
 
-Sakura is the default: midnight plum, rose highlights, lavender panels and an anime portrait. `t` cycles all sixteen palettes, `a` cycles artwork, and `Ctrl+W` opens the live wardrobe. `Ctrl+P` finds every workspace, outfit, scene and experiment, `Ctrl+R` opens research, `Ctrl+B` toggles the sidebar, and Escape returns home. Small terminals collapse decoration; `GINSENG_MOTION=0` disables motion. The fullscreen command preserves the upstream color fix: it clears `NO_COLOR` and defaults `COLORTERM` to `truecolor`. Monochrome rendering remains covered by the direct application snapshot tests.
+The TUI has one fixed dark Gen-X young-adult contemporary / soft club identity:
+near-black surfaces, silver text, restrained mint accents and fine rules.
+The layout uses a narrow navigation rail, a central workbench, a right-hand stack of
+simulation/exact readouts and a bottom session log. Home pairs a decorative wireframe
+water study (explicitly not model output) with a keyboard-operable workflow table.
+Research places evidence beside findings; simulation groups source and method controls;
+results lead with cash-path and draw-bundle canvases. The design extends across
+startup, home, forms, the research editor, charts, tables, archives and command search.
+There is no theme selector or palette shortcut. `--coord` has been removed;
+`GINSENG_COORD` does not change the workspace.
 
-## Anime rice
+`Ctrl+W` opens the portrait, `Ctrl+P` searches workflows, `Ctrl+R` opens research, `Ctrl+B` toggles the navigation and inspector, and Escape
+returns home. Small terminals collapse decoration; `GINSENG_MOTION=0` disables
+motion. The fullscreen command clears `NO_COLOR` and defaults `COLORTERM` to
+`truecolor`. Direct application tests also cover monochrome rendering.
 
-The wardrobe adds six outfits to the original ten:
+## Original artwork
 
-| Launch name | Look | Matching art |
-|---|---|---|
-| `moonrise` | Moonlit navy, lavender and lunar gold | Starry eyes |
-| `evangelion` | Violet armor and acid lime | Cyberpunk portrait |
-| `miku` | Teal, ice blue and pink | Twin-tail idol |
-| `catppuccin` | Mocha, mauve and peach | Black cat |
-| `akira` | Charcoal, coral neon and amber | Shadow portrait |
-| `lain` | Green phosphor and pale cyan | Laptop girl |
+The supplied **cyberpunk portrait** is the sole artwork. Its original glyphs remain in
+`engine/ginseng/art/cyberpunk.txt`, and the ASCII boot wordmark is unchanged.
+The inspector, portrait viewer and boot all show the same artwork. Alternate assets,
+the picker, cycling shortcut and art-selection commands have been removed.
 
-The artwork is the user's supplied collection of **18 Braille pieces**, replacing the earlier simple ASCII drawings. It includes the horned chibi, starry face, black cat, winking girl, laptop girl, two eye panels, ghost, cat-eared chibi, cyberpunk portrait, floppy-eared friend, two spiky-haired characters, twin-tail idol, bird, shadow portrait, negative portrait and twin-tail portrait. Each original is stored in `engine/ginseng/art/*.txt`; joined pieces were separated without changing their nonblank glyphs.
+Artwork uses the same dark aquatic palette as the rest of the workspace. It renders at its original character size in scrollable panels; no Nerd Font or terminal image
+support is required. Use a font with Braille glyphs. High-risk results still reduce
+decorative clutter, and risk states retain explicit labels alongside their colors.
 
-Choose **Match the outfit** for automatic art, or select a piece to retain it while changing palettes. Scene overrides last for the session. Use `ginseng tui --coord miku` or `GINSENG_COORD=miku` for your preferred launch palette. Boot, sidebar and home use the same selection; the wardrobe gives it a larger preview. Rendering trims only empty outer margins and scales the complete dot image to the available space. It retains thin strokes when shrinking, without cropping or substituting a generic face. No Nerd Font or terminal image support is required; use a font with Braille glyphs. High-risk results still reduce decorative clutter.
-
-The initial layout references were [this Sailor Moon Unixporn rice](https://www.reddit.com/r/unixporn/comments/1jr3qki/hyprland_first_rice_guess_my_favorite_childhood/) and [this purple Hyprland rice](https://www.reddit.com/r/unixporn/comments/1fgrfnn). The requested “dollete” search also surfaced the [Dollette text-art collection](https://emojicombos.com/dollette) for future browsing. The shipped art comes from the user's paste.
-
-Matching skins for **all sixteen** palettes live in `engine/ginseng/ginseng_rice/skins/`. For Kitty, include the desired `kitty/ginseng-<coord>.conf` in your configuration. For Ghostty, copy `ghostty/ginseng-<coord>` to `~/.config/ghostty/themes/` and select `theme = ginseng-<coord>`. These files are generated with `python -m ginseng.ginseng_rice.skins`; your terminal configuration is not modified automatically.
+Visual direction: [CARI’s Gen X Soft Club archive](https://cari.institute/aesthetics/gen-x-soft-club).
+The earlier standalone `ginseng_rice` palette demos remain separate from the fixed
+application theme, defined in `engine/ginseng/ginseng_rice/softclub.toml`.
 
 ## More ways to see a run
 
 Below the simulation/exact dashboard, **Cash signals** plots daily p5 cash, median cash and the p95–p5 spread. Each sparkline reports its own dollar range; rows use independent scales. Negative balances carry the shortfall color. **Funding / cost & residual risk** compares expected dollar costs on a common zero-based scale, with each candidate's availability day and remaining shortfall probability. Runs without funding candidates explicitly say so. Both views work on saved dashboards as well as new runs.
 
-Research results add **Data scope** above the selected table. Choose any numeric x and y columns to make a Braille scatter plot. The default x axis is row number, preserving the table's order; select a day/cash/etc. column for numeric spacing. Missing values, booleans and nonfinite values are omitted, with the plotted pair count shown. Dots are observations, with no interpolated curve or uncertainty claim. Tables over 5,000 rows are explicitly labeled as previews; the original tables and full exports remain available. Text-only tables hide the plot. The existing atlas, cash-path fan, histogram and path surface remain available.
+Research results add **Data scope** below the selected table. Choose any numeric x and y columns to make a Braille scatter plot. The default x axis is row number, preserving the table's order; select a day/cash/etc. column for numeric spacing. Missing values, booleans and nonfinite values are omitted, with the plotted pair count shown. Dots are observations, with no interpolated curve or uncertainty claim. Tables over 5,000 rows are explicitly labeled as previews; the original tables and full exports remain available. Text-only tables hide the plot. The existing atlas, cash-path fan, histogram and path surface remain available.
 
 ## Workflows
 

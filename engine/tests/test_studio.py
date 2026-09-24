@@ -172,7 +172,7 @@ def test_research_navigation_execution_export_and_import(monkeypatch, tmp_path):
                 animate=False, immediate=True
             )
             await pilot.pause()
-            await pilot.click("#studio-export", offset=(3, 1))
+            await pilot.click("#studio-export", offset=(3, 0))
             await pilot.pause()
             saved = list(tmp_path.glob("*.json"))
             assert len(saved) == 1
